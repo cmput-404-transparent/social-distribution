@@ -14,6 +14,13 @@ Make a distributed social network!
 
 ## Copyright
 
-The authors claiming copyright, if they wish to be known, can list their names here...
+The authors claiming copyright.
 
-* 
+| Author Name |
+|----------|
+| Tammy Young |
+| Jing Wan |
+| Logan Omelchuk |
+| Jassidak Singh |
+| Jastegh Singh |
+| Abhishek Solanki |
