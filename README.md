@@ -10,7 +10,7 @@ Make a distributed social network!
 
 ## License
 
-* Choose an OSI approved license, name it here, and copy the license text to a file called `LICENSE`.
+[Apache License 2.0](https://github.com/uofa-cmput404/f24-project-transparent/blob/2024/LICENSE)
 
 ## Copyright
 
