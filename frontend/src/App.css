@@ -36,3 +36,13 @@
     transform: rotate(360deg);
   }
 }
+
+.page {
+  padding-left: min(5%, 100px);
+  padding-right: min(5%, 100px);
+  padding-top: 25px;
+  max-width: 100%;
+  min-width: 100%;
+  display: flex;
+  justify-content: center;
+}
