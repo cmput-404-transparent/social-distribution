@@ -168,5 +168,6 @@ CORS_ALLOW_METHODS = [
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'content-type',
     'authorization',
-
+]
 AUTH_USER_MODEL = 'authors.Author'
+

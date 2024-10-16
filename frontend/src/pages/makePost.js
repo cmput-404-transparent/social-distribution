@@ -25,7 +25,7 @@ const MakePost = () => {
                 }
             );
             console.log('Post created:', response.data);
-            navigate('/'); 
+            navigate('/stream'); 
         } catch (error) {
             console.error('Error:', error.response ? error.response.data : error.message);
         }
