@@ -30,6 +30,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+CSRF_ALLOWED_ORIGINS = ["http://localhost:3000"]
+CORS_ORIGINS_WHITELIST = ["http://localhost:3000"]
 
 # Application definition
 
@@ -41,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'authors',
     'api'
 ]
