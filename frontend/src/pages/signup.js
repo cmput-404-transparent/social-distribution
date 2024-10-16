@@ -38,6 +38,7 @@ export default function SignUp() {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('authToken', data.token);
+        localStorage.setItem('authorId', data.userId);
         navigate('/stream');
       } else {
         alert('Invalid credentials');

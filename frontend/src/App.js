@@ -9,15 +9,17 @@ import SignUp from './pages/signup';
 
 function App() {
 
+  const authorId = localStorage.getItem('authorId');
+
   return (
     <Router>
       <div className='grid grid-cols-[auto,1fr] w-full'>
         <NavBar />
         <Routes>
           <Route path="/stream" element={<StreamPage/>} />
-          <Route path="/profile" element={
+          <Route path={`/authors/${authorId}`} element={
             <ProtectedRoute>
-              <Profile />
+              <Profile/>
             </ProtectedRoute>
           } />
           <Route path="/login" element={<Login/>} />

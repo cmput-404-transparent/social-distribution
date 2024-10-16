@@ -14,7 +14,7 @@ const Login = () => {
     const data = new URLSearchParams();
     data.append('username', username);
     data.append('password', password);
-    
+
     const csrftoken = getCookie('csrftoken');
 
     try {
@@ -30,6 +30,7 @@ const Login = () => {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('authToken', data.token); // Store token
+        localStorage.setItem('authorId', data.userId);
         navigate('/stream'); // Redirect to stream
       } else {
         alert('Invalid credentials');

@@ -7,6 +7,7 @@ class AuthorSerializer(serializers.Serializer):
     github = serializers.URLField()
     profile_image = serializers.URLField()
     page = serializers.URLField()
+    username = serializers.CharField()
 
     def create(self, validated_data):
         """
@@ -23,5 +24,6 @@ class AuthorSerializer(serializers.Serializer):
         instance.github = validated_data.get('github', instance.github)
         instance.profile_image = validated_data.get('profile_image', instance.profile_image)
         instance.page = validated_data.get('page', instance.page)
+        instance.username = validated_data.get('username', instance.username)
         instance.save()
         return instance
