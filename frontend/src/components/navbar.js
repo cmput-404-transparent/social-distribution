@@ -13,7 +13,7 @@ export default function NavBar() {
                 <HomeIcon />
                 <p className='pl-3'>Stream</p>
             </NavLink>
-            <NavLink to="/" className="align-middle grid grid-flow-col auto-cols-max">
+            <NavLink to="make-post" className="align-middle grid grid-flow-col auto-cols-max">
                 <ControlPointIcon />
                 <p className='pl-3'>Post</p>
             </NavLink>
