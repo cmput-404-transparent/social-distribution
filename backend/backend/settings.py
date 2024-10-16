@@ -31,6 +31,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+CSRF_ALLOWED_ORIGINS = ["http://localhost:3000"]
+CORS_ORIGINS_WHITELIST = ["http://localhost:3000"]
 
 # Application definition
 
@@ -44,6 +47,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'posts',
     'corsheaders',
+    'rest_framework.authtoken',
+    'authors',
+    'api'
 ]
 
 MIDDLEWARE = [
@@ -145,6 +151,7 @@ STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
@@ -161,4 +168,5 @@ CORS_ALLOW_METHODS = [
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'content-type',
     'authorization',
-]
+
+AUTH_USER_MODEL = 'authors.Author'
