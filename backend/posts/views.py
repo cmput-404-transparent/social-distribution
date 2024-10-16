@@ -12,16 +12,21 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-#@permission_classes([IsAuthenticated])
 @api_view(['POST'])
 def create_new_post(request,author_id):
-    author= get_object_or_404(User, id=author_id)
-    serializer = PostSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(author=author)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    
+    title = request.POST.get('title', '')
+    description = request.POST.get('description', '')
+    content_type = request.POST.get('contentType', '')
+    content = request.POST.get('content', '')
+
+    author = get_object_or_404(User, id=author_id)
+
+    new_post = Post(title=title, description=description, contentType=content_type, content=content, author=author)
+    new_post.save()
+
+    serializer = PostSerializer(new_post)
+
+    return Response(serializer.data, status=201)
 
 
 @api_view(['PUT'])

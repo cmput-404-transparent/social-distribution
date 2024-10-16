@@ -2,6 +2,8 @@
 from django.urls import path
 from . import views
 
+app_name = "posts"
+
 urlpatterns = [
     # Get recent posts from author
     path('authors/<int:author_id>/posts/', views.list_author_posts,name='list_author_posts'),
