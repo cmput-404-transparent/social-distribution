@@ -41,19 +41,20 @@ const MakePost = () => {
   };
 
   return (
-    <div className="post-div">
-      <h1>Make a Post</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Title:</label>
+    <div className="post-div div-make-post">
+      <h1 className='post-title'>Make a Post</h1>
+      <form onSubmit={handleSubmit} className='form-make-post'>
+        <div className='div-make-post'>
+          <label className='label-make-post'>Title:</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
+            className='input-make-post'
           />
         </div>
-        <div>
+        <div className='div-make-post'>
           <label>Description:</label>
           <input
             type="text"
@@ -65,14 +66,15 @@ const MakePost = () => {
 
         <label>Content:</label>
 
-        <div>
+        <div className='div-make-post'>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
+            className='make-post-textarea'
           />
         </div>
-        <button type="submit">Create Post</button>
+        <button type="submit" className='make-post-button'>Create Post</button>
 
       </form>
     </div>

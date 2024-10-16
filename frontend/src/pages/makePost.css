@@ -1,10 +1,10 @@
-form {
+.form-make-post {
     padding: 10px;
     background-color: #FFF5CD;
     border-bottom: 8px;
 }
 
-h1 {
+.post-title {
     text-align: center; 
     color: #333;
     padding-bottom: 30px;
@@ -15,13 +15,13 @@ h1 {
     padding-right: 20px;
 }
 
-div {
+.div-make-post {
     padding-top: 20px;
     padding-bottom: 20px;
     text-align: center;
 }
 
-label {
+.label-make-post {
     margin-bottom: 10px; 
     font-weight: bold;  
     text-align: center;
@@ -30,14 +30,14 @@ label {
     font-size: 15px;
 }
 
-input {
+.input-make-post {
     margin-bottom: 15px;   
     border: 1px solid #ccc; 
     border-radius: 4px; 
     font-size: 16px;    
 }
 
-textarea {
+.make-post-textarea {
     padding: 10px;    
     width: 70%; 
     height: 100%;
@@ -47,7 +47,7 @@ textarea {
 
 }
 
-button {
+.make-post-button {
     padding: 10px;       
     background-color: #9cd3fd; 
     color: white;        
@@ -57,6 +57,6 @@ button {
     cursor: pointer;     
 }
 
-button:hover {
+.make-post-button:hover {
     background-color: #3f87d4; 
 }
