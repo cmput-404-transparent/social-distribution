@@ -5,6 +5,7 @@ import StreamPage from './pages/stream';
 import Profile from './pages/profile';
 import ProtectedRoute from './components/protectedRoute';
 import Login from './pages/login';
+import SignUp from './pages/signup';
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/login" element={<Login/>} />
+          <Route path="/signup" element={<SignUp/>} />
         </Routes>
       </div>
     </Router>
