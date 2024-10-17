@@ -1,12 +1,13 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
-from .models import Author, Post, Comment
-from .serializers import CommentSerializer
-from .permissions import IsLocalRequest, IsAuthenticatedOrReadOnly
+from rest_framework.decorators import api_view
+from .models import *
+from .serializers import AuthorSerializer
+from rest_framework.response import Response
+
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as django_side_login
+from rest_framework.authtoken.models import Token
+
 
 @api_view(['POST'])
 def login(request):
