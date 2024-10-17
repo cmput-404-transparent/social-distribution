@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Post, Author
 import base64
 from django.core.files.base import ContentFile
+import commonmark
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,15 +25,26 @@ class PostSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        if validated_data.get('contentType') in ['image/png;base64', 'image/jpeg;base64']:
+        if validated_data.get('contentType') == 'text/markdown':
+            validated_data['content'] = self.render_commonmark(validated_data['content'])
+        elif validated_data.get('contentType') in ['image/png;base64', 'image/jpeg;base64']:
             format, imgstr = validated_data['content'].split(';base64,')
             ext = format.split('/')[-1]
             validated_data['content'] = ContentFile(base64.b64decode(imgstr), name=f"post_image_{validated_data['id']}.{ext}")
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        if validated_data.get('contentType') in ['image/png;base64', 'image/jpeg;base64']:
+        if validated_data.get('contentType') == 'text/markdown':
+            validated_data['content'] = self.render_commonmark(validated_data['content'])
+        elif validated_data.get('contentType') in ['image/png;base64', 'image/jpeg;base64']:
             format, imgstr = validated_data['content'].split(';base64,')
             ext = format.split('/')[-1]
             validated_data['content'] = ContentFile(base64.b64decode(imgstr), name=f"post_image_{instance.id}.{ext}")
         return super().update(instance, validated_data)
+
+    @staticmethod
+    def render_commonmark(text):
+        parser = commonmark.Parser()
+        renderer = commonmark.HtmlRenderer()
+        ast = parser.parse(text)
+        return renderer.render(ast)

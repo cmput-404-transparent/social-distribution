@@ -9,6 +9,7 @@ from .models import Post, Author, Friend
 from .serializers import PostSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.pagination import PageNumberPagination
+import markdown
 
 # Create your views here.
 User = get_user_model()
