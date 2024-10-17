@@ -76,30 +76,32 @@ def delete_post(request, author_id, post_id):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 # List recent posts by an author
 @api_view(['GET'])
 def list_author_posts(request, author_id):
     author = get_object_or_404(User, id=author_id)
-
-    # Get recent posts by author
+    
+    # Get all posts by the author
     posts = Post.objects.filter(author=author).order_by('-published')
-
+    
     # Filter based on visibility and relationship
     if request.user.is_authenticated:
-        if request.user != author:
-            # Show public posts and friends-only posts if the user is a friend
+        if request.user == author:
+            # Author sees all their own posts
+            pass
+        elif Friend.objects.filter(user=author, friend=request.user).exists():
+            # Friends see public, friends-only, and unlisted posts
             posts = posts.filter(
                 Q(visibility='PUBLIC') |
-                (Q(visibility='FRIENDS') & Q(author__friendships__friend=request.user))
+                Q(visibility='FRIENDS') |
+                Q(visibility='UNLISTED')
             )
+        else:
+            posts = posts.filter(visibility='PUBLIC')
     else:
-        # For unauthenticated users, show only public posts
+        # Unauthenticated users see only public posts
         posts = posts.filter(visibility='PUBLIC')
-
-    # Exclude unlisted posts from the general listing
-    posts = posts.exclude(visibility='UNLISTED')
-
+    
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
 
