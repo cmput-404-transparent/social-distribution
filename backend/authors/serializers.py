@@ -8,6 +8,7 @@ class AuthorSerializer(serializers.Serializer):
     profile_image = serializers.URLField()
     page = serializers.URLField()
     username = serializers.CharField()
+    display_name = serializers.CharField()
 
     def create(self, validated_data):
         """
@@ -25,5 +26,6 @@ class AuthorSerializer(serializers.Serializer):
         instance.profile_image = validated_data.get('profile_image', instance.profile_image)
         instance.page = validated_data.get('page', instance.page)
         instance.username = validated_data.get('username', instance.username)
+        instance.display_name = validated_data.get('display_name', instance.display_name)
         instance.save()
         return instance
