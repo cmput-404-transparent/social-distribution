@@ -59,3 +59,37 @@ def get_author_from_session(request):
     session_token = request.GET.get('session')
     token_obj = Token.objects.get(key=session_token)
     return Response({'userId': token_obj.user_id}, status=200)
+
+@api_view(['POST'])
+def edit_author(request, author_id):
+    author = get_object_or_404(Author, pk=author_id)
+
+    username = request.POST.get('username', None)
+    password = request.POST.get('password', None)
+    display_name = request.POST.get('display_name', None)
+    github = request.POST.get('github', None)
+
+    errors = []
+
+    if username is not None and username != author.username:
+        original_username = author.username
+        try:
+            author.username = username
+            author.save()
+        except:
+            print('hello')
+            author.username = original_username
+            errors.append("Username is taken")
+    if password is not None and not author.check_password(password):     # checks if passwords are the same
+        author.set_password(password)           # if not then change it
+    if display_name is not None and display_name != author.display_name:
+        author.display_name = display_name
+    if github is not None and github != author.github:
+        author.github = github
+    
+    author.save()
+
+    if errors:
+        return Response({'errors': errors}, status=400)
+    else:
+        return Response(status=200)
