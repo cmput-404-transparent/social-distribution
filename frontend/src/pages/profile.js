@@ -11,7 +11,7 @@ export default function Profile() {
     // get profile information
     fetch(`/api/authors/${authorId}/`)
     .then((r) => r.json())
-    .then((data) => setProfileInfo(data))
+    .then((data) => setProfileInfo(data));
 
     // get posts
     fetch(`/api/posts/authors/${authorId}/posts/`)
@@ -36,8 +36,12 @@ export default function Profile() {
                 <h1 className="font-bold text-3xl">{profileInfo.display_name}</h1>
                 <h2>@{profileInfo.username}</h2>
               </div>
-              <div className="space-x-3">
-                <button type="submit" className='bg-neutral-200 rounded p-2 px-5'>Edit Profile</button>
+              <div className="space-x-3 flex">
+                <a href={ `/authors/${authorId}/edit` }>
+                  <button type="submit" className='bg-neutral-200 rounded p-2 px-5'>
+                    Edit Profile
+                  </button>
+                </a>
                 <button type="submit" className='bg-neutral-200 rounded p-2 px-5'>View Deleted</button>
               </div>
             </div>
