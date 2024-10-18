@@ -26,13 +26,14 @@ def signup(request):
     username = request.POST.get('username', '')
     password = request.POST.get('password', '')
     display_name = request.POST.get('displayName', '')
-    github = request.POST.get('github', '')
+    github_username = request.POST.get('github', '')
+    github_link = f"http://github.com/{github_username}"
     host = request.POST.get('origin', '') + '/api/'
 
     if not display_name:
         display_name = username
 
-    new_author = Author(username=username, host=host, display_name=display_name, github=github)
+    new_author = Author(username=username, host=host, display_name=display_name, github=github_link)
     new_author.set_password(password)
     new_author.save()
     

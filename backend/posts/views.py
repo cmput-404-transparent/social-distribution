@@ -3,9 +3,11 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from .models import Post, Friend
+from .models import *
 from .serializers import PostSerializer
 from django.contrib.auth import get_user_model
+import requests
+import json
 
 # Create your views here.
 Author = get_user_model()
@@ -115,3 +117,26 @@ def remove_friend(request, author_id):
         friendship.delete()
         return Response({"detail": "Friend removed successfully."}, status=status.HTTP_200_OK)
     return Response({"detail": "You are not friends with this user."}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def post_github_activity(request, author_id):
+    author = get_object_or_404(User, id=author_id)
+    github_username = author.github.split("/")[-1]
+
+    response = requests.get(f"https://api.github.com/users/{github_username}/events")
+    events = json.loads(response.content.decode())
+    
+    for event in events:
+        event_type = event['type']
+        payload = event['payload']
+
+        new_post = Post()
+
+        if event_type == "IssueEvent":
+            pass
+        elif event_type == "IssueCommentEvent":
+            new_post.title = f"{github_username} commented on an issue in {event['repo']['name']}"
+            new_post.description = f"Event Id: {event['id']}"
+            new_post.content = f""
+
+    return Response(status=200)

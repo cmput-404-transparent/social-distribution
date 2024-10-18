@@ -22,4 +22,7 @@ urlpatterns = [
 
     path('authors/<int:author_id>/add_friend/', views.add_friend, name='add_friend'),
     path('authors/<int:author_id>/remove_friend/', views.remove_friend, name='remove_friend'),
+    
+    # auto post github activity for user
+    path('authors/<int:author_id>/post/github/', views.post_github_activity, name='post_github_activity'),
 ]

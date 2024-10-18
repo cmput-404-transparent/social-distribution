@@ -75,7 +75,7 @@ export default function SignUp() {
               helperText="Can be set later"
             />
             <TextField
-              label="GitHub"
+              label="GitHub Username"
               onChange={(e) => setGithub(e.target.value)}
               value={github}
               helperText="Can be set later"
