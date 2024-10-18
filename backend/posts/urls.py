@@ -19,4 +19,7 @@ urlpatterns = [
     
     # Delete a post (DELETE method)
     path('authors/<int:author_id>/posts/<int:post_id>/delete/', views.delete_post, name='delete_post'),
+
+    path('authors/<int:author_id>/add_friend/', views.add_friend, name='add_friend'),
+    path('authors/<int:author_id>/remove_friend/', views.remove_friend, name='remove_friend'),
 ]
