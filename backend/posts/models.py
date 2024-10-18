@@ -6,25 +6,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 
 # Create your models here.
-User = get_user_model()
-
-class Author(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-    host = models.URLField()
-    display_name = models.CharField(max_length=100)
-    github = models.URLField(blank=True, null=True)
-    profile_image = models.URLField(blank=True, null=True)
-    page = models.URLField()
-
-    def is_friend(self, user):
-        return Friend.objects.filter(user=self.user, friend=user).exists()
-
-    def __str__(self):
-        return self.display_name
 
 class Friend(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friendships')
-    friend = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='friendships')
+    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ['user', 'friend']
@@ -46,7 +31,7 @@ class Post(models.Model):
         ('image/jpeg;base64', 'JPEG Image'),
     ]
 
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     content = models.TextField()
     description = models.TextField(blank=True)

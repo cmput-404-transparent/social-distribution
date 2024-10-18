@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Author
+from .models import Post
 import base64
 from django.core.files.base import ContentFile
 import commonmark
@@ -7,18 +7,16 @@ from .models import Post
 
 import base64
 from django.core.files.base import ContentFile
+from django.contrib.auth import get_user_model
 
-class AuthorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Author
-        fields = ['id', 'username', 'display_name', 'host', 'github', 'profile_image', 'page']
-        read_only_fields = ['id']
+Author = get_user_model()
 
 class PostSerializer(serializers.ModelSerializer):
+    author = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = Post
         fields = ['id', 'title', 'description', 'contentType', 'content', 'author', 'published', 'visibility']
-        read_only_fields = ['id', 'author', 'published']
+        read_only_fields = ['id', 'authot', 'published']
 
     def validate(self, data):
         if data.get('contentType') in ['image/png;base64', 'image/jpeg;base64']:

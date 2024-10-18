@@ -5,14 +5,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from .models import Post, Author, Friend
+from .models import Post, Friend
 from .serializers import PostSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.pagination import PageNumberPagination
 import markdown
 
 # Create your views here.
-User = get_user_model()
+Author = get_user_model()
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -24,8 +24,13 @@ def create_new_post(request, author_id):
             "requested_id": author_id
         }, status=status.HTTP_403_FORBIDDEN)
     
-    author = get_object_or_404(User, id=author_id)
-    serializer = PostSerializer(data=request.data)
+    author = get_object_or_404(Author, id=author_id)
+    # Create a mutable copy of the request data
+    mutable_data = request.data.copy()
+    # Remove 'author' from the data if it's present
+    mutable_data.pop('author', None)
+    
+    serializer = PostSerializer(data=mutable_data)
 
     if serializer.is_valid():
         post = serializer.save(author=author)
@@ -35,7 +40,7 @@ def create_new_post(request, author_id):
 
 @api_view(['PUT'])
 def update_existing_post(request, author_id, post_id):
-    author = get_object_or_404(User, id=author_id)
+    author = get_object_or_404(Author, id=author_id)
     post = get_object_or_404(Post, id=post_id, author=author)
     serializer = PostSerializer(post, data=request.data, partial=True)
     if serializer.is_valid():
@@ -78,7 +83,7 @@ def delete_post(request, author_id, post_id):
 # List recent posts by an author
 @api_view(['GET'])
 def list_author_posts(request, author_id):
-    author = get_object_or_404(User, id=author_id)
+    author = get_object_or_404(Author, id=author_id)
     
     # Get all posts by the author
     posts = Post.objects.filter(author=author).order_by('-published')
@@ -107,7 +112,7 @@ def list_author_posts(request, author_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_friend(request, author_id):
-    friend = get_object_or_404(User, id=author_id)
+    friend = get_object_or_404(Author, id=author_id)
     if request.user == friend:
         return Response({"detail": "You can't be friends with yourself."}, status=status.HTTP_400_BAD_REQUEST)
     friendship, created = Friend.objects.get_or_create(user=request.user, friend=friend)
@@ -118,7 +123,7 @@ def add_friend(request, author_id):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def remove_friend(request, author_id):
-    friend = get_object_or_404(User, id=author_id)
+    friend = get_object_or_404(Author, id=author_id)
     friendship = Friend.objects.filter(user=request.user, friend=friend).first()
     if friendship:
         friendship.delete()
