@@ -37,6 +37,11 @@ function App() {
           } />
           <Route path="/login" element={<Login/>} />
           <Route path="/signup" element={<SignUp/>} />
+          <Route path={`/explore`} element={
+            <ProtectedRoute>
+              <EditProfile/>
+            </ProtectedRoute>
+          } />
         </Routes>
       </div>
     </Router>
