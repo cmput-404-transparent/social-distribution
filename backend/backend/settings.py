@@ -171,3 +171,6 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 ]
 AUTH_USER_MODEL = 'authors.Author'
 
+
+
+
