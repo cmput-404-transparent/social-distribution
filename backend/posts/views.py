@@ -1,41 +1,30 @@
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from .models import Post, Friend
 from .serializers import PostSerializer
 from django.contrib.auth import get_user_model
-from rest_framework.pagination import PageNumberPagination
-import markdown
 
 # Create your views here.
 Author = get_user_model()
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_new_post(request, author_id):
-    if int(request.user.id) != int(author_id):
-        return Response({
-            "detail": "You can only create posts for yourself.",
-            "your_id": str(request.user.id),
-            "requested_id": author_id
-        }, status=status.HTTP_403_FORBIDDEN)
-    
-    author = get_object_or_404(Author, id=author_id)
-    # Create a mutable copy of the request data
-    mutable_data = request.data.copy()
-    # Remove 'author' from the data if it's present
-    mutable_data.pop('author', None)
-    
-    serializer = PostSerializer(data=mutable_data)
+def create_new_post(request,author_id):
+    title = request.POST.get('title', '')
+    description = request.POST.get('description', '')
+    content_type = request.POST.get('contentType', '')
+    content = request.POST.get('content', '')
 
-    if serializer.is_valid():
-        post = serializer.save(author=author)
-        return Response(PostSerializer(post).data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    author = get_object_or_404(Author, id=author_id)
+
+    new_post = Post(title=title, description=description, contentType=content_type, content=content, author=author)
+    new_post.save()
+
+    serializer = PostSerializer(new_post)
+
+    return Response(serializer.data, status=201)
 
 
 @api_view(['PUT'])
@@ -74,7 +63,6 @@ def get_post(request, author_id, post_id):
 
 # Delete a post
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
 def delete_post(request, author_id, post_id):
     post = get_object_or_404(Post, id=post_id, author=request.user)
     post.delete()
@@ -110,7 +98,6 @@ def list_author_posts(request, author_id):
     return Response(serializer.data)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def add_friend(request, author_id):
     friend = get_object_or_404(Author, id=author_id)
     if request.user == friend:
@@ -121,7 +108,6 @@ def add_friend(request, author_id):
     return Response({"detail": "You are already friends with this user."}, status=status.HTTP_200_OK)
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
 def remove_friend(request, author_id):
     friend = get_object_or_404(Author, id=author_id)
     friendship = Friend.objects.filter(user=request.user, friend=friend).first()
