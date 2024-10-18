@@ -1,12 +1,8 @@
 from rest_framework import serializers
-from .models import Post
+from .models import Post, Share
 import base64
 from django.core.files.base import ContentFile
 import commonmark
-from .models import Post
-
-import base64
-from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
 
 Author = get_user_model()
@@ -50,3 +46,9 @@ class PostSerializer(serializers.ModelSerializer):
         renderer = commonmark.HtmlRenderer()
         ast = parser.parse(text)
         return renderer.render(ast)
+
+class ShareSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Share
+        fields = ['id', 'sharer', 'post', 'shared_at']
+        read_only_fields = ['id', 'sharer', 'shared_at']
