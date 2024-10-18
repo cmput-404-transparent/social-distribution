@@ -75,7 +75,6 @@ def delete_post(request, author_id, post_id):
     post.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
-
 # List recent posts by an author
 @api_view(['GET'])
 def list_author_posts(request, author_id):

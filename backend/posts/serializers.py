@@ -3,6 +3,10 @@ from .models import Post, Author
 import base64
 from django.core.files.base import ContentFile
 import commonmark
+from .models import Post
+
+import base64
+from django.core.files.base import ContentFile
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,24 +1,35 @@
-import logo from './logo.svg';
+import NavBar from './components/navbar';
 import './App.css';
+import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import StreamPage from './pages/stream';
+import MakePost from './pages/makePost';
+import Profile from './pages/profile';
+import ProtectedRoute from './components/protectedRoute';
+import Login from './pages/login';
+import SignUp from './pages/signup';
+
 
 function App() {
+
+  const authorId = localStorage.getItem('authorId');
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className='grid grid-cols-[auto,1fr] w-full'>
+        <NavBar />
+        <Routes>
+          <Route path="/stream" element={<StreamPage/>} />
+          <Route path="/make-post" element={<MakePost />} />
+          <Route path={`/authors/${authorId}`} element={
+            <ProtectedRoute>
+              <Profile/>
+            </ProtectedRoute>
+          } />
+          <Route path="/login" element={<Login/>} />
+          <Route path="/signup" element={<SignUp/>} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
