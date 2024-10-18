@@ -16,7 +16,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'title', 'description', 'contentType', 'content', 'author', 'published', 'visibility']
-        read_only_fields = ['id', 'authot', 'published']
+        read_only_fields = ['id', 'author', 'published']
 
     def validate(self, data):
         if data.get('contentType') in ['image/png;base64', 'image/jpeg;base64']:
