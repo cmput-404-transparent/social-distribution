@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_side_login
 from rest_framework.authtoken.models import Token
+from django.db.models import Q
 
 
 @api_view(['POST'])
@@ -94,3 +95,17 @@ def edit_author(request, author_id):
         return Response({'errors': errors}, status=400)
     else:
         return Response(status=200)
+
+@api_view(['GET'])
+def search_author(request):
+    keyword = request.GET.get("keyword", '')
+
+    keyword = keyword.split("=")[1] if keyword else keyword
+
+    results = []
+    if keyword:
+        results = Author.objects.filter(Q(username__icontains=keyword) | Q(display_name__icontains=keyword))
+    
+    results = [AuthorSerializer(author).data for author in results]
+
+    return Response(results, status=200)

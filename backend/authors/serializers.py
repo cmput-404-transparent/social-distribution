@@ -9,6 +9,7 @@ class AuthorSerializer(serializers.Serializer):
     page = serializers.URLField()
     username = serializers.CharField()
     display_name = serializers.CharField()
+    id = serializers.IntegerField()
 
     def create(self, validated_data):
         """
@@ -27,5 +28,6 @@ class AuthorSerializer(serializers.Serializer):
         instance.page = validated_data.get('page', instance.page)
         instance.username = validated_data.get('username', instance.username)
         instance.display_name = validated_data.get('display_name', instance.display_name)
+        instance.id = validated_data.get('id', instance.id)
         instance.save()
         return instance
