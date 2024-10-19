@@ -5,7 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from .models import *
-from .serializers import PostSerializer
+from posts.serializers import *
+from posts.models import *
 
 from rest_framework.pagination import PageNumberPagination
 
@@ -136,28 +137,6 @@ def update_existing_post(request, author_id, post_id):
     } 
 
     return Response(response_data, status=status.HTTP_200_OK)
-
-
-# Get a single post
-def get_post(request, author_id, post_id):
-    post = get_object_or_404(Post, id=post_id, author_id=author_id)
-
-    # Public and unlisted posts are visible to everyone
-    if post.visibility in ['PUBLIC', 'UNLISTED']:
-        return Response(PostSerializer(post).data, status=status.HTTP_200_OK)
-
-    # For friends-only posts, check if the user is authenticated and a friend
-    if post.visibility == 'FRIENDS':
-        if not request.user.is_authenticated:
-            return Response({"detail": "Authentication required to view this post."}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        if request.user == post.author or Friend.objects.filter(user=post.author, friend=request.user).exists():
-            return Response(PostSerializer(post).data, status=status.HTTP_200_OK)
-        else:
-            return Response({"detail": "This post is only visible to friends."}, status=status.HTTP_403_FORBIDDEN)
-
-    # If we reach here, the post has an invalid visibility setting
-    return Response({"detail": "Invalid post visibility setting."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Delete a post
