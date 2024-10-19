@@ -35,4 +35,7 @@ urlpatterns = [
 
     # get shared posts
     path('authors/<str:author_id>/shared_posts/', views.list_shared_posts, name='list_shared_posts'),
+
+
+    path('<int:author_id>/stream/', views.stream, name='stream'),
 ]
