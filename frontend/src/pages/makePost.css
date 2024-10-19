@@ -74,9 +74,8 @@
 .div-plain:hover{
     background-color: #3f87d4;
 }
-.div-plain:active {
-    background-color: #3f87d4; 
-    color: black;
+.div-plain.active {
+    background-color: #3f87d4;
 }
 
 
@@ -94,10 +93,8 @@
 .div-markdown:hover{
     background-color: #3f87d4;
 }
-
-.div-markdown:active {
-    background-color: #3f87d4; 
-    color: black;
+.div-markdown.active {
+    background-color: #3f87d4;
 }
 
 .div-image{
@@ -115,10 +112,11 @@
     background-color: #3f87d4;
 }
 
-.div-image:active {
-    background-color: #3f87d4; 
-    color: black;
+.div-image.active {
+    background-color: #3f87d4;
 }
+
+
 
 
 

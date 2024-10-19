@@ -7,12 +7,14 @@ import commonmark from 'commonmark';
 import { Parser, HtmlRenderer } from 'commonmark';
 
 
+
 const MakePost = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
   const [contentType, setContentType] = useState('text/plain');
   const [uploadedImage, setImage] = useState('')
+  const [activeButton, setActiveButton] = useState('');
 
   const csrftoken = getCookie('csrftoken');
   const authorId = localStorage.getItem('authorId');
@@ -105,9 +107,25 @@ const MakePost = () => {
         </div>
 
         <label> Content Type:</label>
-        <button className='div-plain' type = "button" onClick={() => setContentType('text/plain')}>Plain Text</button>
-        <button className='div-markdown' type = "button" onClick={() => setContentType('text/markdown')}>MarkDown</button>
-        <button className='div-image' type = "button" onClick={() => setContentType('image')}>Image</button>
+
+        <button
+        className={`div-plain ${activeButton === 'plain' ? 'active' : ''}`} type="button"
+        onClick={() => {
+          setContentType('text/plain');
+          setActiveButton('plain');
+        }}>Plain Text </button>
+
+        <button className={`div-markdown ${activeButton === 'markdown' ? 'active' : ''}`} type = "button" 
+        onClick={() => {
+          setContentType('text/markdown');
+          setActiveButton('markdown');
+        }}>MarkDown</button>
+
+        <button className={`div-image ${activeButton === 'image' ? 'active' : ''}`} type="button"
+                  onClick={() => {
+                  setContentType('text/image');
+                  setActiveButton('image');
+                }}x>Image</button>        
         <br></br><br></br>
 
         <label>Content:</label>
