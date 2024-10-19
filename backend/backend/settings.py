@@ -169,3 +169,8 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 ]
 AUTH_USER_MODEL = 'authors.Author'
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,  # Default page size
+}
