@@ -140,6 +140,12 @@ def remove_friend(request, author_id):
         return Response({"detail": "Friend removed successfully."}, status=status.HTTP_200_OK)
     return Response({"detail": "You are not friends with this user."}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+def get_all_public_posts(request):
+    public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
+    serialized_posts = [PostSerializer(post).data for post in public_posts]
+    return Response({"posts": serialized_posts}, status=200)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def share_post(request, post_id):
