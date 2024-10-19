@@ -19,4 +19,13 @@ urlpatterns = [
     
     # Delete a post (DELETE method)
     path('authors/<int:author_id>/posts/<int:post_id>/delete/', views.delete_post, name='delete_post'),
+
+    path('authors/<int:author_id>/add_friend/', views.add_friend, name='add_friend'),
+    path('authors/<int:author_id>/remove_friend/', views.remove_friend, name='remove_friend'),
+
+    # get all public posts on node
+    path('public/', views.get_all_public_posts, name='get_public'),
+
+    path('<int:post_id>/share/', views.share_post, name='share_post'),
+    path('authors/<str:author_id>/shared_posts/', views.list_shared_posts, name='list_shared_posts'),
 ]
