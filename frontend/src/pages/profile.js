@@ -1,25 +1,31 @@
 import { useState, useEffect } from "react";
 import Post from "../components/post";
+import { useParams } from 'react-router-dom';
 
 export default function Profile() {
   const [profileInfo, setProfileInfo] = useState({});
   const [posts, setPosts] = useState([]);
+  const [self, setSelf] = useState(false);
 
   const authorId = localStorage.getItem('authorId');
+  const { profileAuthorId } = useParams();
 
   useEffect(() => {
     // get profile information
-    fetch(`/api/authors/${authorId}/`)
+    fetch(`/api/authors/${profileAuthorId}/`)
     .then((r) => r.json())
     .then((data) => setProfileInfo(data));
 
     // get posts
-    fetch(`/api/authors/${authorId}/posts/`)
+    fetch(`/api/authors/${profileAuthorId}/posts/`)
     .then((r) => r.json())
     .then((data) => {
       setPosts(data.results);
     })
-  }, [])
+
+    setSelf(profileAuthorId === authorId);
+
+  }, [profileAuthorId])
 
   return(
     <div className="page">
@@ -36,14 +42,22 @@ export default function Profile() {
                 <h1 className="font-bold text-3xl">{profileInfo.display_name}</h1>
                 <h2>@{profileInfo.username}</h2>
               </div>
-              <div className="space-x-3 flex">
-                <a href={ `/authors/${authorId}/edit` }>
-                  <button type="submit" className='bg-neutral-200 rounded p-2 px-5'>
-                    Edit Profile
-                  </button>
-                </a>
-                <button type="submit" className='bg-neutral-200 rounded p-2 px-5'>View Deleted</button>
-              </div>
+              {
+                self? (
+                  <div className="space-x-3 flex">
+                    <a href={ `/authors/${authorId}/edit` }>
+                      <button type="submit" className='bg-neutral-200 rounded p-2 px-5'>
+                        Edit Profile
+                      </button>
+                    </a>
+                    <button type="submit" className='bg-neutral-200 rounded p-2 px-5'>View Deleted</button>
+                  </div>
+                ) : (
+                  <div className="space-x-3 flex">
+
+                  </div>
+                )
+              }
             </div>
           </div>
           <div className="flex flex-col space-y-5 items-center">

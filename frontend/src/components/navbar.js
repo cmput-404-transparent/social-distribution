@@ -2,6 +2,7 @@ import {NavLink} from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import ControlPointIcon from '@mui/icons-material/ControlPoint';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import SearchIcon from '@mui/icons-material/Search';
 
 export default function NavBar() {
     const authorId = localStorage.getItem('authorId');
@@ -12,6 +13,10 @@ export default function NavBar() {
             <NavLink to="/stream" className="align-middle grid grid-flow-col auto-cols-max">
                 <HomeIcon />
                 <p className='pl-3'>Stream</p>
+            </NavLink>
+            <NavLink to="/search" className="align-middle grid grid-flow-col auto-cols-max">
+                <SearchIcon />
+                <p className='pl-3'>Search</p>
             </NavLink>
             <NavLink to="make-post" className="align-middle grid grid-flow-col auto-cols-max">
                 <ControlPointIcon />
