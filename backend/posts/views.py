@@ -94,8 +94,13 @@ def list_recent_posts(request, author_id):
         # Unauthenticated users see only public posts
         posts = posts.filter(visibility='PUBLIC')
 
-    serializer = PostSerializer(posts, many=True)
-    return Response(serializer.data)
+    # Apply pagination
+    paginator = PageNumberPagination()
+    paginated_posts = paginator.paginate_queryset(posts, request)
+
+
+    serializer = PostSerializer(paginated_posts, many=True)
+    return paginator.get_paginated_response(serializer.data)
 
 
 
