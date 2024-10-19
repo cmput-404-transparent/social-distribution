@@ -123,7 +123,7 @@ const MakePost = () => {
 
         <button className={`div-image ${activeButton === 'image' ? 'active' : ''}`} type="button"
                   onClick={() => {
-                  setContentType('text/image');
+                  setContentType('image');
                   setActiveButton('image');
                 }}x>Image</button>        
         <br></br><br></br>
