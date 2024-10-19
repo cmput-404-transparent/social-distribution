@@ -35,7 +35,7 @@ function content(post) {
       </div>
     )
   }
-  else if (post.contentType == 'image') {
+  else if (post.contentType.includes('image')) {
     return(
       <div className="p-5">
         <div className="font-bold text-2xl">
@@ -44,7 +44,7 @@ function content(post) {
         <div className="italic text-neutral-700 pb-3">
           {post.description}
         </div>
-        <div><img src={post.content} /></div>
+        <div className="flex justify-center"><img src={post.content} className="w-1/2" /></div>
         
       </div>
     )
@@ -53,13 +53,15 @@ function content(post) {
 
 export default function Post({ post }) {
   const [author, setAuthor] = useState("");
+  const [isStream, setIsStream] = useState(false);
   
   useEffect(() => {
     fetch(`/api/authors/${post.author}/`)
     .then((r) => r.json())
     .then((data) => {
       setAuthor(data);
-    })
+    });
+    setIsStream(window.location.href.includes('stream'));
   }, []);
 
   const dropdown = (e) =>{
@@ -108,11 +110,15 @@ export default function Post({ post }) {
             <h1 className="font-bold text-l">{author.display_name}</h1>
             <h2 className="text-l">@{author.username}</h2>
           </div>
-          <select id = "Dropdown" onChange={dropdown} className="absolute top-2 right-2 border rounded p-1 text-sm">
-            <option>Options</option>
-            <option value="edit">Edit</option>
-            <option value="delete">Delete</option>
-          </select>
+          {
+            !isStream && (
+              <select id = "Dropdown" onChange={dropdown} className="absolute top-2 right-2 border rounded p-1 text-sm">
+                <option>Options</option>
+                <option value="edit">Edit</option>
+                <option value="delete">Delete</option>
+              </select>
+            )
+          }
         </div>
       </div>
       {content(post)}
