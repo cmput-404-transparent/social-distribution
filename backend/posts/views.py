@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from .models import Post, Friend
+from .models import Post, Friend, Share
 from .serializers import PostSerializer
 from django.contrib.auth import get_user_model
 
@@ -173,7 +173,6 @@ def delete_post(request, author_id, post_id):
 
 
 
-
 @api_view(['POST'])
 def add_friend(request, author_id):
     friend = get_object_or_404(Author, id=author_id)
@@ -191,4 +190,58 @@ def remove_friend(request, author_id):
     if friendship:
         friendship.delete()
         return Response({"detail": "Friend removed successfully."}, status=status.HTTP_200_OK)
+
     return Response({"detail": "You are not friends with this user."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['GET'])
+def get_all_public_posts(request):
+    public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
+    serialized_posts = [PostSerializer(post).data for post in public_posts]
+    return Response({"posts": serialized_posts}, status=200)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def share_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    
+    if not post.is_shareable:
+        return Response({"detail": "This post cannot be shared."}, status=status.HTTP_403_FORBIDDEN)
+    
+    share, created = Share.objects.get_or_create(sharer=request.user, post=post)
+    
+    if created:
+        # Create a new post as a share
+        shared_post = Post.objects.create(
+            author=request.user,
+            title=f"Shared: {post.title}",
+            content=post.content,
+            description=post.description,
+            contentType=post.contentType,
+            visibility='PUBLIC',  # Ensure shared posts are always public
+            is_shared=True,
+            original_post=post
+        )
+        # Increment the shares count of the original post
+        post.shares_count += 1
+        post.save()
+        post.refresh_from_db()
+        return Response(PostSerializer(shared_post).data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"detail": "You have already shared this post."}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def list_shared_posts(request, author_id):
+    author = get_object_or_404(Author, id=author_id)
+    shared_posts = Post.objects.filter(author=author, is_shared=True).order_by('-published')
+    
+    # Apply visibility filters similar to list_author_posts
+    if request.user.is_authenticated:
+        if request.user != author:
+            shared_posts = shared_posts.filter(visibility='PUBLIC')
+    else:
+        shared_posts = shared_posts.filter(visibility='PUBLIC')
+    
+    serializer = PostSerializer(shared_posts, many=True)
+    return Response(serializer.data)
