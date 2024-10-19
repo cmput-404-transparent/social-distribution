@@ -4,16 +4,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from .models import Post, Friend, Share
+from .models import *
 from .serializers import PostSerializer
-from django.contrib.auth import get_user_model
 
 from rest_framework.pagination import PageNumberPagination
-
-
-# Create your views here.
-Author = get_user_model()
-
 
 # Main view that checks the request method and delegates to appropriate functions
 @api_view(['GET', 'POST'])
@@ -23,8 +17,7 @@ def author_posts(request, author_id):
     
     elif request.method == 'POST':
         return create_new_post(request, author_id)
-
-
+    
 
 # Function to handle post creation (POST)
 @permission_classes([IsAuthenticated])
@@ -66,9 +59,6 @@ def create_new_post(request, author_id):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-
-
-
 # List recent posts by an author
 def list_recent_posts(request, author_id):
     author = get_object_or_404(Author, id=author_id)
@@ -103,9 +93,6 @@ def list_recent_posts(request, author_id):
     return paginator.get_paginated_response(serializer.data)
 
 
-
-
-
 # Main view to handle GET, PUT, and DELETE for a specific post
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])  # Permissions can vary based on the method if needed
@@ -123,7 +110,6 @@ def post_detail(request, author_id, post_id):
         return delete_post(request, author_id, post_id)
     
 
-
 def update_existing_post(request, author_id, post_id):
     author = get_object_or_404(Author, id=author_id)
     post = get_object_or_404(Post, id=post_id, author=author)
@@ -132,9 +118,6 @@ def update_existing_post(request, author_id, post_id):
         serializer.save(author=author)
         return Response(serializer.data)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
-
-
 
 
 # Get a single post
@@ -159,8 +142,6 @@ def get_post(request, author_id, post_id):
     return Response({"detail": "Invalid post visibility setting."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 # Delete a post
 def delete_post(request, author_id, post_id):
     post = get_object_or_404(Post, id=post_id, author=request.user)
@@ -168,9 +149,6 @@ def delete_post(request, author_id, post_id):
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_403_FORBIDDEN)  # Forbidden if not the author
-
-
-
 
 
 @api_view(['POST'])
@@ -194,12 +172,12 @@ def remove_friend(request, author_id):
     return Response({"detail": "You are not friends with this user."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 @api_view(['GET'])
 def get_all_public_posts(request):
     public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
     serialized_posts = [PostSerializer(post).data for post in public_posts]
     return Response({"posts": serialized_posts}, status=200)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -230,6 +208,7 @@ def share_post(request, post_id):
         return Response(PostSerializer(shared_post).data, status=status.HTTP_201_CREATED)
     else:
         return Response({"detail": "You have already shared this post."}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 def list_shared_posts(request, author_id):
