@@ -22,13 +22,13 @@ urlpatterns = [
     path('<int:author_id>/posts/<int:post_id>/delete/', views.delete_post, name='delete_post'),
     
     # add friend
-    path('authors/<int:author_id>/add_friend/', views.add_friend, name='add_friend'),
+    path('<int:author_id>/add_friend/', views.add_friend, name='add_friend'),
 
     # remove friend
-    path('authors/<int:author_id>/remove_friend/', views.remove_friend, name='remove_friend'),
+    path('<int:author_id>/remove_friend/', views.remove_friend, name='remove_friend'),
     
     # auto post github activity for user
-    path('authors/<int:author_id>/post/github/', views.post_github_activity, name='post_github_activity'),
+    path('<int:author_id>/post/github/', views.post_github_activity, name='post_github_activity'),
 
     # get all public posts on node
     path('public/', views.get_all_public_posts, name='get_public'),
@@ -37,5 +37,5 @@ urlpatterns = [
     path('<int:post_id>/share/', views.share_post, name='share_post'),
 
     # get shared posts
-    path('authors/<str:author_id>/shared_posts/', views.list_shared_posts, name='list_shared_posts'),
+    path('<str:author_id>/shared_posts/', views.list_shared_posts, name='list_shared_posts'),
 ]
