@@ -1,9 +1,10 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from .models import Post, Friend
+from .models import Post, Friend, Share
 from .serializers import PostSerializer
 from django.contrib.auth import get_user_model
 
@@ -11,20 +12,43 @@ from django.contrib.auth import get_user_model
 Author = get_user_model()
 
 @api_view(['POST'])
-def create_new_post(request,author_id):
-    title = request.POST.get('title', '')
-    description = request.POST.get('description', '')
-    content_type = request.POST.get('contentType', '')
-    content = request.POST.get('content', '')
+@permission_classes([IsAuthenticated])
+def create_new_post(request, author_id):
+    # Check if the authenticated user matches the author_id
+    if str(request.user.id) != str(author_id):
+        return Response({
+            "detail": "You can only create posts for yourself.",
+            "your_id": str(request.user.id),
+            "requested_id": author_id
+        }, status=status.HTTP_403_FORBIDDEN)
 
     author = get_object_or_404(Author, id=author_id)
 
-    new_post = Post(title=title, description=description, contentType=content_type, content=content, author=author)
+    # Handle both JSON and form data
+    if request.content_type == 'application/json':
+        data = request.data
+    else:
+        data = request.POST
+
+    title = data.get('title', '')
+    description = data.get('description', '')
+    content_type = data.get('contentType', '')
+    content = data.get('content', '')
+    visibility = data.get('visibility', 'PUBLIC')
+
+    new_post = Post(
+        title=title,
+        description=description,
+        contentType=content_type,
+        content=content,
+        author=author,
+        visibility=visibility
+    )
     new_post.save()
 
     serializer = PostSerializer(new_post)
 
-    return Response(serializer.data, status=201)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['PUT'])
@@ -121,3 +145,48 @@ def get_all_public_posts(request):
     public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
     serialized_posts = [PostSerializer(post).data for post in public_posts]
     return Response({"posts": serialized_posts}, status=200)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def share_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    
+    if not post.is_shareable:
+        return Response({"detail": "This post cannot be shared."}, status=status.HTTP_403_FORBIDDEN)
+    
+    share, created = Share.objects.get_or_create(sharer=request.user, post=post)
+    
+    if created:
+        # Create a new post as a share
+        shared_post = Post.objects.create(
+            author=request.user,
+            title=f"Shared: {post.title}",
+            content=post.content,
+            description=post.description,
+            contentType=post.contentType,
+            visibility='PUBLIC',  # Ensure shared posts are always public
+            is_shared=True,
+            original_post=post
+        )
+        # Increment the shares count of the original post
+        post.shares_count += 1
+        post.save()
+        post.refresh_from_db()
+        return Response(PostSerializer(shared_post).data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"detail": "You have already shared this post."}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def list_shared_posts(request, author_id):
+    author = get_object_or_404(Author, id=author_id)
+    shared_posts = Post.objects.filter(author=author, is_shared=True).order_by('-published')
+    
+    # Apply visibility filters similar to list_author_posts
+    if request.user.is_authenticated:
+        if request.user != author:
+            shared_posts = shared_posts.filter(visibility='PUBLIC')
+    else:
+        shared_posts = shared_posts.filter(visibility='PUBLIC')
+    
+    serializer = PostSerializer(shared_posts, many=True)
+    return Response(serializer.data)
