@@ -79,7 +79,7 @@ export default function Post({ post }) {
   const Delete = async() =>{
     const csrftoken = getCookie('csrftoken');
     try{
-      const response = await fetch(`/api/posts/authors/${post.author}/posts/${post.id}/delete/`, {
+      const response = await fetch(`/api/authors/${post.author}/posts/${post.id}/delete/`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
