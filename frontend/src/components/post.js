@@ -101,26 +101,28 @@ export default function Post({ post }) {
   return(
     
     <div className="grid auto-rows-auto grid-flow-row border w-4/5 rounded relative">
-      <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
-        <div className="pr-8">
-          profile picture
-        </div>
-        <div className="grid grid-flow-row auto-rows-auto space-y-4">
-          <div>
-            <h1 className="font-bold text-l">{author.display_name}</h1>
-            <h2 className="text-l">@{author.username}</h2>
+      <a href={`/authors/${author.id}`}>
+        <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
+          <div className="pr-8">
+            profile picture
           </div>
-          {
-            !isStream && (
-              <select id = "Dropdown" onChange={dropdown} className="absolute top-2 right-2 border rounded p-1 text-sm">
-                <option>Options</option>
-                <option value="edit">Edit</option>
-                <option value="delete">Delete</option>
-              </select>
-            )
-          }
+          <div className="grid grid-flow-row auto-rows-auto space-y-4">
+            <div>
+              <h1 className="font-bold text-l">{author.display_name}</h1>
+              <h2 className="text-l">@{author.username}</h2>
+            </div>
+            {
+              !isStream && (
+                <select id = "Dropdown" onChange={dropdown} className="absolute top-2 right-2 border rounded p-1 text-sm">
+                  <option>Options</option>
+                  <option value="edit">Edit</option>
+                  <option value="delete">Delete</option>
+                </select>
+              )
+            }
+          </div>
         </div>
-      </div>
+      </a>
       {content(post)}
     </div>
   )

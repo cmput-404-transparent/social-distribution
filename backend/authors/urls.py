@@ -13,5 +13,7 @@ urlpatterns = [
     # signup
     path("signup/", views.signup, name="signup"),
     # get author info from session cookie
-    path("get/from_session/", views.get_author_from_session, name="get_author_from_session")
+    path("get/from_session/", views.get_author_from_session, name="get_author_from_session"),
+    # search authors
+    path("search/", views.search_author, name="search_author")
 ]
