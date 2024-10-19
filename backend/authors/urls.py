@@ -36,12 +36,8 @@ urlpatterns = [
     # Retrieve a specific post           # Update an existing post (PUT method)               # Delete a post (DELETE method)       
     path('<int:author_id>/posts/<int:post_id>/', posts_views.post_detail, name='get_post'),
 
-    # Update an existing post (PUT method)
-    path('<int:author_id>/posts/<int:post_id>/edit/', posts_views.update_existing_post, name='update_existing_post'),
+    # VISIBILITY URLS ------------------------------------------------------------------------------
 
-    # Delete a post (DELETE method)
-    path('<int:author_id>/posts/<int:post_id>/delete/', posts_views.delete_post, name='delete_post'),
-    
     # add friend
     path('<int:author_id>/add_friend/', posts_views.add_friend, name='add_friend'),
 
@@ -50,6 +46,8 @@ urlpatterns = [
 
     # get all public posts on node
     path('posts/public/', posts_views.get_all_public_posts, name='get_public'),
+
+    # SHARING URLS ------------------------------------------------------------------------------
 
     # share post
     path('<int:post_id>/share/', posts_views.share_post, name='share_post'),
