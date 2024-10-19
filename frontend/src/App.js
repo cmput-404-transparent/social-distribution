@@ -26,7 +26,7 @@ function App() {
               <MakePost />
             </ProtectedRoute>
           } />
-          <Route path={`/authors/${authorId}`} element={
+          <Route path="/authors/:profileAuthorId" element={
             <ProtectedRoute>
               <Profile/>
             </ProtectedRoute>
