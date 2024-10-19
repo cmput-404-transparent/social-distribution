@@ -8,6 +8,7 @@ import ProtectedRoute from './components/protectedRoute';
 import Login from './pages/login';
 import SignUp from './pages/signup';
 import EditProfile from './pages/editProfile';
+import Search from './pages/search';
 
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
           } />
           <Route path="/login" element={<Login/>} />
           <Route path="/signup" element={<SignUp/>} />
+          <Route path="/search" element={<Search/>} />
         </Routes>
       </div>
     </Router>
