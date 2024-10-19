@@ -24,7 +24,7 @@ const MakePost = () => {
       data.append('contentType', 'text/plain');
       data.append('content', content);
 
-      const response = await fetch(`/api/posts/authors/${authorId}/posts/create/`, {
+      const response = await fetch(`/api/authors/${authorId}/posts/create/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',

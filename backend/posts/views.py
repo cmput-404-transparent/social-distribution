@@ -8,9 +8,11 @@ from .models import Post, Friend
 from .serializers import PostSerializer
 from django.contrib.auth import get_user_model
 
+from rest_framework.pagination import PageNumberPagination
+
+
 # Create your views here.
 Author = get_user_model()
-
 
 
 # Main view that checks the request method and delegates to appropriate functions
@@ -67,7 +69,6 @@ def create_new_post(request, author_id):
 
 
 
-
 # List recent posts by an author
 def list_recent_posts(request, author_id):
     author = get_object_or_404(Author, id=author_id)
@@ -92,11 +93,9 @@ def list_recent_posts(request, author_id):
     else:
         # Unauthenticated users see only public posts
         posts = posts.filter(visibility='PUBLIC')
-    
+
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
-
-
 
 
 
@@ -164,7 +163,6 @@ def delete_post(request, author_id, post_id):
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_403_FORBIDDEN)  # Forbidden if not the author
-
 
 
 

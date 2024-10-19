@@ -14,7 +14,7 @@ export default function Profile() {
     .then((data) => setProfileInfo(data));
 
     // get posts
-    fetch(`/api/posts/authors/${authorId}/posts/`)
+    fetch(`/api/authors/${authorId}/posts/`)
     .then((r) => r.json())
     .then((data) => {
       setPosts(data);
