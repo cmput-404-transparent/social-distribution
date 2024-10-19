@@ -51,7 +51,7 @@ const MakePost = () => {
            
       }
       
-      const response = await fetch(`/api/posts/authors/${authorId}/posts/create/`, {
+      const response = await fetch(`/api/authors/${authorId}/posts/create/`, {
 
         method: 'POST',
         headers: {
