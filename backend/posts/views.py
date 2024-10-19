@@ -127,11 +127,29 @@ def post_detail(request, author_id, post_id):
 def update_existing_post(request, author_id, post_id):
     author = get_object_or_404(Author, id=author_id)
     post = get_object_or_404(Post, id=post_id, author=author)
-    serializer = PostSerializer(post, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save(author=author)
-        return Response(serializer.data)
-    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    data = request.data
+
+     # For example, updating specific fields
+    post.title = data.get('title', post.title)
+    post.description = data.get('description', post.description)
+    post.content = data.get('content', post.content)
+    post.contentType = data.get('contentType', post.contentType)
+    post.visibility = data.get('visibility', post.visibility)
+
+    post.save()
+
+
+    response_data = {
+        'id': post.id,
+        'title': post.title,
+        'description': post.description,
+        'content': post.content,
+        'contentType': post.contentType,
+        'visibility': post.visibility,
+        'published': post.published,
+    } 
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 
