@@ -47,6 +47,9 @@ urlpatterns = [
     # get all public posts on node
     path('posts/public/', posts_views.get_all_public_posts, name='get_public'),
 
+    # get all stream posts for a user
+    path('<int:author_id>/stream/', posts_views.stream, name='stream'),
+
     # SHARING URLS ------------------------------------------------------------------------------
 
     # share post

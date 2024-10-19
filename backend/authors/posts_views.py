@@ -64,7 +64,7 @@ def list_recent_posts(request, author_id):
     author = get_object_or_404(Author, id=author_id)
     
     # Get all posts by the author
-    posts = Post.objects.filter(author=author).order_by('-published')
+    posts = Post.objects.filter(author=author,is_deleted=False).order_by('-published')
     
     # Filter based on visibility and relationship
     if request.user.is_authenticated:
@@ -113,11 +113,29 @@ def post_detail(request, author_id, post_id):
 def update_existing_post(request, author_id, post_id):
     author = get_object_or_404(Author, id=author_id)
     post = get_object_or_404(Post, id=post_id, author=author)
-    serializer = PostSerializer(post, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save(author=author)
-        return Response(serializer.data)
-    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    data = request.data
+
+     # For example, updating specific fields
+    post.title = data.get('title', post.title)
+    post.description = data.get('description', post.description)
+    post.content = data.get('content', post.content)
+    post.contentType = data.get('contentType', post.contentType)
+    post.visibility = data.get('visibility', post.visibility)
+
+    post.save()
+
+
+    response_data = {
+        'id': post.id,
+        'title': post.title,
+        'description': post.description,
+        'content': post.content,
+        'contentType': post.contentType,
+        'visibility': post.visibility,
+        'published': post.published,
+    } 
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 # Get a single post
@@ -224,3 +242,33 @@ def list_shared_posts(request, author_id):
     
     serializer = PostSerializer(shared_posts, many=True)
     return Response(serializer.data)
+
+
+# Stream for showing all relevant posts
+@api_view(['GET'])
+def stream(request,author_id):
+
+    author = get_object_or_404(Author, id=author_id)
+
+    # getting all the public posts
+    posts = Post.objects.filter(~Q(author=request.user), visibility='PUBLIC')  #public posts excluding the author's own posts
+    
+    if request.user.is_authenticated:
+        # friends-only and unlisted posts from following
+        following = Friend.objects.filter(user=request.user).values_list('friend', flat=True)
+        
+        #getting  friends-only and unlisted posts from those followed authors
+        friends_posts = Post.objects.filter(author__in=following, visibility__in=['FRIENDS', 'UNLISTED'])
+
+        # both public posts and friends/unlisted posts
+        posts = posts | friends_posts
+
+    # remove deleted posts
+    posts = posts.exclude(is_deleted=True).order_by('-published')
+
+    # paginate the stream
+    paginator = PageNumberPagination()
+    paginated_posts = paginator.paginate_queryset(posts, request)
+
+    serializer = PostSerializer(paginated_posts, many=True)
+    return paginator.get_paginated_response(serializer.data)
