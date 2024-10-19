@@ -11,8 +11,17 @@ class PostSerializer(serializers.ModelSerializer):
     author = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = Post
-        fields = ['id', 'title', 'description', 'contentType', 'content', 'author', 'published', 'visibility']
-        read_only_fields = ['id', 'author', 'published']
+        fields = ['id', 'title', 'description', 'contentType', 'content', 'author', 'published', 'visibility', 'is_shared', 'original_post', 'shares_count']
+        read_only_fields = ['id', 'author', 'published', 'is_shared', 'original_post', 'shares_count']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.is_shared:
+            representation.pop('shares_count', None)
+        else:
+            representation.pop('is_shared', None)
+            representation.pop('original_post', None)
+        return representation
 
     def validate(self, data):
         if data.get('contentType') in ['image/png;base64', 'image/jpeg;base64']:

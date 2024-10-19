@@ -158,10 +158,14 @@ def share_post(request, post_id):
             content=post.content,
             description=post.description,
             contentType=post.contentType,
-            visibility=post.visibility,
+            visibility='PUBLIC',  # Ensure shared posts are always public
             is_shared=True,
             original_post=post
         )
+        # Increment the shares count of the original post
+        post.shares_count += 1
+        post.save()
+        post.refresh_from_db()
         return Response(PostSerializer(shared_post).data, status=status.HTTP_201_CREATED)
     else:
         return Response({"detail": "You have already shared this post."}, status=status.HTTP_400_BAD_REQUEST)

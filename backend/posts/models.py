@@ -40,10 +40,15 @@ class Post(models.Model):
     visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='PUBLIC')
     is_shared = models.BooleanField(default=False)
     original_post = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='shares')
+    shares_count = models.PositiveIntegerField(default=0)
 
     @property
     def is_shareable(self):
         return self.visibility == 'PUBLIC'
+
+    def increment_shares_count(self):
+        self.shares_count += 1
+        self.save()
 
     def __str__(self):
         return self.title
