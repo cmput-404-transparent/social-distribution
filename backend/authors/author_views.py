@@ -135,3 +135,22 @@ def get_follow_requests(request, author_id):
     follow_requests_authors = Author.objects.filter(id__in=follow_requests)
     serialized_follow_requests = [AuthorSerializer(request).data for request in follow_requests_authors]
     return Response(serialized_follow_requests, status=200)
+
+@api_view(["PUT", "DELETE"])
+def manage_follow(request, author_id):
+    author = request.user
+    follower = Author.objects.get(id=request.POST.get('follower', None))
+    if author and follower:
+        if request.method == "PUT":
+            # accepting follow request
+            follow = Follow.objects.get(user=author, follower=follower)
+            follow.status = "FOLLOWED"
+            follow.save()
+        elif request.method == "DELETE":
+            # remove follow request
+            follow = Follow.objects.get(user=author, follower=follower)
+            follow.delete()
+        
+        return Response(status=200)
+    
+    return Response("author and/or follower doesn't exist", status=400)

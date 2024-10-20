@@ -32,7 +32,10 @@ def get_post(request, author_id, post_id):
 @api_view(['GET'])
 def post_github_activity(request, author_id):
     author = get_object_or_404(Author, id=author_id)
-    github_username = author.github.split("/")[-1]
+    github_username = author.github.split("http://github.com/")[-1]
+
+    if not github_username:
+        return Response(status=200)
 
     response = requests.get(f"https://api.github.com/users/{github_username}/events")
     events = json.loads(response.content.decode())

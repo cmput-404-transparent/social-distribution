@@ -1,25 +1,83 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
+import getCookie from "../getCSRFToken";
 
-function FollowRequest({request}) {
+function FollowRequest({request, authorId}) {
+
+  const csrftoken = getCookie('csrftoken');
+  
+  function accept() {
+    const data = new URLSearchParams();
+    data.append('follower', request.id);
+
+    try {
+      fetch(`/api/authors/${authorId}/follow_request/`, {
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken,
+        },
+        body: data.toString()
+      })
+      .then((response) => {
+        if (response.ok) {
+          window.location.reload();
+        } else {
+          alert("accept follow failed");
+        }
+      })
+    } catch (error) {
+      console.log("error accepting follow request:", error);
+    }
+    
+  }
+
+  function remove() {
+    const data = new URLSearchParams();
+    data.append('follower', request.id);
+
+    try {
+      fetch(`/api/authors/${authorId}/follow_request/`, {
+        method: "DELETE",
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken,
+        },
+        body: data.toString()
+      })
+      .then((response) => {
+        if (response.ok) {
+          window.location.reload();
+        } else {
+          alert("delete follow request failed");
+        }
+      })
+    } catch (error) {
+      console.log("error deleting follow request:", error);
+    }
+    
+  }
+
   return(
     <div className="border rounded">
-      <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
-          <div className="pr-8">
-            profile picture
-          </div>
-          <div className="grid grid-flow-row auto-rows-auto space-y-4">
-            <div className="grid grid-cols-[auto,auto]">
-              <div>
-                <h1 className="font-bold text-l">{request.display_name}</h1>
-                <h2 className="text-l">@{request.username}</h2>
-              </div>
-              <div className="space-x-2 flex justify-end">
-                <button type="submit" className='bg-sky-400 rounded p-2 px-4'>Accept</button>
-                <button type="submit" className='bg-neutral-200 rounded p-2 px-4'>Delete</button>
-              </div>
+      <div className="grid grid-cols-[auto,auto] auto-cols-auto border-b p-5">
+        <a href={`/authors/${request.id}`}>
+          <div className="grid grid-cols-[min-content,auto]">
+            <div className="pr-8">
+              profile picture
+            </div>
+            <div>
+              <h1 className="font-bold text-l">{request.display_name}</h1>
+              <h2 className="text-l">@{request.username}</h2>
             </div>
           </div>
+        </a>
+        <div className="grid grid-cols-1">
+          <div className="space-x-2 flex justify-end">
+            <button type="submit" className='bg-sky-400 rounded p-2 px-4' onClick={accept}>Accept</button>
+            <button type="submit" className='bg-neutral-200 rounded p-2 px-4' onClick={remove}>Delete</button>
+          </div>
         </div>
+      </div>
     </div>
   )
 }
@@ -43,7 +101,7 @@ export default function Notifications() {
             <h1 className="text-3xl font-bold">Follow Requests</h1>
             <div>
               {followRequests.map((request) => (
-                <FollowRequest request={request} />
+                <FollowRequest request={request} authorId={authorId} />
               ))}
             </div>
           </div>
