@@ -22,6 +22,7 @@ def login(request):
     else:
         return Response(status=401)
 
+
 @api_view(['POST'])
 def signup(request):
     username = request.POST.get('username', '')
@@ -50,17 +51,20 @@ def signup(request):
 
     return Response({"token": token.key, "author": serializer.data, "userId": user.id}, status=200)
 
+
 @api_view(['GET'])
 def get_author(request, author_id):
     author = get_object_or_404(Author, pk=author_id)
     serializer = AuthorSerializer(author)
     return Response(serializer.data, status=200)
 
+
 @api_view(['GET'])
 def get_author_from_session(request):
     session_token = request.GET.get('session')
     token_obj = Token.objects.get(key=session_token)
     return Response({'userId': token_obj.user_id}, status=200)
+
 
 @api_view(['POST'])
 def edit_author(request, author_id):
