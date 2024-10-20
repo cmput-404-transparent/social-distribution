@@ -3,3 +3,4 @@ from .models import *
 
 admin.site.register(Author)
 admin.site.register(Friend)
+admin.site.register(Follow)

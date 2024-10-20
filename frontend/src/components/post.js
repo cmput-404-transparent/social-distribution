@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import getCookie from '../getCSRFToken';
+import PeopleIcon from '@mui/icons-material/People';
+import LinkIcon from '@mui/icons-material/Link';
 
 function content(post) {
   // plain text post
-  if (post.contentType == 'text/plain') {
+  if (post.contentType === 'text/plain') {
     return(
       <div className="p-5">
         <div className="font-bold text-2xl">
@@ -18,7 +20,7 @@ function content(post) {
       </div>
     )
   }
-  else if (post.contentType == 'text/markdown') {
+  else if (post.contentType === 'text/markdown') {
     return(
       <div className="p-5">
         <div className="font-bold text-2xl">
@@ -54,6 +56,9 @@ function content(post) {
 export default function Post({ post }) {
   const [author, setAuthor] = useState("");
   const [isStream, setIsStream] = useState(false);
+  const [isOwn, setIsOwn] = useState(false);
+
+  const authorId = localStorage.getItem('authorId');
   
   useEffect(() => {
     fetch(`/api/authors/${post.author}/`)
@@ -62,14 +67,16 @@ export default function Post({ post }) {
       setAuthor(data);
     });
     setIsStream(window.location.href.includes('stream'));
+    setIsOwn(post.author === parseInt(authorId));
+    // eslint-disable-next-line
   }, []);
 
   const dropdown = (e) =>{
     const option = e.target.value
-    if(option == "edit"){
+    if(option === "edit"){
       Edit()
     }
-    else if(option == "delete"){
+    else if(option === "delete"){
       Delete()
     }
   }
@@ -81,7 +88,7 @@ export default function Post({ post }) {
   const Delete = async() =>{
     const csrftoken = getCookie('csrftoken');
     try{
-      const response = await fetch(`/api/authors/${post.author}/posts/${post.id}/delete/`, {
+      await fetch(`/api/authors/${post.author}/posts/${post.id}/delete/`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -101,25 +108,45 @@ export default function Post({ post }) {
   return(
     
     <div className="grid auto-rows-auto grid-flow-row border w-4/5 rounded relative">
-      <a href={`/authors/${author.id}`}>
+      <a href={`/authors/${author.id}`} onClick={!isStream? (e) => {e.preventDefault()} : null} className={!isStream? "cursor-default" : "cursor-pointer"}>
         <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
           <div className="pr-8">
             profile picture
           </div>
           <div className="grid grid-flow-row auto-rows-auto space-y-4">
-            <div>
-              <h1 className="font-bold text-l">{author.display_name}</h1>
-              <h2 className="text-l">@{author.username}</h2>
+            <div className="grid grid-cols-[auto,auto]">
+              <div>
+                <h1 className="font-bold text-l">{author.display_name}</h1>
+                <h2 className="text-l">@{author.username}</h2>
+              </div>
+              <div className={post.visibility != "PUBLIC" && isOwn ? "grid grid-rows-2" : "items-center flex justify-end"}>
+                {
+                  (!isStream && isOwn) ? (
+                    <div>
+                      <select id = "Dropdown" onChange={dropdown} className="absolute top-2 right-2 border rounded p-1 text-sm">
+                        <option>Options</option>
+                        <option value="edit">Edit</option>
+                        <option value="delete">Delete</option>
+                      </select>
+                    </div>
+                  ) : (<div></div>)
+                }
+                {
+                  (post.visibility === "FRIENDS") && (
+                    <div className="text-right text-neutral-400">
+                      FRIENDS ONLY <PeopleIcon className="ml-1" />
+                    </div>
+                  ) ||
+                  (post.visibility === "UNLISTED") && (
+                    <div className="text-right text-neutral-400">
+                      UNLISTED <LinkIcon className="ml-1" />
+                    </div>
+                  )
+              }
+              </div>
+              
             </div>
-            {
-              !isStream && (
-                <select id = "Dropdown" onChange={dropdown} className="absolute top-2 right-2 border rounded p-1 text-sm">
-                  <option>Options</option>
-                  <option value="edit">Edit</option>
-                  <option value="delete">Delete</option>
-                </select>
-              )
-            }
+            
           </div>
         </div>
       </a>
