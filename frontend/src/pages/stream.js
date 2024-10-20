@@ -17,7 +17,7 @@ export default function StreamPage() {
 
   return(
     <div className="page max-h-screen overflow-scroll">
-      <div className="flex flex-col space-y-5 items-center">
+      <div className="flex flex-col space-y-5 items-center w-full">
         {posts.map((post) => (
           <Post post={post} />
         ))}

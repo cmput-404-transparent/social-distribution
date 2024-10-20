@@ -9,11 +9,16 @@ import Login from './pages/login';
 import SignUp from './pages/signup';
 import EditProfile from './pages/editProfile';
 import Search from './pages/search';
+import { useEffect } from 'react';
 
 
 function App() {
 
   const authorId = localStorage.getItem('authorId');
+
+  useEffect(() => {
+    fetch(`/api/posts/${authorId}/github/`)
+  });
 
   return (
     <Router>

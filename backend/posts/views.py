@@ -5,6 +5,9 @@ from rest_framework.response import Response
 from authors.serializers import *
 from posts.serializers import *
 from django.shortcuts import get_object_or_404
+import requests
+import json
+from datetime import datetime
 
 
 @api_view(['GET'])
@@ -28,3 +31,63 @@ def get_post(request, author_id, post_id):
 
     # If we reach here, the post has an invalid visibility setting
     return Response({"detail": "Invalid post visibility setting."}, status=400)
+
+@api_view(['GET'])
+def post_github_activity(request, author_id):
+    author = get_object_or_404(Author, id=author_id)
+    github_username = author.github.split("/")[-1]
+
+    response = requests.get(f"https://api.github.com/users/{github_username}/events")
+    events = json.loads(response.content.decode())
+    
+    for event in events:
+        event_type = event['type']
+        payload = event['payload']
+        event_id = event['id']
+
+        # if post already exists then all subsequent posts also exist so don't need to make
+        if Post.objects.filter(github_activity_id=event_id).exists():
+            break
+
+        new_post = Post()
+        new_post.author = author
+        new_post.contentType = 'text/markdown'
+        new_post.github_activity_id = event_id
+
+        if event_type == "IssuesEvent":
+            issue = payload['issue']
+            new_post.title = f"{github_username} {payload['action']} an issue"
+            new_post.description = f"in {event['repo']['name']}"
+            new_post.content = f"<b>Issue:</b> {issue['title']}<br>View issue [here]({issue['html_url']})"
+
+        elif event_type == "IssueCommentEvent":
+            issue = payload['issue']
+            comment = payload['comment']
+            new_post.title = f"{github_username} commented on an issue"
+            new_post.description = f"in {event['repo']['name']}"
+            new_post.content = f"<b>Issue:</b> {issue['title']}<br>View comment [here]({comment['html_url']})"
+
+        elif event_type == "PullRequestEvent":
+            pr = payload['pull_request']
+            new_post.title = f"{github_username} {payload['action']} a pull request"
+            new_post.description = f"in {event['repo']['name']}"
+            new_post.content = f"<b>Pull Request:</b> {issue['title']}<br>View pull request [here]({pr['html_url']})"
+
+        elif event_type == "PullRequestReviewCommentEvent":
+            pr = payload['pull_request']
+            comment = payload['comment']
+            new_post.title = f"{github_username} commented on a pull request"
+            new_post.description = f"in {event['repo']['name']}"
+            new_post.content = f"<b>Pull Request:</b> {issue['title']}<br>View comment [here]({comment['html_url']})"
+        
+        else:
+            continue
+        
+        new_post.save()
+
+        date_published = datetime.strptime(event['created_at'], "%Y-%m-%dT%H:%M:%SZ")
+        new_post.published = date_published
+        new_post.fqid = new_post.id
+        new_post.save()
+
+    return Response(status=201)

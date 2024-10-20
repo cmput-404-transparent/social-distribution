@@ -28,8 +28,8 @@ export default function Profile() {
   }, [profileAuthorId])
 
   return(
-    <div className="page">
-      <div className="border w-4/5 pt-16">
+    <div className="page overflow-scroll max-h-screen">
+      <div className="w-4/5 pt-16">
         <div className="grid grid-flow-row auto-rows-auto space-y-5">
           <div className="grid grid-flow-col grid-cols-2">
             <div className="flex justify-center justify-items-center align-middle">

@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import getCookie from '../getCSRFToken';
 import { NavLink } from 'react-router-dom';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -31,7 +29,7 @@ const Login = () => {
         const data = await response.json();
         localStorage.setItem('authToken', data.token); // Store token
         localStorage.setItem('authorId', data.userId);
-        navigate('/stream'); // Redirect to stream
+        window.location.href = "/stream";
       } else {
         alert('Invalid credentials');
       }

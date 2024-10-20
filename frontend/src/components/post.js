@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import getCookie from '../getCSRFToken';
+import { marked } from 'marked';
 import PeopleIcon from '@mui/icons-material/People';
 import LinkIcon from '@mui/icons-material/Link';
 
@@ -21,6 +22,7 @@ function content(post) {
     )
   }
   else if (post.contentType === 'text/markdown') {
+    const postContentHTML = marked(post.content || '');
     return(
       <div className="p-5">
         <div className="font-bold text-2xl">
@@ -32,7 +34,7 @@ function content(post) {
         <div>
         {/* Using dangerouslySetInnerHTML to render rich text into HTML 
         Reference- https://blog.logrocket.com/using-dangerouslysetinnerhtml-react-application/ */}
-        <div dangerouslySetInnerHTML={{ __html: post.content }} className="post-content" />
+        <div dangerouslySetInnerHTML={{ __html: postContentHTML }} className="post-content" />
         </div>
       </div>
     )
