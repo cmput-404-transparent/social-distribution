@@ -53,7 +53,7 @@ def signup(request):
 @api_view(['GET'])
 def get_author(request, author_id):
     author = get_object_or_404(Author, pk=author_id)
-    serializer = AuthorSerializer(author, request_user=request.user)
+    serializer = AuthorSerializer(author, request_user=author)
     return Response(serializer.data, status=200)
 
 
@@ -70,7 +70,7 @@ def edit_author(request, author_id):
 
     username = request.POST.get('username', None)
     password = request.POST.get('password', None)
-    display_name = request.POST.get('display_name', None)
+    display_name = request.POST.get('displayName', None)
     github = request.POST.get('github', None)
 
     errors = []
@@ -81,10 +81,9 @@ def edit_author(request, author_id):
             author.username = username
             author.save()
         except:
-            print('hello')
             author.username = original_username
             errors.append("Username is taken")
-    if password is not None and not author.check_password(password):     # checks if passwords are the same
+    if password is not None and password and not author.check_password(password):     # checks if passwords are the same
         author.set_password(password)           # if not then change it
     if display_name is not None and display_name != author.display_name:
         author.display_name = display_name
