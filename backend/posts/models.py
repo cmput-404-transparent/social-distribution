@@ -29,7 +29,7 @@ class Post(models.Model):
     shares_count = models.PositiveIntegerField(default=0)
     github_activity_id = models.IntegerField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
-    fqid = models.CharField(unique=True, max_length=200)
+    fqid = models.CharField(unique=True, max_length=200, blank=True, null=True)
 
     @property
     def is_shareable(self):

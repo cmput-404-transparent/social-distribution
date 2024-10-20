@@ -54,6 +54,8 @@ def create_new_post(request, author_id):
         visibility=visibility
     )
     new_post.save()
+    new_post.fqid = new_post.id
+    new_post.save()
 
     serializer = PostSerializer(new_post)
 
