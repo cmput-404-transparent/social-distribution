@@ -15,6 +15,13 @@ const MakePost = () => {
   const [contentType, setContentType] = useState('text/plain');
   const [uploadedImage, setImage] = useState('')
   const [activeButton, setActiveButton] = useState('');
+  const [visibility, setVisbility] = useState('Public'); 
+
+
+  //simple drown-down - https://medium.com/@maazmedia1/how-to-create-a-dropdown-menu-in-reactjs-36f27987dbc4
+  const handleChange = (event) => {
+    setVisbility(event.target.value);
+    };
 
   const csrftoken = getCookie('csrftoken');
   const authorId = localStorage.getItem('authorId');
@@ -28,6 +35,7 @@ const MakePost = () => {
       const data = new URLSearchParams();
       data.append('title', title);
       data.append('description', description);
+      data.append('visibility', visibility);
 
       if (contentType === 'text/plain'){
       data.append('contentType', 'text/plain');
@@ -143,10 +151,20 @@ const MakePost = () => {
           required
           className='make-post-textarea'
           
+
+          
           />
 
           )}
           
+        </div>
+
+        <div className='div-make-post'>
+          <select value={visibility} onChange={handleChange}>
+                <option value="Option 1">Public</option>
+                <option value="Option 2">Friends-Only</option>
+                <option value="Option 3">Unlisted</option>
+          </select>
         </div>
         <button type="submit" className='make-post-button'>Create Post</button>
       
