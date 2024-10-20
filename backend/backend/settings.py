@@ -38,6 +38,7 @@ CORS_ORIGINS_WHITELIST = ["http://localhost:3000"]
 # Application definition
 
 INSTALLED_APPS = [
+    'authors',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,11 +46,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'posts',
     'corsheaders',
     'rest_framework.authtoken',
-    'authors',
-    'api'
+    'api',
+    'posts'
 ]
 
 MIDDLEWARE = [
@@ -150,8 +150,6 @@ STATIC_URL = "/static/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
@@ -171,6 +169,8 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 ]
 AUTH_USER_MODEL = 'authors.Author'
 
-
-
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,  # Default page size
+}
 

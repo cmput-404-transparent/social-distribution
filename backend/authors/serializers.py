@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
 
+
 class AuthorSerializer(serializers.Serializer):
     host = serializers.URLField()
     display_name = serializers.CharField()
@@ -8,6 +9,8 @@ class AuthorSerializer(serializers.Serializer):
     profile_image = serializers.URLField()
     page = serializers.URLField()
     username = serializers.CharField()
+    display_name = serializers.CharField()
+    id = serializers.IntegerField()
 
     def create(self, validated_data):
         """
@@ -25,6 +28,8 @@ class AuthorSerializer(serializers.Serializer):
         instance.profile_image = validated_data.get('profile_image', instance.profile_image)
         instance.page = validated_data.get('page', instance.page)
         instance.username = validated_data.get('username', instance.username)
+        instance.display_name = validated_data.get('display_name', instance.display_name)
+        instance.id = validated_data.get('id', instance.id)
         instance.save()
         return instance
     

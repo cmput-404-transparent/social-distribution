@@ -7,11 +7,18 @@ import Profile from './pages/profile';
 import ProtectedRoute from './components/protectedRoute';
 import Login from './pages/login';
 import SignUp from './pages/signup';
+import EditProfile from './pages/editProfile';
+import Search from './pages/search';
+import { useEffect } from 'react';
 
 
 function App() {
 
   const authorId = localStorage.getItem('authorId');
+
+  useEffect(() => {
+    fetch(`/api/posts/${authorId}/github/`)
+  });
 
   return (
     <Router>
@@ -19,14 +26,24 @@ function App() {
         <NavBar />
         <Routes>
           <Route path="/stream" element={<StreamPage/>} />
-          <Route path="/make-post" element={<MakePost />} />
-          <Route path={`/authors/${authorId}`} element={
+          <Route path="/make-post" element={
+            <ProtectedRoute>
+              <MakePost />
+            </ProtectedRoute>
+          } />
+          <Route path="/authors/:profileAuthorId" element={
             <ProtectedRoute>
               <Profile/>
             </ProtectedRoute>
           } />
+          <Route path={`/authors/${authorId}/edit`} element={
+            <ProtectedRoute>
+              <EditProfile/>
+            </ProtectedRoute>
+          } />
           <Route path="/login" element={<Login/>} />
           <Route path="/signup" element={<SignUp/>} />
+          <Route path="/search" element={<Search/>} />
         </Routes>
       </div>
     </Router>

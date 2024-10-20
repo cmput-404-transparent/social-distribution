@@ -8,6 +8,7 @@ date: October 15, 2024
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 
 class AuthorManager(BaseUserManager):
     def create_user(self, username, password=None, **extra_fields):
@@ -46,3 +47,13 @@ class Author(AbstractBaseUser, PermissionsMixin):
     objects = AuthorManager()
 
     USERNAME_FIELD = 'username'
+
+class Friend(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='friendships')
+    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['user', 'friend']
+
+    def __str__(self):
+        return f"{self.user.username} is friends with {self.friend.username}"

@@ -1,18 +1,13 @@
-
 from django.db import models
-from django.utils import timezone
-from authors.models import Author
-from django.contrib.auth import get_user_model
-import uuid
+from django.conf import settings
 
-User = get_user_model()
+# Create your models here.
 
 class Post(models.Model):
     VISIBILITY_CHOICES = [
         ('PUBLIC', 'Public'),
-        ('FRIENDS', 'Friends Only'),
         ('UNLISTED', 'Unlisted'),
-        ('DELETED', 'Deleted'),
+        ('FRIENDS', 'Friends Only'),
     ]
 
     CONTENT_TYPE_CHOICES = [
@@ -22,50 +17,38 @@ class Post(models.Model):
         ('image/jpeg;base64', 'JPEG Image'),
     ]
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    author = models.ForeignKey(Author, related_name='posts', on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
-    source = models.URLField()
-    origin = models.URLField()
-    description = models.TextField(blank=True)
-    content_type = models.CharField(max_length=50, choices=CONTENT_TYPE_CHOICES)
     content = models.TextField()
-    published = models.DateTimeField(default=timezone.now)
+    description = models.TextField(blank=True)
+    contentType = models.CharField(choices=CONTENT_TYPE_CHOICES, max_length=20, default= 'text/plain')
+    published = models.DateTimeField(auto_now_add=True)
     visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='PUBLIC')
-    unlisted = models.BooleanField(default=False)
+    is_shared = models.BooleanField(default=False)
+    original_post = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='shares')
+    shares_count = models.PositiveIntegerField(default=0)
+    github_activity_id = models.IntegerField(blank=True, null=True)
+    is_deleted = models.BooleanField(default=False)
+    fqid = models.CharField(unique=True, max_length=200, blank=True, null=True)
 
-    class Meta:
-        ordering = ['-published']
+    @property
+    def is_shareable(self):
+        return self.visibility == 'PUBLIC'
+
+    def increment_shares_count(self):
+        self.shares_count += 1
+        self.save()
 
     def __str__(self):
         return self.title
-    
-class Comment(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    comment = models.TextField()
-    content_type = models.CharField(max_length=50, default='text/plain')
-    published = models.DateTimeField(default=timezone.now)
 
-    def get_fqid(self):
-        return f"{self.author.host}posts/{self.id}/"
-    
-    def get_page_url(self):
-        return f"{self.author.host}authors/{self.author.username}/posts/{self.id}/"
-    
-    def get_fqid(self):
-        return f"{self.author.host}authors/{self.author.id}/commented/{self.id}/"
-    
-    def __str__(self):
-        return f'Comment by {self.author} on {self.post}'
+class Share(models.Model):
+    sharer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shares')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='shared_by')
+    shared_at = models.DateTimeField(auto_now_add=True)
 
-class Like(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    context = models.URLField()
-    summary = models.CharField(max_length=200)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    object = models.URLField()  # URL to the liked object (Post or Comment)
+    class Meta:
+        unique_together = ['sharer', 'post']
 
     def __str__(self):
-        return f'Like by {self.author} on {self.object}'
+        return f"{self.sharer.username} shared {self.post.title}"
