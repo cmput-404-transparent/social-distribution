@@ -25,7 +25,7 @@ export default function Profile() {
     })
 
     setSelf(profileAuthorId === authorId);
-
+    // eslint-disable-next-line
   }, [profileAuthorId]);
 
   function follow() {
@@ -58,7 +58,7 @@ export default function Profile() {
         <div className="grid grid-flow-row auto-rows-auto space-y-5">
           <div className="grid grid-flow-col grid-cols-2">
             <div className="flex justify-center justify-items-center align-middle">
-              <p className="justify-self-center align-middle leading-[inherit]">
+              <p className="items-center justify-center flex">
                 profile picture
               </p>
             </div>
@@ -66,6 +66,14 @@ export default function Profile() {
               <div>
                 <h1 className="font-bold text-3xl">{profileInfo.display_name}</h1>
                 <h2>@{profileInfo.username}</h2>
+              </div>
+              <div className="grid grid-cols-[min-content,auto] space-x-3 text-left">
+                <div>
+                  <p className="block whitespace-nowrap"><span className="font-bold">{profileInfo.followers}</span> Followers</p>
+                </div>
+                <div>
+                <p className="block whitespace-nowrap"><span className="font-bold">{profileInfo.following}</span> Following</p>
+                </div>
               </div>
               {
                 self? (

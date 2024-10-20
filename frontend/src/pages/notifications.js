@@ -91,6 +91,7 @@ export default function Notifications() {
     fetch(`/api/authors/${authorId}/follow_requests/`)
     .then((response) => response.json())
     .then((data) => setFollowRequests(data));
+    // eslint-disable-next-line
   }, [])
 
   return (

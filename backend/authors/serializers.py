@@ -12,6 +12,8 @@ class AuthorSerializer(serializers.Serializer):
     display_name = serializers.CharField()
     id = serializers.IntegerField()
     relationship = serializers.SerializerMethodField()
+    followers = serializers.SerializerMethodField()
+    following = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         """
@@ -40,6 +42,18 @@ class AuthorSerializer(serializers.Serializer):
                 return Follow.objects.get(user=obj, follower=self.request_user).status
         
         return 'NONE'
+    
+    def get_followers(self, obj):
+        """
+        Get the number of followers for a user
+        """
+        return Follow.objects.filter(user=obj).count()
+    
+    def get_following(self, obj):
+        """
+        Get the number of followers for a user
+        """
+        return Follow.objects.filter(follower=obj).count()
 
     def update(self, instance, validated_data):
         """
