@@ -117,3 +117,9 @@
   margin-right: 0;
   font-weight: bold;
 }
+
+.post-content a {
+  color: rgb(14 165 233);
+  text-decoration: underline;
+  cursor: auto;
+}

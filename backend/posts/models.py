@@ -27,6 +27,7 @@ class Post(models.Model):
     is_shared = models.BooleanField(default=False)
     original_post = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='shares')
     shares_count = models.PositiveIntegerField(default=0)
+    github_activity_id = models.IntegerField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
     fqid = models.CharField(unique=True, max_length=200, blank=True, null=True)
 

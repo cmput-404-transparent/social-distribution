@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import { TextField } from '@mui/material';
 import getCookie from '../getCSRFToken';
-import { useNavigate } from 'react-router-dom';
 
 export default function SignUp() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [github, setGithub] = useState('');
-
-  const navigate = useNavigate();
 
   const handleSignup = async (e) => {
 
@@ -39,7 +36,7 @@ export default function SignUp() {
         const data = await response.json();
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('authorId', data.userId);
-        navigate('/stream');
+        window.location.href = "/stream";
       } else {
         alert('Invalid credentials');
       }
@@ -75,7 +72,7 @@ export default function SignUp() {
               helperText="Can be set later"
             />
             <TextField
-              label="GitHub"
+              label="GitHub Username"
               onChange={(e) => setGithub(e.target.value)}
               value={github}
               helperText="Can be set later"
