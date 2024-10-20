@@ -38,12 +38,6 @@ urlpatterns = [
 
     # VISIBILITY URLS ------------------------------------------------------------------------------
 
-    # add friend
-    path('<int:author_id>/add_friend/', posts_views.add_friend, name='add_friend'),
-
-    # remove friend
-    path('<int:author_id>/remove_friend/', posts_views.remove_friend, name='remove_friend'),
-
     # get all public posts on node
     path('posts/public/', posts_views.get_all_public_posts, name='get_public'),
 

@@ -113,3 +113,15 @@ def search_author(request):
     results = [AuthorSerializer(author).data for author in results]
 
     return Response(results, status=200)
+
+@api_view(['POST'])
+def follow(request):
+    user = request.POST.user
+    follower = request.POST.follower
+
+    user_author = Author.objects.get(id=user)
+    follower_author = Author.objects.get(id=follower)
+
+    Follow.objects.get_or_create(user=user_author, follower=follower_author)
+
+    return Response(status=201)
