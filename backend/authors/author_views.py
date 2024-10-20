@@ -47,15 +47,13 @@ def signup(request):
     django_side_login(request, user)
     token, _ = Token.objects.get_or_create(user=user)
 
-    serializer = AuthorSerializer(new_author)
-
-    return Response({"token": token.key, "author": serializer.data, "userId": user.id}, status=200)
+    return Response({"token": token.key, "userId": user.id}, status=200)
 
 
 @api_view(['GET'])
 def get_author(request, author_id):
     author = get_object_or_404(Author, pk=author_id)
-    serializer = AuthorSerializer(author)
+    serializer = AuthorSerializer(author, request_user=request.user)
     return Response(serializer.data, status=200)
 
 
@@ -116,12 +114,16 @@ def search_author(request):
 
 @api_view(['POST'])
 def follow(request):
-    user = request.POST.user
-    follower = request.POST.follower
+    user = request.POST.get('user', None)
+    follower = request.POST.get('follower', None)
 
-    user_author = Author.objects.get(id=user)
-    follower_author = Author.objects.get(id=follower)
+    if user and follower:
+        user_author = Author.objects.get(id=user)
+        follower_author = Author.objects.get(id=follower)
 
-    Follow.objects.get_or_create(user=user_author, follower=follower_author)
+        Follow.objects.get_or_create(user=user_author, follower=follower_author)
 
-    return Response(status=201)
+        return Response(status=201)
+
+    else:
+        return Response("user and/or follower does not exist", status=400)

@@ -11,12 +11,35 @@ class AuthorSerializer(serializers.Serializer):
     username = serializers.CharField()
     display_name = serializers.CharField()
     id = serializers.IntegerField()
+    relationship = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         """
         Create and return a new `Author` instance, given the validated data
         """
         return Author.objects.create(**validated_data)
+    
+    def __init__(self, *args, **kwargs):
+        self.request_user = kwargs.pop('request_user', None)
+        super().__init__(*args, **kwargs)
+
+    def get_relationship(self, obj):
+        """
+        Get the relationship between the requesting user and the author being serialized.
+        """
+
+        if self.request_user:
+            if self.request_user.id == obj.id:
+                return 'SELF'
+            
+            if Follow.are_friends(self.request_user, obj):
+                return 'FRIENDS'
+            
+            following = Follow.objects.filter(user=obj, follower=self.request_user)
+            if following.exists():
+                return Follow.objects.get(user=obj, follower=self.request_user).status
+        
+        return 'NONE'
 
     def update(self, instance, validated_data):
         """

@@ -25,6 +25,9 @@ urlpatterns = [
     # search authors
     path("search/", author_views.search_author, name="search_author"),
 
+    # follow author
+    path("follow/", author_views.follow, name="follow"),
+
     # POSTS URLS ------------------------------------------------------------------------------
 
     # Get recent posts from author

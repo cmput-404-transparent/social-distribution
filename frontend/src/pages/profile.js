@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Post from "../components/post";
 import { useParams } from 'react-router-dom';
+import getCookie from "../getCSRFToken";
 
 export default function Profile() {
   const [profileInfo, setProfileInfo] = useState({});
@@ -25,7 +26,31 @@ export default function Profile() {
 
     setSelf(profileAuthorId === authorId);
 
-  }, [profileAuthorId])
+  }, [profileAuthorId]);
+
+  function follow() {
+
+    const data = new URLSearchParams();
+    data.append('user', profileAuthorId);
+    data.append('follower', authorId);
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      fetch("/api/authors/follow/", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken,
+        },
+        body: data.toString(),
+      })
+      .then((r) => {
+        window.location.reload();
+      });
+    } catch (error) {
+      console.error('Follow user failed:', error);
+    }
+  }
 
   return(
     <div className="page overflow-scroll max-h-screen">
@@ -53,9 +78,20 @@ export default function Profile() {
                     <button type="submit" className='bg-neutral-200 rounded p-2 px-5'>View Deleted</button>
                   </div>
                 ) : (
-                  <div className="space-x-3 flex">
-
-                  </div>
+                  profileInfo.relationship === "NONE"? (
+                    <div className="space-x-3 flex">
+                      <button className='bg-sky-400 rounded p-2 px-5' onClick={follow}>
+                        Follow
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-x-3 flex">
+                      <button className='bg-neutral-200 rounded p-2 px-5' disabled>
+                        {profileInfo.relationship}
+                      </button>
+                    </div>
+                  )
+                  
                 )
               }
             </div>
