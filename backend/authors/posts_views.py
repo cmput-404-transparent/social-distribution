@@ -7,6 +7,7 @@ from django.db.models import Q
 from .models import *
 from posts.serializers import *
 from posts.models import *
+from posts.views import get_post
 
 from rest_framework.pagination import PageNumberPagination
 
