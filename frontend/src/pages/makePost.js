@@ -161,9 +161,9 @@ const MakePost = () => {
 
         <div className='div-make-post'>
           <select value={visibility} onChange={handleChange}>
-                <option value="Option 1">Public</option>
-                <option value="Option 2">Friends-Only</option>
-                <option value="Option 3">Unlisted</option>
+                <option value="PUBLIC">Public</option>
+                <option value="FRIENDS">Friends-Only</option>
+                <option value="UNLISTED">Unlisted</option>
           </select>
         </div>
         <button type="submit" className='make-post-button'>Create Post</button>
