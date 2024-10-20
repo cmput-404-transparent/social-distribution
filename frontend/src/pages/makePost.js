@@ -15,7 +15,7 @@ const MakePost = () => {
   const [contentType, setContentType] = useState('text/plain');
   const [uploadedImage, setImage] = useState('')
   const [activeButton, setActiveButton] = useState('');
-  const [visibility, setVisbility] = useState('Public'); 
+  const [visibility, setVisbility] = useState('PUBLIC'); 
 
 
   //simple drown-down - https://medium.com/@maazmedia1/how-to-create-a-dropdown-menu-in-reactjs-36f27987dbc4
