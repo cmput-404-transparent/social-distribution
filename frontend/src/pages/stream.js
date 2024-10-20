@@ -30,7 +30,7 @@ export default function StreamPage() {
     <div className="grid grid-cols-[min-content,auto] auto-cols-auto max-h-screen">
       <StreamNavBar />
       <div className="page overflow-scroll">
-        <div className="flex flex-col space-y-5 items-center">
+        <div className="flex flex-col space-y-5 items-center w-full">
           {posts.map((post) => (
             <Post post={post} />
           ))}
