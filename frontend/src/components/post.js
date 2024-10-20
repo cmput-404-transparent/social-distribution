@@ -141,7 +141,7 @@ const Content = ({post, postState}) => {
         <div>
         {/* Using dangerouslySetInnerHTML to render rich text into HTML 
         Reference- https://blog.logrocket.com/using-dangerouslysetinnerhtml-react-application/ */}
-        <div dangerouslySetInnerHTML={{ __html: post.content }} className="post-content" />
+        <div dangerouslySetInnerHTML={{ __html: marked(post.content) }} className="post-content" />
         </div>
       </div>
       </>
