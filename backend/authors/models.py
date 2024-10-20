@@ -57,3 +57,16 @@ class Friend(models.Model):
 
     def __str__(self):
         return f"{self.user.username} is friends with {self.friend.username}"
+
+class Follow(models.Model):
+    STATUS_CHOICES = [
+        ('REQUESTED', 'Requested'),
+        ('FOLLOWED', 'Followed')
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='followers')
+    follower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=20, default= 'REQUESTED')
+
+    class Meta:
+        unique_together = ['user', 'follower']

@@ -15,7 +15,7 @@ const MakePost = () => {
   const [contentType, setContentType] = useState('text/plain');
   const [uploadedImage, setImage] = useState('')
   const [activeButton, setActiveButton] = useState('');
-  const [visibility, setVisbility] = useState('Public'); 
+  const [visibility, setVisbility] = useState('PUBLIC'); 
 
 
   //simple drown-down - https://medium.com/@maazmedia1/how-to-create-a-dropdown-menu-in-reactjs-36f27987dbc4
@@ -161,9 +161,9 @@ const MakePost = () => {
 
         <div className='div-make-post'>
           <select value={visibility} onChange={handleChange}>
-                <option value="Option 1">Public</option>
-                <option value="Option 2">Friends-Only</option>
-                <option value="Option 3">Unlisted</option>
+                <option value="PUBLIC">Public</option>
+                <option value="FRIENDS">Friends-Only</option>
+                <option value="UNLISTED">Unlisted</option>
           </select>
         </div>
         <button type="submit" className='make-post-button'>Create Post</button>

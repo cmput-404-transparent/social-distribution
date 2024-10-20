@@ -14,6 +14,14 @@ frontend:
 backend:
 	$(BACKEND_RUN_CMD)
 
+# make migrations
+migrations:
+	cd $(BACKEND_DIR) && python manage.py makemigrations
+
+# migrate
+migrate:
+	cd $(BACKEND_DIR) && python manage.py migrate
+
 # run frontend and backend locally
 local:
 	$(FRONTEND_RUN_CMD) & $(BACKEND_RUN_CMD)

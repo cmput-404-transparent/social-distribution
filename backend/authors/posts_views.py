@@ -229,20 +229,22 @@ def list_shared_posts(request, author_id):
 @api_view(['GET'])
 def stream(request,author_id):
 
-    author = get_object_or_404(Author, id=author_id)
-
     # getting all the public posts
-    posts = Post.objects.filter(~Q(author=request.user), visibility='PUBLIC')  #public posts excluding the author's own posts
+    posts = Post.objects.filter(~Q(author=request.user), visibility='PUBLIC')  # public posts excluding the author's own posts
     
     if request.user.is_authenticated:
-        # friends-only and unlisted posts from following
-        following = Friend.objects.filter(user=request.user).values_list('friend', flat=True)
+        # see unlisted posts from people you follow
+        following = Follow.objects.filter(follower=request.user, status="FOLLOWED").values_list('user', flat=True)
+        following_posts = Post.objects.filter(author__in=following, visibility='UNLISTED')
         
-        #getting  friends-only and unlisted posts from those followed authors
-        friends_posts = Post.objects.filter(author__in=following, visibility__in=['FRIENDS', 'UNLISTED'])
+        # see unlisted and friends-only posts from friends
+        friends = Friend.objects.filter(user=request.user).values_list('friend', flat=True)
+        more_friends = Friend.objects.filter(friend=request.user).values_list('user', flat=True)
+        friends = friends.union(more_friends)
+        friends_posts = Post.objects.filter(author__in=friends, visibility__in=['UNLISTED', 'FRIENDS'])
 
-        # both public posts and friends/unlisted posts
-        posts = posts | friends_posts
+        # see public posts and relevant friends/unlisted posts
+        posts = posts | following_posts | friends_posts
 
     # remove deleted posts
     posts = posts.exclude(is_deleted=True).order_by('-published')
