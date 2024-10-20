@@ -28,7 +28,7 @@ class Post(models.Model):
     original_post = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='shares')
     shares_count = models.PositiveIntegerField(default=0)
     is_deleted = models.BooleanField(default=False)
-    fqid = models.CharField(unique=True, max_length=200)
+    fqid = models.CharField(unique=True, max_length=200, blank=True, null=True)
 
     @property
     def is_shareable(self):
