@@ -38,7 +38,6 @@ CORS_ORIGINS_WHITELIST = ["http://localhost:3000"]
 # Application definition
 
 INSTALLED_APPS = [
-    'posts',
     'authors',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -49,7 +48,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken',
-    'api'
+    'api',
+    'posts'
 ]
 
 MIDDLEWARE = [

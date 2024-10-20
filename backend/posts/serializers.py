@@ -1,11 +1,8 @@
 from rest_framework import serializers
-from .models import Post, Share
-import base64
-from django.core.files.base import ContentFile
+from .models import *
 import commonmark
-from django.contrib.auth import get_user_model
-
-Author = get_user_model()
+from django.core.files.base import ContentFile
+import base64
 
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.PrimaryKeyRelatedField(read_only=True)

@@ -1,21 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 
 # Create your models here.
-
-class Friend(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='friendships')
-    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ['user', 'friend']
-
-    def __str__(self):
-        return f"{self.user.username} is friends with {self.friend.username}"
 
 class Post(models.Model):
     VISIBILITY_CHOICES = [
@@ -42,6 +28,7 @@ class Post(models.Model):
     original_post = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='shares')
     shares_count = models.PositiveIntegerField(default=0)
     is_deleted = models.BooleanField(default=False)
+    fqid = models.CharField(unique=True, max_length=200)
 
     @property
     def is_shareable(self):

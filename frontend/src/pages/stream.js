@@ -19,7 +19,7 @@ export default function StreamPage() {
 
   useEffect(() => {
     // get posts
-    fetch(`/api/posts/public/`)
+    fetch(`/api/authors/posts/public/`)
     .then((r) => r.json())
     .then((data) => {
       setPosts(data.posts);

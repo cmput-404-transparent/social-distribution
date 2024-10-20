@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
 
+
 class AuthorSerializer(serializers.Serializer):
     host = serializers.URLField()
     display_name = serializers.CharField()
