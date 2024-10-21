@@ -18,6 +18,7 @@ from .docs import (create_new_post_docs,list_recent_posts_docs,update_post_docs,
 import base64
 from django.http import HttpResponse, JsonResponse
 
+@create_new_post_docs
 @list_recent_posts_docs
 # Main view that checks the request method and delegates to appropriate functions
 @api_view(['GET', 'POST'])
@@ -28,9 +29,8 @@ def author_posts(request, author_id):
     elif request.method == 'POST':
         return create_new_post(request, author_id)
     
-@create_new_post_docs
+
 # Function to handle post creation (POST)
-@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_new_post(request, author_id):
 
