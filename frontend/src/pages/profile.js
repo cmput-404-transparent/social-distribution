@@ -54,7 +54,7 @@ export default function Profile() {
     fetch(`/api/authors/${profileAuthorId}/followers/`)
     .then((r) => r.json())
     .then((data) => {
-      setFollowers(data)
+      setFollowers(data.followers)
     });
 
     // get people author follows

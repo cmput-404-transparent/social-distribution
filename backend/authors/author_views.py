@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from .models import *
-from .serializers import AuthorSerializer
+from .serializers import *
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination 
 from django.contrib.auth import authenticate
@@ -55,7 +55,7 @@ def get_update_author(request, author_id):
     author = get_object_or_404(Author, pk=author_id)
     
     if request.method == 'GET':
-        serializer = AuthorSerializer(author, context={'request': request})
+        serializer = AuthorSummarySerializer(author, context={'request': request})
         return Response(serializer.data)
     
     elif request.method == 'PUT':
@@ -194,8 +194,12 @@ def get_followers(request, author_id):
     author = Author.objects.get(id=author_id)
     followers_id = Follow.objects.filter(user=author, status="FOLLOWED").values_list('follower')
     followers = Author.objects.filter(id__in=followers_id)
-    serialized_followers = [AuthorSerializer(follower).data for follower in followers]
-    return Response(serialized_followers, status=200)
+    serialized_followers = [AuthorSummarySerializer(follower).data for follower in followers]
+    response_data = {
+        "type": "followers",
+        "followers": serialized_followers
+    }
+    return Response(response_data, status=200)
 
 @api_view(['GET'])
 def get_following(request, author_id):
