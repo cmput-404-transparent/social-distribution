@@ -11,7 +11,7 @@ from django.db.models import Q
 from rest_framework import status
 
 #documentation 
-from .docs import login_docs, signup_docs, get_author_docs, edit_author_docs,get_author_from_session_docs,search_author_docs,follow_docs,get_follow_request_docs,accept_follow_docs,delete_follow_docs,get_follows_docs,get_following_docs
+from .docs import *
 
 
 @login_docs
@@ -55,7 +55,7 @@ def signup(request):
     return Response({"token": token.key, "userId": user.id}, status=201)
 
 
-@get_author_docs
+@get_author_by_id_docs
 @api_view(['GET', 'PUT'])
 def get_update_author(request, author_id):
 

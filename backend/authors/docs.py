@@ -447,11 +447,11 @@ signup_docs = swagger_auto_schema(
 # Get Author Details Documentation
 get_author_docs = swagger_auto_schema(
     method='get',
-    operation_summary="Get author details by ID",
+    operation_summary="Get authors",
     operation_description="""
-    **When to use**: Use this endpoint to retrieve the details of an author by their ID.
+    **When to use**: Use this endpoint to retrieve the details of all authors paginated.
 
-    **How to use**: Send a GET request with the author's ID in the URL.
+    **How to use**: Send a GET request to the URL.
 
     **Why/Why not**: Use this to get information about an author.
     """,
@@ -460,11 +460,64 @@ get_author_docs = swagger_auto_schema(
             description="Author details",
             examples={
                 "application/json": {
-                    "id": 1,
-                    "username": "johndoe",
-                    "display_name": "John Doe",
-                    "github": "johndoe",
-                    "page": "/authors/1"
+                    "type": "authors",
+                    "authors": [
+                        {
+                            "type": "author",
+                            "id": "http://localhost:3000/api/authors/1",
+                            "host": "http://localhost:3000/api/",
+                            "displayName": "John Doe",
+                            "github": "http://github.com/JohnDoe",
+                            "profileImage": "",
+                            "page": "http://localhost:3000/authors/1"
+                        }
+                    ]
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="Author not found",
+            examples={
+                "application/json": {
+                    "detail": "Author not found."
+                }
+            }
+        )
+    }
+)
+
+# get specific author documentation
+author_id_param = openapi.Parameter(
+    'author_id',  # The name of the parameter
+    openapi.IN_PATH,  # Indicates that this parameter is in the path
+    description="The ID of the author to retrieve",
+    type=openapi.TYPE_INTEGER,  # Set the type of the parameter
+    required=True  # Indicates that this parameter is required
+)
+
+get_author_by_id_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Get author details by ID",
+    operation_description="""
+    **When to use**: Use this endpoint to retrieve the details of an author by their ID.
+
+    **How to use**: Send a GET request with the author's ID in the URL.
+
+    **Why/Why not**: Use this to get information about an author.
+    """,
+    manual_parameters=[author_id_param],  # Add the parameter here
+    responses={
+        200: openapi.Response(
+            description="Author details",
+            examples={
+                "application/json": {
+                    "type": "author",
+                    "id": "http://localhost:3000/api/authors/1",
+                    "host": "http://localhost:3000/api/",
+                    "displayName": "John Doe",
+                    "github": "http://github.com/JohnDoe",
+                    "profileImage": "",
+                    "page": "http://localhost:3000/authors/1"
                 }
             }
         ),
