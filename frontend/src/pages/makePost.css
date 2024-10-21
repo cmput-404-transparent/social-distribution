@@ -1,0 +1,122 @@
+.form-make-post {
+    padding: 10px;
+    background-color: #FFF5CD;
+    border-bottom: 8px;
+}
+
+.post-title {
+    text-align: center; 
+    color: #333;
+    padding-bottom: 30px;
+}
+
+.post-div {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.div-make-post {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    text-align: center;
+}
+
+.label-make-post {
+    margin-bottom: 10px; 
+    font-weight: bold;  
+    text-align: center;
+    padding-right: 20px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-size: 15px;
+}
+
+.input-make-post {
+    margin-bottom: 15px;   
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+    font-size: 16px;    
+}
+
+.make-post-textarea {
+    padding: 10px;    
+    width: 70%; 
+    height: 100%;
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+    font-size: 16px;
+
+}
+
+.make-post-button {
+    padding: 10px;       
+    background-color: #9cd3fd; 
+    color: white;        
+    border: none;       
+    border-radius: 4px;  
+    font-size: 16px;     
+    cursor: pointer;     
+}
+
+.make-post-button:hover {
+    background-color: #3f87d4; 
+}
+
+.div-plain{
+    background-color: #9cd3fd; 
+    color: white;
+    margin: 0 10px;
+    border: none;       
+    border-radius: 4px;  
+    font-size: 16px;     
+    cursor: pointer;
+    padding: 10px; 
+}
+.div-plain:hover{
+    background-color: #3f87d4;
+}
+.div-plain.active {
+    background-color: #3f87d4;
+}
+
+
+.div-markdown{
+    background-color: #9cd3fd; 
+    color: white;
+    margin: 0 10px;
+    border: none;       
+    border-radius: 4px;  
+    font-size: 16px;     
+    cursor: pointer; 
+    padding: 10px;
+}
+
+.div-markdown:hover{
+    background-color: #3f87d4;
+}
+.div-markdown.active {
+    background-color: #3f87d4;
+}
+
+.div-image{
+    background-color: #9cd3fd; 
+    color: white;
+    margin: 0 10px;
+    border: none;       
+    border-radius: 4px;  
+    font-size: 16px;     
+    cursor: pointer; 
+    padding: 10px;
+}
+
+.div-image:hover{
+    background-color: #3f87d4;
+}
+
+.div-image.active {
+    background-color: #3f87d4;
+}
+
+
+
+
+
