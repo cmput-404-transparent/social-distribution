@@ -4,6 +4,7 @@ import ControlPointIcon from '@mui/icons-material/ControlPoint';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
+import CircleNotificationsIcon from '@mui/icons-material/CircleNotifications';
 
 export default function NavBar() {
 
@@ -29,9 +30,13 @@ export default function NavBar() {
         <SearchIcon />
         <p className='pl-3'>Search</p>
       </NavLink>
-      <NavLink to="make-post" className="align-middle grid grid-flow-col auto-cols-max">
+      <NavLink to="/make-post" className="align-middle grid grid-flow-col auto-cols-max">
         <ControlPointIcon />
         <p className='pl-3'>Post</p>
+      </NavLink>
+      <NavLink to="/notifications" className="align-middle grid grid-flow-col auto-cols-max">
+        <CircleNotificationsIcon />
+        <p className='pl-3'>Notifications</p>
       </NavLink>
       <div className="align-middle grid grid-flow-col auto-cols-max cursor-pointer" onClick={toProfile}>
         <AccountCircleIcon />

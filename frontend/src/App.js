@@ -10,6 +10,7 @@ import SignUp from './pages/signup';
 import EditProfile from './pages/editProfile';
 import Search from './pages/search';
 import { useEffect } from 'react';
+import Notifications from './pages/notifications';
 
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
           <Route path="/login" element={<Login/>} />
           <Route path="/signup" element={<SignUp/>} />
           <Route path="/search" element={<Search/>} />
+          <Route path="/notifications" element={<Notifications/>} />
         </Routes>
       </div>
     </Router>
