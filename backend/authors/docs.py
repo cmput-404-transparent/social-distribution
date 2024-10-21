@@ -62,7 +62,7 @@ list_recent_posts_docs = swagger_auto_schema(
     method='get',
     operation_summary="List recent posts by a specific author",
     operation_description="""
-    **When to use**: Use this endpoint to retrieve recent posts from a specific author based on visibility and the user's relationship with the author.
+    **When to use**: Use this endpoint to retrieve recent posts from a specific author based on visibility.
 
     **How to use**: Send a GET request with the author's ID to retrieve their posts.
 
@@ -505,7 +505,7 @@ get_author_by_id_docs = swagger_auto_schema(
 
     **Why/Why not**: Use this to get information about an author.
     """,
-    manual_parameters=[author_id_param],  # Add the parameter here
+    manual_parameters=[author_id_param],
     responses={
         200: openapi.Response(
             description="Author details",
@@ -603,7 +603,13 @@ get_author_from_session_docs = swagger_auto_schema(
     }
 )
 
-
+search_param = openapi.Parameter(
+    'keywords',  # The name of the parameter
+    openapi.IN_QUERY,  # Indicates that this parameter is in the path
+    description="Keywords to search authors for",
+    type=openapi.TYPE_STRING,  # Set the type of the parameter
+    required=False  # Indicates that this parameter is required
+)
 
 search_author_docs = swagger_auto_schema(
     method='get',
@@ -615,6 +621,7 @@ search_author_docs = swagger_auto_schema(
 
     **Why/Why not**: Use this to find authors by username or display name.
     """,
+    manual_parameters=[search_param],
     responses={
         200: openapi.Response(
             description="Search results",
@@ -682,11 +689,17 @@ get_follow_request_docs = swagger_auto_schema(
             examples={
                 "application/json": [
                     {
-                        "id": 2,
-                        "username": "janedoe",
-                        "display_name": "Jane Doe",
-                        "github": "janedoe",
-                        "page": "/authors/2"
+                        "type": "author",
+                        "host": "http://localhost:3000/api/",
+                        "github": "http://github.com/JohnDoe",
+                        "profile_image": "",
+                        "page": "http://localhost:3000/authors/6",
+                        "username": "JohnDoe",
+                        "display_name": "John Doe",
+                        "id": "http://localhost:3000/api/authors/6",
+                        "relationship": "NONE",
+                        "followers": 0,
+                        "following": 0
                     }
                 ]
             }
@@ -767,11 +780,22 @@ get_follows_docs = swagger_auto_schema(
             examples={
                 "application/json": [
                     {
-                        "id": 2,
-                        "username": "janedoe",
-                        "display_name": "Jane Doe",
-                        "github": "janedoe123",
-                        "page": "/authors/2"
+                        "type": "author",
+                        "id": "http://localhost:3000/api/authors/8",
+                        "host": "http://localhost:3000/api/",
+                        "displayName": "User 1",
+                        "github": "",
+                        "profileImage": "",
+                        "page": "http://localhost:3000/authors/8"
+                    },
+                    {
+                        "type": "author",
+                        "id": "http://localhost:3000/api/authors/12",
+                        "host": "http://localhost:3000/api/",
+                        "displayName": "User 2",
+                        "github": "http://github.com/",
+                        "profileImage": "",
+                        "page": "http://localhost:3000/authors/12"
                     }
                 ]
             }
@@ -795,13 +819,71 @@ get_following_docs = swagger_auto_schema(
             examples={
                 "application/json": [
                     {
-                        "id": 1,
-                        "username": "johndoe",
-                        "display_name": "John Doe",
-                        "github": "johndoe",
-                        "page": "/authors/1"   
+                        "type": "author",
+                        "id": "http://localhost:3000/api/authors/8",
+                        "host": "http://localhost:3000/api/",
+                        "displayName": "User 1",
+                        "github": "",
+                        "profileImage": "",
+                        "page": "http://localhost:3000/authors/8"
+                    },
+                    {
+                        "type": "author",
+                        "id": "http://localhost:3000/api/authors/12",
+                        "host": "http://localhost:3000/api/",
+                        "displayName": "User 2",
+                        "github": "http://github.com/",
+                        "profileImage": "",
+                        "page": "http://localhost:3000/authors/12"
                     }
                 ]
+            }
+        )
+    }
+)
+
+author_1_id_param = openapi.Parameter(
+    'author_1_id',
+    openapi.IN_PATH,
+    description="The ID of the first author.",
+    type=openapi.TYPE_INTEGER,
+    required=True
+)
+
+author_2_id_param = openapi.Parameter(
+    'author_2_id',
+    openapi.IN_PATH,
+    description="The ID of the second author.",
+    type=openapi.TYPE_INTEGER,
+    required=True
+)
+
+relationship_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Get relationship between two authors",
+    operation_description="""
+    **When to use**: Use this endpoint to retrieve the relationship between two authors by their IDs.
+
+    **How to use**: Send a GET request with the authors' IDs in the URL.
+
+    **Why/Why not**: Use this to understand the relationship status between two authors.
+    """,
+    manual_parameters=[author_1_id_param, author_2_id_param],
+    responses={
+        200: openapi.Response(
+            description="Relationship details between two authors",
+            examples={
+                "application/json": {
+                    "relationship": "FRIEND"
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="Author not found",
+            examples={
+                "application/json": {
+                    "detail": "Author not found."
+                }
             }
         )
     }

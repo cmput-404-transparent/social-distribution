@@ -264,6 +264,7 @@ def get_following(request, author_id):
     serialized_following = [AuthorSummarySerializer(following_user).data for following_user in following]
     return Response(serialized_following, status=200)
 
+@relationship_docs
 @api_view(['GET'])
 def get_relationship(request, author_1_id, author_2_id):
     author_1 = Author.objects.get(id=author_1_id)
