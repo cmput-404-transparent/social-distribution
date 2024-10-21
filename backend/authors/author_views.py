@@ -3,12 +3,12 @@ from rest_framework.decorators import api_view
 from .models import *
 from .serializers import AuthorSerializer
 from rest_framework.response import Response
-
+from rest_framework.pagination import PageNumberPagination 
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_side_login
 from rest_framework.authtoken.models import Token
 from django.db.models import Q
-
+from rest_framework import status
 
 @api_view(['POST'])
 def login(request):
@@ -52,12 +52,36 @@ def signup(request):
     return Response({"token": token.key, "author": serializer.data, "userId": user.id}, status=200)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT'])
 def get_author(request, author_id):
     author = get_object_or_404(Author, pk=author_id)
-    serializer = AuthorSerializer(author)
-    return Response(serializer.data, status=200)
+    
+    if request.method == 'GET':
+        serializer = AuthorSerializer(author, context={'request': request})
+        return Response(serializer.data)
+    
+    elif request.method == 'PUT':
+        # Check if the authenticated user is the author
+        if request.user.id != author.id:
+            return Response({"detail": "You do not have permission to edit this profile."}, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = AuthorSerializer(author, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size_query_param = 'size'
+
+@api_view(['GET'])
+def get_all_authors(request):
+    paginator = CustomPageNumberPagination()
+    authors = Author.objects.all()
+    result_page = paginator.paginate_queryset(authors, request)
+    serializer = AuthorSerializer(result_page, many=True)
+    return paginator.get_paginated_response(serializer.data)
+    
 
 @api_view(['GET'])
 def get_author_from_session(request):
@@ -66,39 +90,39 @@ def get_author_from_session(request):
     return Response({'userId': token_obj.user_id}, status=200)
 
 
-@api_view(['POST'])
-def edit_author(request, author_id):
-    author = get_object_or_404(Author, pk=author_id)
+# @api_view(['PUT'])
+# def edit_author(request, author_id):
+#     author = get_object_or_404(Author, pk=author_id)
 
-    username = request.POST.get('username', None)
-    password = request.POST.get('password', None)
-    display_name = request.POST.get('display_name', None)
-    github = request.POST.get('github', None)
+#     username = request.data.get('username', None)
+#     password = request.data.get('password', None)
+#     display_name = request.data.get('display_name', None)
+#     github = request.data.get('github', None)
 
-    errors = []
+#     errors = []
 
-    if username is not None and username != author.username:
-        original_username = author.username
-        try:
-            author.username = username
-            author.save()
-        except:
-            print('hello')
-            author.username = original_username
-            errors.append("Username is taken")
-    if password is not None and not author.check_password(password):     # checks if passwords are the same
-        author.set_password(password)           # if not then change it
-    if display_name is not None and display_name != author.display_name:
-        author.display_name = display_name
-    if github is not None and github != author.github:
-        author.github = github
+#     if username is not None and username != author.username:
+#         original_username = author.username
+#         try:
+#             author.username = username
+#             author.save()
+#         except:
+#             print('hello')
+#             author.username = original_username
+#             errors.append("Username is taken")
+#     if password is not None and not author.check_password(password):     # checks if passwords are the same
+#         author.set_password(password)           # if not then change it
+#     if display_name is not None and display_name != author.display_name:
+#         author.display_name = display_name
+#     if github is not None and github != author.github:
+#         author.github = github
     
-    author.save()
+#     author.save()
 
-    if errors:
-        return Response({'errors': errors}, status=400)
-    else:
-        return Response(status=200)
+#     if errors:
+#         return Response({'errors': errors}, status=400)
+#     else:
+#         return Response(status=200)
 
 @api_view(['GET'])
 def search_author(request):

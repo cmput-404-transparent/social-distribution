@@ -6,10 +6,11 @@ import base64
 
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.PrimaryKeyRelatedField(read_only=True)
+    type = serializers.CharField(default='post', read_only=True)
     class Meta:
         model = Post
-        fields = ['id', 'title', 'description', 'contentType', 'content', 'author', 'published', 'visibility', 'is_shared', 'original_post', 'shares_count']
-        read_only_fields = ['id', 'author', 'published', 'is_shared', 'original_post', 'shares_count']
+        fields = ['type', 'id', 'title', 'description', 'contentType', 'content', 'author', 'published', 'visibility', 'is_shared', 'original_post', 'shares_count']
+        read_only_fields = ['type', 'id', 'author', 'published', 'is_shared', 'original_post', 'shares_count']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

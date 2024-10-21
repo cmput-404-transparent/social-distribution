@@ -3,6 +3,7 @@ from .models import *
 
 
 class AuthorSerializer(serializers.Serializer):
+    type = serializers.CharField(default='author', read_only=True)
     host = serializers.URLField()
     display_name = serializers.CharField()
     github = serializers.URLField()

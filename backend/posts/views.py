@@ -12,8 +12,8 @@ from datetime import datetime
 
 @api_view(['GET'])
 # Get a single post
-def get_post(request, author_id, post_id):
-    post = get_object_or_404(Post, id=post_id, author_id=author_id)
+def get_post(request, fqid):
+    post = get_object_or_404(Post, fqid=fqid)
 
     # Public and unlisted posts are visible to everyone
     if post.visibility in ['PUBLIC', 'UNLISTED']:

@@ -7,11 +7,11 @@ app_name = "authors"
 urlpatterns = [
     # AUTHOR URLS ------------------------------------------------------------------------------
 
-    # get author info by author id
-    path("<int:author_id>/", author_views.get_author, name="get_author"),
+    # get all authors
+    path("", author_views.get_all_authors, name="get_all_authors"),
 
-    # edit author by author id
-    path("<int:author_id>/edit/", author_views.edit_author, name="edit_author"),
+    # get author info and update/edit author info by author id
+    path("<int:author_id>/", author_views.get_author, name="get_author"),
 
     # login
     path("login/", author_views.login, name="login"),
@@ -27,11 +27,8 @@ urlpatterns = [
 
     # POSTS URLS ------------------------------------------------------------------------------
 
-    # Get recent posts from author
+    # Get recent posts from author              # Create a new post (POST method)
     path('<int:author_id>/posts/', posts_views.author_posts, name='author_posts'),
-
-    # Create a new post (POST method)
-    path('<int:author_id>/posts/create/', posts_views.create_new_post, name='create_new_post'),
 
     # Retrieve a specific post           # Update an existing post (PUT method)               # Delete a post (DELETE method)       
     path('<int:author_id>/posts/<int:post_id>/', posts_views.post_detail, name='get_post'),

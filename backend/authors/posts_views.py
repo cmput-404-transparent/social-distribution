@@ -102,10 +102,19 @@ def list_recent_posts(request, author_id):
 @permission_classes([IsAuthenticated])  # Permissions can vary based on the method if needed
 def post_detail(request, author_id, post_id):
     # author = get_object_or_404(User, id=author_id)
-    # post = get_object_or_404(Post, id=post_id, author=author)
+    post = get_object_or_404(Post, id=post_id, author_id=author_id)
 
     if request.method == 'GET':
-        return get_post(request, author_id, post_id)
+        if post.visibility in ['PUBLIC', 'UNLISTED']:
+            return Response(PostSerializer(post).data, status=200)
+
+        if post.visibility == 'FRIENDS':
+            if request.user == post.author or Friend.objects.filter(user=post.author, friend=request.user).exists() or Friend.objects.filter(user=request.user, friend=post.author).exists():
+                return Response(PostSerializer(post).data, status=200)
+            else:
+                return Response({"detail": "This post is only visible to friends."}, status=403)
+
+        return Response({"detail": "Invalid post visibility setting."}, status=400)
 
     elif request.method == 'PUT':
         return update_existing_post(request, author_id, post_id)
@@ -117,6 +126,9 @@ def post_detail(request, author_id, post_id):
 def update_existing_post(request, author_id, post_id):
     author = get_object_or_404(Author, id=author_id)
     post = get_object_or_404(Post, id=post_id, author=author)
+
+    if request.user != author:
+        return Response({"detail": "You don't have permission to edit this post."}, status=status.HTTP_403_FORBIDDEN)
     data = request.data
 
      # For example, updating specific fields
