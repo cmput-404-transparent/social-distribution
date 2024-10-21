@@ -5,6 +5,7 @@ from . import posts_views
 app_name = "authors"
 
 urlpatterns = [
+    
     # AUTHOR URLS ------------------------------------------------------------------------------
 
     # get author info by author id
