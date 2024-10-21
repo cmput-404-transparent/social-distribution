@@ -9,17 +9,13 @@ from posts.serializers import *
 from posts.models import *
 from posts.views import get_post
 
-# for documentation 
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from rest_framework.pagination import PageNumberPagination
+
+#documentation
+from .docs import (create_new_post_docs,list_recent_posts_docs,update_post_docs, delete_post_docs, get_all_public_posts_docs,
+                   share_post_docs, list_shared_posts_docs, stream_docs)
 
 
-'''
-Documentation 
-source: ChatGPT (OpenAI)
-prompt: "Give me a base template for Augmentating swagger doc to accomdate when how and why explanations for these views"
-date: October 21, 2024
-'''
 
 # Main view that checks the request method and delegates to appropriate functions
 @api_view(['GET', 'POST'])
@@ -30,49 +26,12 @@ def author_posts(request, author_id):
     elif request.method == 'POST':
         return create_new_post(request, author_id)
     
-
-@swagger_auto_schema(
-    method='post',
-    operation_summary="Create a new post for a specific author",
-    operation_description="""
-    **When to use**: Use this endpoint to create a new post for a specific author.
-
-    **How to use**: Send a POST request with the required fields (`title`, `description`, `content`, `contentType`, `visibility`).
-
-    **Why/Why not**: Use this endpoint to allow authors to publish new posts.
-    """,
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        required=['title', 'content', 'contentType', 'visibility'],
-        properties={
-            'title': openapi.Schema(type=openapi.TYPE_STRING, example="Post Title", description="The title of the post."),
-            'description': openapi.Schema(type=openapi.TYPE_STRING, example="A description of the post", description="description to provide context."),
-            'contentType': openapi.Schema(type=openapi.TYPE_STRING, example="text/plain", description="The type of content in the post (e.g., plain text, markdown, base64 image)."),
-            'content': openapi.Schema(type=openapi.TYPE_STRING, example="This is the content of the post.", description="The main content of the post."),
-            'visibility': openapi.Schema(type=openapi.TYPE_STRING, example="PUBLIC", description="Who can see the post (e.g., PUBLIC, UNLISTED, FRIENDS).")
-        }
-    ),
-    responses={
-        201: openapi.Response(
-            description="Post created successfully",
-            examples={
-                "application/json": {
-                    "id": "550e8400-e29b-41d4-a716-446655440000", 
-                    "title": "New Post Title",
-                    "description": "A brief description of the post",
-                    "contentType": "text/plain",
-                    "content": "content of the post!",
-                    "author": 3,
-                    "visibility": "PUBLIC"
-                }
-            }
-        )
-    }
-)
+@create_new_post_docs
 # Function to handle post creation (POST)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_new_post(request, author_id):
+
     # Check if the authenticated user matches the author_id
     if str(request.user.id) != str(author_id):
         return Response({
@@ -111,37 +70,7 @@ def create_new_post(request, author_id):
 
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-@swagger_auto_schema(
-    method='get',
-    operation_summary="List recent posts by a specific author",
-    operation_description="""
-    **When to use**: Use this endpoint to retrieve recent posts from a specific author based on visibility and the the user's relationship with the author.
-
-    **How to use**: Send a GET request with the author's ID to retrieve their posts.
-
-    **Why/Why not**: useful to use when you need to view an author's recent posts based on the specfic visbility 
-    """,
-    responses={
-        200: openapi.Response(
-            description="A list of recent posts by the author",
-            examples={
-                "application/json": [
-                    {
-                        "id": "550e8400-e29b-41d4-a716-446655440000",
-                        "title": "Author's Public Post",
-                        "description": "Description of the public post",
-                        "contentType": "text/plain",
-                        "content": "This is the content of the post.",
-                        "author": 3,
-                        "published": "2023-10-20T14:48:00Z",
-                        "visibility": "PUBLIC",
-                        "shares_count": 0
-                    }
-                ]
-            }
-        )
-    }
-)
+@list_recent_posts_docs
 @api_view(['GET'])
 # List recent posts by an author
 def list_recent_posts(request, author_id):
@@ -200,45 +129,7 @@ def post_detail(request, author_id, post_id):
     elif request.method == 'DELETE':
         return delete_post(request, author_id, post_id)
     
-
-
-@swagger_auto_schema(
-    method='put',
-    operation_summary="Update an existing post",
-    operation_description="""
-    **When to use**: Use this endpoint to update an existing post by providing the updated fields.
-
-    **How to use**: Send a PUT request with the updated fields (`title`, `description`, `content`, `contentType`, `visibility`).
-
-    **Why/Why not**: Use this to allow authors to update or edit their posts.
-    """,
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'title': openapi.Schema(type=openapi.TYPE_STRING, example="Updated Title", description="Updated title of the post."),
-            'description': openapi.Schema(type=openapi.TYPE_STRING, example="Updated description", description="An updated description for the post."),
-            'contentType': openapi.Schema(type=openapi.TYPE_STRING, example="text/markdown", description="Updated content type (e.g., text/plain, text/markdown)."),
-            'content': openapi.Schema(type=openapi.TYPE_STRING, example="Updated content", description="Updated content of the post."),
-            'visibility': openapi.Schema(type=openapi.TYPE_STRING, example="FRIENDS", description="Updated visibility (e.g., PUBLIC, FRIENDS, UNLISTED).")
-        }
-    ),
-    responses={
-        200: openapi.Response(
-            description="Post updated successfully",
-            examples={
-                "application/json": {
-                    "id": "550e8400-e29b-41d4-a716-446655440000",
-                    "title": "Updated Post Title",
-                    "description": "Updated description",
-                    "contentType": "text/markdown",
-                    "content": "Updated markdown content",
-                    "visibility": "FRIENDS",
-                    "published": "2023-10-21T10:30:00Z"
-                }
-            }
-        )
-    }
-)
+@update_post_docs
 @api_view(['PUT'])
 def update_existing_post(request, author_id, post_id):
     author = get_object_or_404(Author, id=author_id)
@@ -267,22 +158,7 @@ def update_existing_post(request, author_id, post_id):
 
     return Response(response_data, status=status.HTTP_200_OK)
 
-
-@swagger_auto_schema(
-    method='delete',
-    operation_summary="Delete a post using ID",
-    operation_description="""
-    **When to use**: Use this endpoint to delete a specific post by its ID.
-
-    **How to use**: Send a DELETE request with the post ID.
-
-    **Why/Why not**: Use this to allow authors to delete posts they have created.
-    """,
-    responses={
-        204: openapi.Response(description="Post deleted successfully"),
-        403: openapi.Response(description="Forbidden: You can only delete your own posts")
-    }
-)
+@delete_post_docs
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 
@@ -294,51 +170,7 @@ def delete_post(request, author_id, post_id):
         return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_403_FORBIDDEN)  # Forbidden if not the author
 
-
-@swagger_auto_schema(
-    method='get',
-    operation_summary="Get all public posts from all authors",
-    operation_description="""
-    **When to use**: Use this endpoint to get all publicly visible posts from all authors.
-
-    **How to use**: Send a GET request to retrieve all public posts
-
-    **Why/Why not**: Should be used as we would to see streams of only public posts 
-
-    Is not paginated
-    """,
-    responses={200: openapi.Response(
-        description="A list of public posts",
-        examples={
-            "application/json": {
-                "results": [
-                    {
-                        # example 1
-                        "id": "550e8400-e29b-41d4-a716-446655440000",  #unique identifer for post for identification
-                        "title": "My First Post",  # title of post 
-                        "description": "This is a description for my first post", #description for post 
-                        "contentType": "text/plain", # Type of format in this case plain text
-                        "content": "content for first page",  # the content of the post 
-                        "author": 3, # Id of author who created the post needed for identification
-                        "visibility": "PUBLIC",  # indicates who can see the post  
-                    },
-
-                    # example 2
-                    {
-                        "id": "123e4567-e89b-12d3-a456-426614174000",
-                        "title": "Second Post",
-                        "description": "A second example of a public post",
-                        "contentType": "text/plain",
-                        "content": "Here’s the content for my second post",
-                        "author": 4,
-                        "visibility": "PUBLIC",
-                    }
-                ]
-            }
-        }
-    )}
-)
-
+@get_all_public_posts_docs
 @api_view(['GET'])
 def get_all_public_posts(request):
     public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
@@ -346,38 +178,7 @@ def get_all_public_posts(request):
     return Response({"posts": serialized_posts}, status=200)
 
 
-
-@swagger_auto_schema(
-    method='post',
-    operation_summary="Share a post",
-    operation_description="""
-    **When to use**: Use this endpoint to share an existing post.
-
-    **How to use**: Send a POST request with the post ID of the post you want to share.
-
-    **Why/Why not**: Use this to allow users to share posts with others, making the shared post visible to a broader audience.
-    """,
-    responses={
-        201: openapi.Response(
-            description="Post shared successfully",
-            examples={
-                "application/json": {
-                    "id": "550e8400-e29b-41d4-a716-446655440001",
-                    "title": "Shared: Original Post Title",
-                    "description": "Description of the original post",
-                    "contentType": "text/plain",
-                    "content": "Original post content",
-                    "author": 5,
-                    "published": "2023-10-22T14:00:00Z",
-                    "visibility": "PUBLIC",
-                    "is_shared": True,
-                    "original_post": "550e8400-e29b-41d4-a716-446655440000"
-                }
-            }
-        ),
-        403: openapi.Response(description="Forbidden: This post cannot be shared")
-    }
-)
+@share_post_docs
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def share_post(request, post_id):
@@ -408,46 +209,7 @@ def share_post(request, post_id):
     else:
         return Response({"detail": "You have already shared this post."}, status=status.HTTP_400_BAD_REQUEST)
 
-@swagger_auto_schema(
-    method='get',
-    operation_summary="List all shared posts by an author",
-    operation_description="""
-    **When to use**: Use this endpoint to retrieve all posts shared by a specific author.
-
-    **How to use**: Send a GET request with the author's ID in the URL. The endpoint returns shared posts that are publicly visible or, if the user is authenticated, may include additional visibility-based posts.
-
-    **Why/Why not**: Use this to see all shared posts from an author, especially if you're following or interested in the author's public content.
-    """,
-    responses={
-        200: openapi.Response(
-            description="List of shared posts",
-            examples={
-                "application/json": [
-                    {
-                        "id": "550e8400-e29b-41d4-a716-446655440000",
-                        "title": "Shared: Original Post Title",
-                        "description": "This is a shared post description",
-                        "contentType": "text/plain",
-                        "content": "This is the content of the shared post",
-                        "author": 3,
-                        "published": "2023-10-20T14:48:00Z",
-                        "visibility": "PUBLIC",
-                        "is_shared": True,
-                        "original_post": "550e8400-e29b-41d4-a716-446655440001"
-                    }
-                ]
-            }
-        ),
-        404: openapi.Response(
-            description="Author not found",
-            examples={
-                "application/json": {
-                    "detail": "Author not found."
-                }
-            }
-        )
-    }
-)
+@list_shared_posts_docs
 @api_view(['GET'])
 def list_shared_posts(request, author_id):
     author = get_object_or_404(Author, id=author_id)
@@ -464,64 +226,12 @@ def list_shared_posts(request, author_id):
     return Response(serializer.data)
 
 
-@swagger_auto_schema(
-    method='get',
-    operation_summary="Retrieve the stream of relevant posts",
-    operation_description="""
-    **When to use**: Use this endpoint to retrieve a stream of posts relevant to the authenticated user, based on their follows, friends, and public posts.
-
-    **How to use**: Send a GET request. The endpoint will return public posts and additional posts based on the user's relationships (e.g., followed users, friends).
-
-    **Why/Why not**: Use this to view a personalized feed of posts, filtered based on visibility settings (public, unlisted, friends-only).
-    """,
-    responses={
-        200: openapi.Response(
-            description="Stream of posts",
-            examples={
-                "application/json": {
-                    "count": 3,
-                    "next": None,
-                    "previous": None,
-                    "results": [
-                        {
-                            "id": "550e8400-e29b-41d4-a716-446655440000",
-                            "title": "Public Post Title",
-                            "description": "Description of a public post",
-                            "contentType": "text/plain",
-                            "content": "This is a public post",
-                            "author": 3,
-                            "published": "2023-10-20T14:48:00Z",
-                            "visibility": "PUBLIC"
-                        },
-                        {
-                            "id": "550e8400-e29b-41d4-a716-446655440001",
-                            "title": "Unlisted Post Title",
-                            "description": "Description of an unlisted post",
-                            "contentType": "text/markdown",
-                            "content": "This is an unlisted post",
-                            "author": 5,
-                            "published": "2023-10-21T10:30:00Z",
-                            "visibility": "UNLISTED"
-                        },
-                        {
-                            "id": "550e8400-e29b-41d4-a716-446655440002",
-                            "title": "Friends-Only Post Title",
-                            "description": "Description of a friends-only post",
-                            "contentType": "text/markdown",
-                            "content": "This is a friends-only post",
-                            "author": 4,
-                            "published": "2023-10-21T11:30:00Z",
-                            "visibility": "FRIENDS"
-                        }
-                    ]
-                }
-            }
-        )
-    }
-)
+@stream_docs
 # Stream for showing all relevant posts
 @api_view(['GET'])
 def stream(request,author_id):
+
+    from .docs import stream_docs
 
     # getting all the public posts
     posts = Post.objects.filter(~Q(author=request.user), visibility='PUBLIC')  # public posts excluding the author's own posts
