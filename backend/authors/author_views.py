@@ -47,9 +47,7 @@ def signup(request):
     django_side_login(request, user)
     token, _ = Token.objects.get_or_create(user=user)
 
-    serializer = AuthorSerializer(new_author)
-
-    return Response({"token": token.key, "author": serializer.data, "userId": user.id}, status=200)
+    return Response({"token": token.key, "userId": user.id}, status=200)
 
 
 @api_view(['GET', 'PUT'])
@@ -64,12 +62,36 @@ def get_update_author(request, author_id):
         # Check if the authenticated user is the author
         if request.user.id != author.id:
             return Response({"detail": "You do not have permission to edit this profile."}, status=status.HTTP_403_FORBIDDEN)
+                
+        username = request.data.get('username', None)
+        password = request.data.get('password', None)
+        display_name = request.data.get('displayName', None)
+        github = request.data.get('github', None)
+
+        errors = []
+
+        if username is not None and username != author.username:
+            original_username = author.username
+            try:
+                author.username = username
+                author.save()
+            except:
+                author.username = original_username
+                errors.append("Username is taken")
+        if password is not None and not author.check_password(password):     # checks if passwords are the same
+            author.set_password(password)           # if not then change it
+        if display_name is not None and display_name != author.display_name:
+            author.display_name = display_name
+        if github is not None and github != author.github:
+            author.github = github
         
-        serializer = AuthorSerializer(author, data=request.data, partial=True, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        author.save()
+
+        if errors:
+            return Response({'errors': errors}, status=400)
+        else:
+            return Response(status=200)
+
 
 class CustomPageNumberPagination(PageNumberPagination):
     page_size_query_param = 'size'
@@ -90,40 +112,6 @@ def get_author_from_session(request):
     return Response({'userId': token_obj.user_id}, status=200)
 
 
-# @api_view(['PUT'])
-# def edit_author(request, author_id):
-#     author = get_object_or_404(Author, pk=author_id)
-
-#     username = request.data.get('username', None)
-#     password = request.data.get('password', None)
-#     display_name = request.data.get('display_name', None)
-#     github = request.data.get('github', None)
-
-#     errors = []
-
-#     if username is not None and username != author.username:
-#         original_username = author.username
-#         try:
-#             author.username = username
-#             author.save()
-#         except:
-#             print('hello')
-#             author.username = original_username
-#             errors.append("Username is taken")
-#     if password is not None and not author.check_password(password):     # checks if passwords are the same
-#         author.set_password(password)           # if not then change it
-#     if display_name is not None and display_name != author.display_name:
-#         author.display_name = display_name
-#     if github is not None and github != author.github:
-#         author.github = github
-    
-#     author.save()
-
-#     if errors:
-#         return Response({'errors': errors}, status=400)
-#     else:
-#         return Response(status=200)
-
 @api_view(['GET'])
 def search_author(request):
     keyword = request.GET.get("keyword", '')
@@ -137,3 +125,62 @@ def search_author(request):
     results = [AuthorSerializer(author).data for author in results]
 
     return Response(results, status=200)
+
+@api_view(['POST'])
+def follow(request):
+    user = request.POST.get('user', None)
+    follower = request.POST.get('follower', None)
+
+    if user and follower:
+        user_author = Author.objects.get(id=user)
+        follower_author = Author.objects.get(id=follower)
+
+        Follow.objects.get_or_create(user=user_author, follower=follower_author)
+
+        return Response(status=201)
+
+    else:
+        return Response("user and/or follower does not exist", status=400)
+
+@api_view(['GET'])
+def get_follow_requests(request, author_id):
+    author = Author.objects.get(id=author_id)
+    follow_requests = Follow.objects.filter(user=author, status="REQUESTED").values_list('follower')
+    follow_requests_authors = Author.objects.filter(id__in=follow_requests)
+    serialized_follow_requests = [AuthorSerializer(request).data for request in follow_requests_authors]
+    return Response(serialized_follow_requests, status=200)
+
+@api_view(["PUT", "DELETE"])
+def manage_follow(request, author_id):
+    author = request.user
+    follower = Author.objects.get(id=request.POST.get('follower', None))
+    if author and follower:
+        if request.method == "PUT":
+            # accepting follow request
+            follow = Follow.objects.get(user=author, follower=follower)
+            follow.status = "FOLLOWED"
+            follow.save()
+        elif request.method == "DELETE":
+            # remove follow request
+            follow = Follow.objects.get(user=author, follower=follower)
+            follow.delete()
+        
+        return Response(status=200)
+    
+    return Response("author and/or follower doesn't exist", status=400)
+
+@api_view(['GET'])
+def get_followers(request, author_id):
+    author = Author.objects.get(id=author_id)
+    followers_id = Follow.objects.filter(user=author, status="FOLLOWED").values_list('follower')
+    followers = Author.objects.filter(id__in=followers_id)
+    serialized_followers = [AuthorSerializer(follower).data for follower in followers]
+    return Response(serialized_followers, status=200)
+
+@api_view(['GET'])
+def get_following(request, author_id):
+    author = Author.objects.get(id=author_id)
+    following_ids = Follow.objects.filter(follower=author, status="FOLLOWED").values_list('user')
+    following = Author.objects.filter(id__in=following_ids)
+    serialized_following = [AuthorSerializer(following_user).data for following_user in following]
+    return Response(serialized_following, status=200)

@@ -40,8 +40,8 @@ export default function EditProfile() {
     const csrftoken = getCookie('csrftoken');
 
     try {
-      const response = await fetch(`/api/authors/${authorId}/edit/`, {
-        method: 'POST',
+      const response = await fetch(`/api/authors/${authorId}/`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': csrftoken,

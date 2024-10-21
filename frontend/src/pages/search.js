@@ -4,7 +4,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 
-function AuthorResult({author}) {
+export function AuthorResult({author}) {
   return(
     <NavLink to={`/authors/${author.id}`} className="cursor-pointer">
       <div className="border rounded my-4 p-4">

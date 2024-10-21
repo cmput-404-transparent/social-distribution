@@ -48,16 +48,6 @@ class Author(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'username'
 
-class Friend(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='friendships')
-    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ['user', 'friend']
-
-    def __str__(self):
-        return f"{self.user.username} is friends with {self.friend.username}"
-
 class Follow(models.Model):
     STATUS_CHOICES = [
         ('REQUESTED', 'Requested'),
@@ -70,3 +60,15 @@ class Follow(models.Model):
 
     class Meta:
         unique_together = ['user', 'follower']
+
+    @staticmethod
+    def are_friends(user1, user2):
+        follow_1 = Follow.objects.filter(user=user1, follower=user2, status='FOLLOWED').exists()
+        follow_2 = Follow.objects.filter(user=user2, follower=user1, status='FOLLOWED').exists()
+        return follow_1 and follow_2
+
+    @staticmethod
+    def get_friends(user):
+        friends_1 = Follow.objects.filter(user=user, status='FOLLOWED').values_list('follower')
+        friends_2 = Follow.objects.filter(follower=user, status='FOLLOWED').values_list('user')
+        return friends_1.intersection(friends_2)

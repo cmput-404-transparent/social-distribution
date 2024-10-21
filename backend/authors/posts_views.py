@@ -77,11 +77,17 @@ def list_recent_posts(request, author_id):
         if request.user == author:
             # Author sees all their own posts
             pass
-        elif Friend.objects.filter(user=author, friend=request.user).exists():
+        elif Follow.are_friends(author, request.user):
             # Friends see public, friends-only, and unlisted posts
             posts = posts.filter(
                 Q(visibility='PUBLIC') |
                 Q(visibility='FRIENDS') |
+                Q(visibility='UNLISTED')
+            )
+        elif Follow.are_friends(author, request.user):
+            # followers can see public and unlisted posts
+            posts = posts.filter(
+                Q(visibility='PUBLIC') |
                 Q(visibility='UNLISTED')
             )
         else:
@@ -165,27 +171,6 @@ def delete_post(request, author_id, post_id):
     return Response(status=status.HTTP_403_FORBIDDEN)  # Forbidden if not the author
 
 
-@api_view(['POST'])
-def add_friend(request, author_id):
-    friend = get_object_or_404(Author, id=author_id)
-    if request.user == friend:
-        return Response({"detail": "You can't be friends with yourself."}, status=status.HTTP_400_BAD_REQUEST)
-    friendship, created = Friend.objects.get_or_create(user=request.user, friend=friend)
-    if created:
-        return Response({"detail": "Friend added successfully."}, status=status.HTTP_201_CREATED)
-    return Response({"detail": "You are already friends with this user."}, status=status.HTTP_200_OK)
-
-@api_view(['DELETE'])
-def remove_friend(request, author_id):
-    friend = get_object_or_404(Author, id=author_id)
-    friendship = Friend.objects.filter(user=request.user, friend=friend).first()
-    if friendship:
-        friendship.delete()
-        return Response({"detail": "Friend removed successfully."}, status=status.HTTP_200_OK)
-
-    return Response({"detail": "You are not friends with this user."}, status=status.HTTP_400_BAD_REQUEST)
-
-
 @api_view(['GET'])
 def get_all_public_posts(request):
     public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
@@ -253,9 +238,7 @@ def stream(request,author_id):
         following_posts = Post.objects.filter(author__in=following, visibility='UNLISTED')
         
         # see unlisted and friends-only posts from friends
-        friends = Friend.objects.filter(user=request.user).values_list('friend', flat=True)
-        more_friends = Friend.objects.filter(friend=request.user).values_list('user', flat=True)
-        friends = friends.union(more_friends)
+        friends = Follow.get_friends(request.user)
         friends_posts = Post.objects.filter(author__in=friends, visibility__in=['UNLISTED', 'FRIENDS'])
 
         # see public posts and relevant friends/unlisted posts
