@@ -3,6 +3,7 @@ from .models import *
 
 
 class AuthorSerializer(serializers.Serializer):
+    type = serializers.CharField(default='author', read_only=True)
     host = serializers.URLField()
     display_name = serializers.CharField()
     github = serializers.URLField()
@@ -66,7 +67,7 @@ class AuthorSerializer(serializers.Serializer):
         instance.page = validated_data.get('page', instance.page)
         instance.username = validated_data.get('username', instance.username)
         instance.display_name = validated_data.get('display_name', instance.display_name)
-        instance.id = validated_data.get('id', instance.id)
+        # instance.id = validated_data.get('id', instance.id)
         instance.save()
         return instance
     
@@ -74,7 +75,7 @@ class AuthorSerializer(serializers.Serializer):
 class AuthorSummarySerializer(serializers.ModelSerializer):
     type = serializers.CharField(default='author', read_only=True)
     id = serializers.SerializerMethodField()
-    url = serializers.SerializerMethodField()
+    page = serializers.URLField()
     host = serializers.URLField()
     displayName = serializers.CharField(source='display_name')
     github = serializers.URLField(allow_blank=True, required=False)
@@ -82,10 +83,11 @@ class AuthorSummarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Author
-        fields = ['type', 'id', 'url', 'host', 'displayName', 'github', 'profileImage']
+        fields = ['type', 'id', 'host', 'displayName', 'github', 'profileImage', 'page']
 
     def get_id(self, obj):
-        return f"{obj.host}authors/{obj.id}/"
+        return f"{obj.host}authors/{obj.id}"
+
 
     def get_url(self, obj):
         return self.get_id(obj)

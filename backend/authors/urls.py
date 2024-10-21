@@ -7,11 +7,17 @@ app_name = "authors"
 urlpatterns = [
     # AUTHOR URLS ------------------------------------------------------------------------------
 
-    # get author info by author id
-    path("<int:author_id>/", author_views.get_author, name="get_author"),
+    # get all authors
+    path("", author_views.get_all_authors, name="get_all_authors"),
 
-    # edit author by author id
-    path("<int:author_id>/edit/", author_views.edit_author, name="edit_author"),
+    # get author info and update/edit author info by author id
+    path("<int:author_id>/", author_views.get_update_author, name="get_update_author"),
+
+    # get author info and update/edit author info by author id
+    path("<int:author_id>/full/", author_views.get_full_author, name="get_full_author"),
+
+    # get author info by fqid
+    # path("<int:author_fqid>/",),      #################### NOT DONE YET ####################
 
     # login
     path("login/", author_views.login, name="login"),
@@ -40,21 +46,18 @@ urlpatterns = [
     # get users that an author follows
     path("<int:author_id>/following/", author_views.get_following, name="get_following"),
 
+    # get relationship between two authors
+    path("<int:author_1_id>/relationship/<int:author_2_id>/", author_views.get_relationship, name="get_relationship"),
+
     # POSTS URLS ------------------------------------------------------------------------------
 
-    # Get recent posts from author
+    # Get recent posts from author              # Create a new post (POST method)
     path('<int:author_id>/posts/', posts_views.author_posts, name='author_posts'),
-
-    # Create a new post (POST method)
-    path('<int:author_id>/posts/create/', posts_views.create_new_post, name='create_new_post'),
 
     # Retrieve a specific post           # Update an existing post (PUT method)               # Delete a post (DELETE method)       
     path('<int:author_id>/posts/<int:post_id>/', posts_views.post_detail, name='get_post'),
 
     # VISIBILITY URLS ------------------------------------------------------------------------------
-
-    # get all public posts on node
-    path('posts/public/', posts_views.get_all_public_posts, name='get_public'),
 
     # get all stream posts for a user
     path('<int:author_id>/stream/', posts_views.stream, name='stream'),
@@ -66,4 +69,8 @@ urlpatterns = [
 
     # get shared posts
     path('<str:author_id>/shared_posts/', posts_views.list_shared_posts, name='list_shared_posts'),
+
+    # IMAGE URLS ------------------------------------------------------------------------------
+
+    path('<int:author_id>/posts/<int:post_id>/image/', posts_views.get_image_post, name='get_image_post'),
 ]

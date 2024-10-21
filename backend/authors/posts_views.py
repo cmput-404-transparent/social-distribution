@@ -8,8 +8,10 @@ from .models import *
 from posts.serializers import *
 from posts.models import *
 from posts.views import get_post
-
 from rest_framework.pagination import PageNumberPagination
+
+import base64
+from django.http import HttpResponse, JsonResponse
 
 # Main view that checks the request method and delegates to appropriate functions
 @api_view(['GET', 'POST'])
@@ -98,31 +100,51 @@ def list_recent_posts(request, author_id):
     paginator = PageNumberPagination()
     paginated_posts = paginator.paginate_queryset(posts, request)
 
+    serializer = PostSummarySerializer(paginated_posts, many=True)
 
-    serializer = PostSerializer(paginated_posts, many=True)
-    return paginator.get_paginated_response(serializer.data)
+    response_data = {
+        "type": "posts",
+        "posts": serializer.data
+    }
+
+    return Response(response_data, status=200)
 
 
 # Main view to handle GET, PUT, and DELETE for a specific post
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])  # Permissions can vary based on the method if needed
 def post_detail(request, author_id, post_id):
     # author = get_object_or_404(User, id=author_id)
-    # post = get_object_or_404(Post, id=post_id, author=author)
+    post = get_object_or_404(Post, id=post_id, author_id=author_id)
 
     if request.method == 'GET':
-        return get_post(request, author_id, post_id)
+        if post.visibility in ['PUBLIC', 'UNLISTED']:
+            return Response(PostSummarySerializer(post).data, status=200)
+
+        if post.visibility == 'FRIENDS':
+            if request.user.is_authenticated:
+                return Response(PostSummarySerializer(post).data, status=200)
+            else:
+                return Response({"detail": "Must be authenticated to view friends only posts."}, status=401)
+
+        return Response({"detail": "Invalid post visibility setting."}, status=400)
 
     elif request.method == 'PUT':
-        return update_existing_post(request, author_id, post_id)
+        if request.user.is_authenticated:
+            return update_existing_post(request, author_id, post_id)
+        return Response({"detail": "Must be authenticated to update posts."}, status=401) 
 
     elif request.method == 'DELETE':
-        return delete_post(request, author_id, post_id)
+        if request.user.is_authenticated:
+            return delete_post(request, author_id, post_id)
+        return Response({"detail": "Must be authenticated to delete posts."}, status=401)
     
 
 def update_existing_post(request, author_id, post_id):
     author = get_object_or_404(Author, id=author_id)
     post = get_object_or_404(Post, id=post_id, author=author)
+
+    if request.user != author:
+        return Response({"detail": "You don't have permission to edit this post."}, status=status.HTTP_403_FORBIDDEN)
     data = request.data
 
      # For example, updating specific fields
@@ -155,13 +177,6 @@ def delete_post(request, author_id, post_id):
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_403_FORBIDDEN)  # Forbidden if not the author
-
-
-@api_view(['GET'])
-def get_all_public_posts(request):
-    public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
-    serialized_posts = [PostSerializer(post).data for post in public_posts]
-    return Response({"posts": serialized_posts}, status=200)
 
 
 @api_view(['POST'])
@@ -237,5 +252,23 @@ def stream(request,author_id):
     paginator = PageNumberPagination()
     paginated_posts = paginator.paginate_queryset(posts, request)
 
-    serializer = PostSerializer(paginated_posts, many=True)
+    serializer = PostSummarySerializer(paginated_posts, many=True)
     return paginator.get_paginated_response(serializer.data)
+
+@api_view(['GET'])
+def get_image_post(request, author_id, post_id):
+    # Get the post by author_serial and post_serial
+    post = get_object_or_404(Post, id=post_id, author_id=author_id)
+
+    # Check if the contentType is an image
+    if not post.contentType.startswith('image/'):
+        return JsonResponse({"detail": "Not an image post"}, status=404)
+
+    # Decode the base64 content to binary
+    try:
+        image_data = base64.b64decode(post.content)
+    except base64.binascii.Error:
+        return JsonResponse({"detail": "Invalid image data"}, status=400)
+
+    # Return the image as a binary
+    return HttpResponse(image_data, content_type=post.contentType)
