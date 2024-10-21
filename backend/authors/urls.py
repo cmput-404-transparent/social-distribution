@@ -5,6 +5,7 @@ from . import posts_views
 app_name = "authors"
 
 urlpatterns = [
+    
     # AUTHOR URLS ------------------------------------------------------------------------------
 
     # get all authors
@@ -55,7 +56,7 @@ urlpatterns = [
     path('<int:author_id>/posts/', posts_views.author_posts, name='author_posts'),
 
     # Retrieve a specific post           # Update an existing post (PUT method)               # Delete a post (DELETE method)       
-    path('<int:author_id>/posts/<int:post_id>/', posts_views.post_detail, name='get_post'),
+    path('<int:author_id>/posts/<uuid:post_id>/', posts_views.post_detail, name='get_post'),
 
     # VISIBILITY URLS ------------------------------------------------------------------------------
 
@@ -65,12 +66,12 @@ urlpatterns = [
     # SHARING URLS ------------------------------------------------------------------------------
 
     # share post
-    path('<int:post_id>/share/', posts_views.share_post, name='share_post'),
+    path('<uuid:post_id>/share/', posts_views.share_post, name='share_post'),
 
     # get shared posts
     path('<str:author_id>/shared_posts/', posts_views.list_shared_posts, name='list_shared_posts'),
 
     # IMAGE URLS ------------------------------------------------------------------------------
 
-    path('<int:author_id>/posts/<int:post_id>/image/', posts_views.get_image_post, name='get_image_post'),
+    path('<int:author_id>/posts/<uuid:post_id>/image/', posts_views.get_image_post, name='get_image_post'),
 ]
