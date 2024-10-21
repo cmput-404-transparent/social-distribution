@@ -3,6 +3,7 @@ from .models import *
 import commonmark
 from django.core.files.base import ContentFile
 import base64
+from authors.serializers import AuthorSummarySerializer
 
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -59,3 +60,19 @@ class ShareSerializer(serializers.ModelSerializer):
         model = Share
         fields = ['id', 'sharer', 'post', 'shared_at']
         read_only_fields = ['id', 'sharer', 'shared_at']
+
+class PostSummarySerializer(serializers.ModelSerializer):
+    type = serializers.CharField(default='post', read_only=True)
+    id = serializers.SerializerMethodField()
+    author = serializers.SerializerMethodField()
+
+    def get_id(self, obj):
+        return f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}"
+    
+    def get_author(self, obj):
+        return AuthorSummarySerializer(obj.author).data
+    
+    class Meta:
+        model = Post
+        fields = ['type', 'title', 'id', 'description', 'contentType', 'content', 'author', 'published', 'visibility']
+

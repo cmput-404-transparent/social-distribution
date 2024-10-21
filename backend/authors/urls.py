@@ -13,6 +13,9 @@ urlpatterns = [
     # get author info and update/edit author info by author id
     path("<int:author_id>/", author_views.get_update_author, name="get_update_author"),
 
+    # get author info and update/edit author info by author id
+    path("<int:author_id>/full/", author_views.get_full_author, name="get_full_author"),
+
     # get author info by fqid
     # path("<int:author_fqid>/",),      #################### NOT DONE YET ####################
 
@@ -43,6 +46,9 @@ urlpatterns = [
     # get users that an author follows
     path("<int:author_id>/following/", author_views.get_following, name="get_following"),
 
+    # get relationship between two authors
+    path("<int:author_1_id>/relationship/<int:author_2_id>/", author_views.get_relationship, name="get_relationship"),
+
     # POSTS URLS ------------------------------------------------------------------------------
 
     # Get recent posts from author              # Create a new post (POST method)
@@ -52,9 +58,6 @@ urlpatterns = [
     path('<int:author_id>/posts/<int:post_id>/', posts_views.post_detail, name='get_post'),
 
     # VISIBILITY URLS ------------------------------------------------------------------------------
-
-    # get all public posts on node
-    path('posts/public/', posts_views.get_all_public_posts, name='get_public'),
 
     # get all stream posts for a user
     path('<int:author_id>/stream/', posts_views.stream, name='stream'),

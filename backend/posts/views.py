@@ -18,12 +18,12 @@ def get_post(request, fqid):
 
     # Public and unlisted posts are visible to everyone
     if post.visibility in ['PUBLIC', 'UNLISTED']:
-        return Response(PostSerializer(post).data, status=200)
+        return Response(PostSummarySerializer(post).data, status=200)
 
     # For friends-only posts, check if the user is authenticated
     if post.visibility == 'FRIENDS':
         if request.user.is_authenticated:
-            return Response(PostSerializer(post).data, status=200)
+            return Response(PostSummarySerializer(post).data, status=200)
         else:
             return Response({"detail": "Authentication required to view this post."}, status=401)
 

@@ -206,5 +206,17 @@ def get_following(request, author_id):
     author = Author.objects.get(id=author_id)
     following_ids = Follow.objects.filter(follower=author, status="FOLLOWED").values_list('user')
     following = Author.objects.filter(id__in=following_ids)
-    serialized_following = [AuthorSerializer(following_user).data for following_user in following]
+    serialized_following = [AuthorSummarySerializer(following_user).data for following_user in following]
     return Response(serialized_following, status=200)
+
+@api_view(['GET'])
+def get_relationship(request, author_1_id, author_2_id):
+    author_1 = Author.objects.get(id=author_1_id)
+    author_2 = Author.objects.get(id=author_2_id)
+    author_serialized = AuthorSerializer(author_2, request_user=author_1)
+    return Response({'relationship': author_serialized.data['relationship']}, status=200)
+
+@api_view(['GET'])
+def get_full_author(request, author_id):
+    author = Author.objects.get(id=author_id)
+    return Response(AuthorSerializer(author).data, status=200)

@@ -18,7 +18,7 @@ export default function EditProfile() {
 
   useEffect(() => {
     // get profile information
-    fetch(`/api/authors/${authorId}/`)
+    fetch(`/api/authors/${authorId}/full/`)
     .then((r) => r.json())
     .then((data) => {
       setUsername(data.username);
