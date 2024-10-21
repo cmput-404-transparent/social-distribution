@@ -8,7 +8,8 @@ from django.shortcuts import get_object_or_404
 import requests
 import json
 from datetime import datetime
-
+import base64
+from django.http import HttpResponse, JsonResponse
 
 @api_view(['GET'])
 # Get a single post
@@ -91,3 +92,21 @@ def post_github_activity(request, author_id):
         new_post.save()
 
     return Response(status=201)
+
+@api_view(['GET'])
+def get_image_post_by_fqid(request, post_fqid):
+    # Fetch the post by FQID
+    post = get_object_or_404(Post, fqid=post_fqid, visibility='PUBLIC')
+
+    # Check if the contentType is an image
+    if not post.contentType.startswith('image/'):
+        return JsonResponse({"detail": "Not an image post"}, status=404)
+
+    # Decode the base64 content to binary
+    try:
+        image_data = base64.b64decode(post.content)
+    except base64.binascii.Error:
+        return JsonResponse({"detail": "Invalid image data"}, status=400)
+
+    # Return the image as a binary
+    return HttpResponse(image_data, content_type=post.contentType)

@@ -11,7 +11,7 @@ urlpatterns = [
     path("", author_views.get_all_authors, name="get_all_authors"),
 
     # get author info and update/edit author info by author id
-    path("<int:author_id>/", author_views.get_author, name="get_author"),
+    path("<int:author_id>/", author_views.get_update_author, name="get_update_author"),
 
     # login
     path("login/", author_views.login, name="login"),
@@ -54,4 +54,8 @@ urlpatterns = [
 
     # get shared posts
     path('<str:author_id>/shared_posts/', posts_views.list_shared_posts, name='list_shared_posts'),
+
+    # IMAGE URLS ------------------------------------------------------------------------------
+
+    path('<int:author_id>/posts/<int:post_id>/image/', posts_views.get_image_post, name='get_image_post'),
 ]

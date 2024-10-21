@@ -53,7 +53,7 @@ def signup(request):
 
 
 @api_view(['GET', 'PUT'])
-def get_author(request, author_id):
+def get_update_author(request, author_id):
     author = get_object_or_404(Author, pk=author_id)
     
     if request.method == 'GET':

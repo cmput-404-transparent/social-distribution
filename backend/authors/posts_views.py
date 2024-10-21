@@ -8,8 +8,10 @@ from .models import *
 from posts.serializers import *
 from posts.models import *
 from posts.views import get_post
-
 from rest_framework.pagination import PageNumberPagination
+
+import base64
+from django.http import HttpResponse, JsonResponse
 
 # Main view that checks the request method and delegates to appropriate functions
 @api_view(['GET', 'POST'])
@@ -268,3 +270,21 @@ def stream(request,author_id):
 
     serializer = PostSerializer(paginated_posts, many=True)
     return paginator.get_paginated_response(serializer.data)
+
+@api_view(['GET'])
+def get_image_post(request, author_id, post_id):
+    # Get the post by author_serial and post_serial
+    post = get_object_or_404(Post, id=post_id, author_id=author_id)
+
+    # Check if the contentType is an image
+    if not post.contentType.startswith('image/'):
+        return JsonResponse({"detail": "Not an image post"}, status=404)
+
+    # Decode the base64 content to binary
+    try:
+        image_data = base64.b64decode(post.content)
+    except base64.binascii.Error:
+        return JsonResponse({"detail": "Invalid image data"}, status=400)
+
+    # Return the image as a binary
+    return HttpResponse(image_data, content_type=post.contentType)
