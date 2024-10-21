@@ -12,12 +12,49 @@ class AuthorSerializer(serializers.Serializer):
     username = serializers.CharField()
     display_name = serializers.CharField()
     id = serializers.IntegerField()
+    relationship = serializers.SerializerMethodField()
+    followers = serializers.SerializerMethodField()
+    following = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         """
         Create and return a new `Author` instance, given the validated data
         """
         return Author.objects.create(**validated_data)
+    
+    def __init__(self, *args, **kwargs):
+        self.request_user = kwargs.pop('request_user', None)
+        super().__init__(*args, **kwargs)
+
+    def get_relationship(self, obj):
+        """
+        Get the relationship between the requesting user and the author being serialized.
+        """
+
+        if self.request_user:
+            if self.request_user.id == obj.id:
+                return 'SELF'
+            
+            if Follow.are_friends(self.request_user, obj):
+                return 'FRIENDS'
+            
+            following = Follow.objects.filter(user=obj, follower=self.request_user)
+            if following.exists():
+                return Follow.objects.get(user=obj, follower=self.request_user).status
+        
+        return 'NONE'
+    
+    def get_followers(self, obj):
+        """
+        Get the number of followers for a user
+        """
+        return Follow.objects.filter(user=obj, status="FOLLOWED").count()
+    
+    def get_following(self, obj):
+        """
+        Get the number of followers for a user
+        """
+        return Follow.objects.filter(follower=obj, status="FOLLOWED").count()
 
     def update(self, instance, validated_data):
         """
@@ -30,7 +67,7 @@ class AuthorSerializer(serializers.Serializer):
         instance.page = validated_data.get('page', instance.page)
         instance.username = validated_data.get('username', instance.username)
         instance.display_name = validated_data.get('display_name', instance.display_name)
-        instance.id = validated_data.get('id', instance.id)
+        # instance.id = validated_data.get('id', instance.id)
         instance.save()
         return instance
     

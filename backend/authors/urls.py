@@ -25,6 +25,21 @@ urlpatterns = [
     # search authors
     path("search/", author_views.search_author, name="search_author"),
 
+    # follow author
+    path("follow/", author_views.follow, name="follow"),
+
+    # get follow requests
+    path("<int:author_id>/follow_requests/", author_views.get_follow_requests, name="get_follow_requests"),
+
+    # manage follow request
+    path("<int:author_id>/follow_request/", author_views.manage_follow, name="manage_follow"),
+
+    # get followers
+    path("<int:author_id>/followers/", author_views.get_followers, name="get_followers"),
+
+    # get users that an author follows
+    path("<int:author_id>/following/", author_views.get_following, name="get_following"),
+
     # POSTS URLS ------------------------------------------------------------------------------
 
     # Get recent posts from author              # Create a new post (POST method)
@@ -34,12 +49,6 @@ urlpatterns = [
     path('<int:author_id>/posts/<int:post_id>/', posts_views.post_detail, name='get_post'),
 
     # VISIBILITY URLS ------------------------------------------------------------------------------
-
-    # add friend
-    path('<int:author_id>/add_friend/', posts_views.add_friend, name='add_friend'),
-
-    # remove friend
-    path('<int:author_id>/remove_friend/', posts_views.remove_friend, name='remove_friend'),
 
     # get all public posts on node
     path('posts/public/', posts_views.get_all_public_posts, name='get_public'),
