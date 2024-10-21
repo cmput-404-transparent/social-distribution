@@ -146,7 +146,7 @@ def update_existing_post(request, author_id, post_id):
     } 
 
     return Response(response_data, status=status.HTTP_200_OK)
-
+ 
 
 # Delete a post
 def delete_post(request, author_id, post_id):
