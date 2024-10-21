@@ -230,16 +230,18 @@ def list_shared_posts(request, author_id):
 @api_view(['GET'])
 def stream(request,author_id):
 
+    author = Author.objects.get(id=author_id)
+
     # getting all the public posts
-    posts = Post.objects.filter(~Q(author=request.user), visibility='PUBLIC')  # public posts excluding the author's own posts
+    posts = Post.objects.filter(~Q(author=author), visibility='PUBLIC')  # public posts excluding the author's own posts
     
-    if request.user.is_authenticated:
+    if author.is_authenticated:
         # see unlisted posts from people you follow
-        following = Follow.objects.filter(follower=request.user, status="FOLLOWED").values_list('user', flat=True)
+        following = Follow.objects.filter(follower=author, status="FOLLOWED").values_list('user', flat=True)
         following_posts = Post.objects.filter(author__in=following, visibility='UNLISTED')
         
         # see unlisted and friends-only posts from friends
-        friends = Follow.get_friends(request.user)
+        friends = Follow.get_friends(author)
         friends_posts = Post.objects.filter(author__in=friends, visibility__in=['UNLISTED', 'FRIENDS'])
 
         # see public posts and relevant friends/unlisted posts
