@@ -153,3 +153,19 @@ def manage_follow(request, author_id):
         return Response(status=200)
     
     return Response("author and/or follower doesn't exist", status=400)
+
+@api_view(['GET'])
+def get_followers(request, author_id):
+    author = Author.objects.get(id=author_id)
+    followers_id = Follow.objects.filter(user=author, status="FOLLOWED").values_list('follower')
+    followers = Author.objects.filter(id__in=followers_id)
+    serialized_followers = [AuthorSerializer(follower).data for follower in followers]
+    return Response(serialized_followers, status=200)
+
+@api_view(['GET'])
+def get_following(request, author_id):
+    author = Author.objects.get(id=author_id)
+    following_ids = Follow.objects.filter(follower=author, status="FOLLOWED").values_list('user')
+    following = Author.objects.filter(id__in=following_ids)
+    serialized_following = [AuthorSerializer(following_user).data for following_user in following]
+    return Response(serialized_following, status=200)

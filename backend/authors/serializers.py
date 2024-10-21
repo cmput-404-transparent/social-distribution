@@ -47,13 +47,13 @@ class AuthorSerializer(serializers.Serializer):
         """
         Get the number of followers for a user
         """
-        return Follow.objects.filter(user=obj).count()
+        return Follow.objects.filter(user=obj, status="FOLLOWED").count()
     
     def get_following(self, obj):
         """
         Get the number of followers for a user
         """
-        return Follow.objects.filter(follower=obj).count()
+        return Follow.objects.filter(follower=obj, status="FOLLOWED").count()
 
     def update(self, instance, validated_data):
         """

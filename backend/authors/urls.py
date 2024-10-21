@@ -34,6 +34,12 @@ urlpatterns = [
     # manage follow request
     path("<int:author_id>/follow_request/", author_views.manage_follow, name="manage_follow"),
 
+    # get followers
+    path("<int:author_id>/followers/", author_views.get_followers, name="get_followers"),
+
+    # get users that an author follows
+    path("<int:author_id>/following/", author_views.get_following, name="get_following"),
+
     # POSTS URLS ------------------------------------------------------------------------------
 
     # Get recent posts from author
