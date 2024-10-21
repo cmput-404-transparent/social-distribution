@@ -10,8 +10,14 @@ from posts.models import *
 from posts.views import get_post
 from rest_framework.pagination import PageNumberPagination
 
+#documentation
+from .docs import (create_new_post_docs,list_recent_posts_docs,update_post_docs, delete_post_docs, get_all_public_posts_docs,
+                   share_post_docs, list_shared_posts_docs, stream_docs)
+
+
 import base64
 from django.http import HttpResponse, JsonResponse
+
 
 # Main view that checks the request method and delegates to appropriate functions
 @api_view(['GET', 'POST'])
@@ -22,10 +28,12 @@ def author_posts(request, author_id):
     elif request.method == 'POST':
         return create_new_post(request, author_id)
     
-
+@create_new_post_docs
 # Function to handle post creation (POST)
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_new_post(request, author_id):
+
     # Check if the authenticated user matches the author_id
     if str(request.user.id) != str(author_id):
         return Response({
@@ -64,7 +72,8 @@ def create_new_post(request, author_id):
 
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
+@list_recent_posts_docs
+@api_view(['GET'])
 # List recent posts by an author
 def list_recent_posts(request, author_id):
     author = get_object_or_404(Author, id=author_id)
@@ -110,6 +119,7 @@ def list_recent_posts(request, author_id):
     return Response(response_data, status=200)
 
 
+
 # Main view to handle GET, PUT, and DELETE for a specific post
 @api_view(['GET', 'PUT', 'DELETE'])
 def post_detail(request, author_id, post_id):
@@ -138,7 +148,8 @@ def post_detail(request, author_id, post_id):
             return delete_post(request, author_id, post_id)
         return Response({"detail": "Must be authenticated to delete posts."}, status=401)
     
-
+@update_post_docs
+@api_view(['PUT'])
 def update_existing_post(request, author_id, post_id):
     author = get_object_or_404(Author, id=author_id)
     post = get_object_or_404(Post, id=post_id, author=author)
@@ -168,7 +179,10 @@ def update_existing_post(request, author_id, post_id):
     } 
 
     return Response(response_data, status=status.HTTP_200_OK)
- 
+
+@delete_post_docs
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 
 # Delete a post
 def delete_post(request, author_id, post_id):
@@ -178,7 +192,15 @@ def delete_post(request, author_id, post_id):
         return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_403_FORBIDDEN)  # Forbidden if not the author
 
+@get_all_public_posts_docs
+@api_view(['GET'])
+def get_all_public_posts(request):
+    public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
+    serialized_posts = [PostSerializer(post).data for post in public_posts]
+    return Response({"posts": serialized_posts}, status=200)
 
+
+@share_post_docs
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def share_post(request, post_id):
@@ -209,7 +231,7 @@ def share_post(request, post_id):
     else:
         return Response({"detail": "You have already shared this post."}, status=status.HTTP_400_BAD_REQUEST)
 
-
+@list_shared_posts_docs
 @api_view(['GET'])
 def list_shared_posts(request, author_id):
     author = get_object_or_404(Author, id=author_id)
@@ -226,11 +248,13 @@ def list_shared_posts(request, author_id):
     return Response(serializer.data)
 
 
+@stream_docs
 # Stream for showing all relevant posts
 @api_view(['GET'])
 def stream(request,author_id):
 
     author = Author.objects.get(id=author_id)
+
 
     # getting all the public posts
     posts = Post.objects.filter(~Q(author=author), visibility='PUBLIC')  # public posts excluding the author's own posts

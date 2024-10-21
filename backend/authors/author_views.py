@@ -10,6 +10,11 @@ from rest_framework.authtoken.models import Token
 from django.db.models import Q
 from rest_framework import status
 
+#documentation 
+from .docs import *
+
+
+@login_docs
 @api_view(['POST'])
 def login(request):
     username = request.POST.get('username', None)
@@ -22,7 +27,7 @@ def login(request):
     else:
         return Response(status=401)
 
-
+@signup_docs
 @api_view(['POST'])
 def signup(request):
     username = request.POST.get('username', '')
@@ -50,8 +55,10 @@ def signup(request):
     return Response({"token": token.key, "userId": user.id}, status=201)
 
 
+@get_author_by_id_docs
 @api_view(['GET', 'PUT'])
 def get_update_author(request, author_id):
+
     author = get_object_or_404(Author, pk=author_id)
     
     if request.method == 'GET':
@@ -96,6 +103,7 @@ def get_update_author(request, author_id):
 class CustomPageNumberPagination(PageNumberPagination):
     page_size_query_param = 'size'
 
+@get_author_docs
 @api_view(['GET'])
 def get_all_authors(request):
     paginator = CustomPageNumberPagination()
@@ -125,6 +133,7 @@ def get_all_authors(request):
     return Response(response_data)
     
 
+@get_author_from_session_docs
 @api_view(['GET'])
 def get_author_from_session(request):
     session_token = request.GET.get('session')
@@ -132,6 +141,44 @@ def get_author_from_session(request):
     return Response({'userId': token_obj.user_id}, status=200)
 
 
+@edit_author_docs
+@api_view(['POST'])
+def edit_author(request, author_id):
+    author = get_object_or_404(Author, pk=author_id)
+
+    if request.user != author:
+        return Response({"error": "Cannot modify other user's posts!"}, status=401)
+
+    username = request.POST.get('username', None)
+    password = request.POST.get('password', None)
+    display_name = request.POST.get('displayName', None)
+    github = request.POST.get('github', None)
+
+    errors = []
+
+    if username is not None and username != author.username:
+        original_username = author.username
+        try:
+            author.username = username
+            author.save()
+        except:
+            author.username = original_username
+            errors.append("Username is taken")
+    if password is not None and password and not author.check_password(password):     # checks if passwords are the same
+        author.set_password(password)           # if not then change it
+    if display_name is not None and display_name != author.display_name:
+        author.display_name = display_name
+    if github is not None and github != author.github:
+        author.github = github
+    
+    author.save()
+
+    if errors:
+        return Response({'errors': errors}, status=400)
+    else:
+        return Response(status=200)
+
+@search_author_docs
 @api_view(['GET'])
 def search_author(request):
     keyword = request.GET.get("keyword", '')
@@ -146,6 +193,8 @@ def search_author(request):
 
     return Response(results, status=200)
 
+
+@follow_docs
 @api_view(['POST'])
 def follow(request):
     user = request.POST.get('user', None)
@@ -161,7 +210,8 @@ def follow(request):
 
     else:
         return Response("user and/or follower does not exist", status=400)
-
+    
+@get_follow_request_docs
 @api_view(['GET'])
 def get_follow_requests(request, author_id):
     author = Author.objects.get(id=author_id)
@@ -170,6 +220,9 @@ def get_follow_requests(request, author_id):
     serialized_follow_requests = [AuthorSerializer(request).data for request in follow_requests_authors]
     return Response(serialized_follow_requests, status=200)
 
+
+@accept_follow_docs
+@delete_follow_docs
 @api_view(["PUT", "DELETE"])
 def manage_follow(request, author_id):
     author = request.user
@@ -189,6 +242,7 @@ def manage_follow(request, author_id):
     
     return Response("author and/or follower doesn't exist", status=400)
 
+@get_follows_docs
 @api_view(['GET'])
 def get_followers(request, author_id):
     author = Author.objects.get(id=author_id)
@@ -201,6 +255,7 @@ def get_followers(request, author_id):
     }
     return Response(response_data, status=200)
 
+@get_following_docs
 @api_view(['GET'])
 def get_following(request, author_id):
     author = Author.objects.get(id=author_id)
@@ -209,6 +264,7 @@ def get_following(request, author_id):
     serialized_following = [AuthorSummarySerializer(following_user).data for following_user in following]
     return Response(serialized_following, status=200)
 
+@relationship_docs
 @api_view(['GET'])
 def get_relationship(request, author_1_id, author_2_id):
     author_1 = Author.objects.get(id=author_1_id)
