@@ -52,7 +52,7 @@ const Content = ({ post, postState }) => {
 
     const csrftoken = getCookie('csrftoken');
     try {
-      await fetch(`/api/authors/${post.author}/posts/${post.id}/`, {
+      await fetch(post.id + "/", {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -270,13 +270,14 @@ export default function Post({ post }) {
   const [postState, setPostState] = useState(PostState.ViewPost);
 
   useEffect(() => {
-    fetch(`/api/authors/${post.author}/`)
+    fetch(post.author.id)
       .then((r) => r.json())
       .then((data) => {
         setAuthor(data);
       });
     setIsStream(window.location.href.includes('stream'));
-    setIsOwn(post.author === parseInt(authorId));
+    let postId = post.author.id.split("/").pop();
+    setIsOwn(postId === authorId);
     // eslint-disable-next-line
   }, []);
 
@@ -298,7 +299,7 @@ export default function Post({ post }) {
   const Delete = async () => {
     const csrftoken = getCookie('csrftoken');
     try {
-      await fetch(`/api/authors/${post.author}/posts/${post.id}/`, {
+      await fetch(post.id + "/", {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -318,16 +319,15 @@ export default function Post({ post }) {
   return (
 
     <div className="grid auto-rows-auto grid-flow-row border w-4/5 rounded relative">
-      <a href={`/authors/${author.id}`} onClick={!isStream ? (e) => { e.preventDefault() } : null} className={!isStream ? "cursor-default" : "cursor-pointer"}>
+      <a href={`${author.page}`} onClick={!isStream ? (e) => { e.preventDefault() } : null} className={!isStream ? "cursor-default" : "cursor-pointer"}>
         <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
           <div className="pr-8">
             profile picture
           </div>
           <div className="grid grid-flow-row auto-rows-auto space-y-4">
             <div className="grid grid-cols-[auto,auto]">
-              <div>
-                <h1 className="font-bold text-l">{author.display_name}</h1>
-                <h2 className="text-l">@{author.username}</h2>
+              <div className="flex justify-start items-center">
+                <h1 className="font-bold text-l">{post.author.displayName}</h1>
               </div>
               <div className={post.visibility !== "PUBLIC" && isOwn ? "grid grid-rows-2" : "items-center flex justify-end"}>
                 {
