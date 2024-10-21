@@ -70,6 +70,9 @@ def get_author_from_session(request):
 def edit_author(request, author_id):
     author = get_object_or_404(Author, pk=author_id)
 
+    if request.user != author:
+        return Response({"error": "Cannot modify other user's posts!"}, status=401)
+
     username = request.POST.get('username', None)
     password = request.POST.get('password', None)
     display_name = request.POST.get('display_name', None)
