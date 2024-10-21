@@ -6,7 +6,7 @@ import getCookie from "../getCSRFToken";
 import Box from '@mui/material/Box';
 import CloseIcon from '@mui/icons-material/Close';
 import Modal from '@mui/material/Modal';
-import { AuthorResult } from "./search";
+import { NavLink } from "react-router-dom";
 
 /**
   * source: Material UI Documentation
@@ -24,10 +24,28 @@ const style = {
   p: 4
 };
 
+export function User({author}) {
+  return(
+    <NavLink to={author.page} className="cursor-pointer">
+      <div className="border rounded my-4 p-4">
+        <div className="grid grid-cols-[min-content,auto]">
+          <div className="pr-5 flex items-center">
+            <p>profile picture</p>
+          </div>
+          <div className="flex justify-start items-center">
+            <h1 className="font-bold text-2xl">{author.displayName}</h1>
+          </div>
+        </div>
+      </div>
+    </NavLink>
+  )
+}
+
 
 export default function Profile() {
   const [profileInfo, setProfileInfo] = useState({});
   const [posts, setPosts] = useState([]);
+  const [relationship, setRelationship] = useState([]);
   const [self, setSelf] = useState(false);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
@@ -45,22 +63,30 @@ export default function Profile() {
     fetch(`/api/authors/${profileAuthorId}/posts/`)
     .then((r) => r.json())
     .then((data) => {
-      setPosts(data.results);
+      setPosts(data.posts);
     })
 
     setSelf(profileAuthorId === authorId);
+
+    fetch(`/api/authors/${authorId}/relationship/${profileAuthorId}`)
+    .then((r) => r.json())
+    .then((data) => {
+      setRelationship(data.relationship)
+    });
 
     // get followers
     fetch(`/api/authors/${profileAuthorId}/followers/`)
     .then((r) => r.json())
     .then((data) => {
-      setFollowers(data)
+      setFollowers(data.followers)
     });
 
     // get people author follows
     fetch(`/api/authors/${profileAuthorId}/following/`)
     .then((r) => r.json())
-    .then((data) => setFollowing(data));
+    .then((data) => {
+      setFollowing(data)
+    });
 
     setFollowersOpen(false);
     setFollowingOpen(false);
@@ -114,15 +140,14 @@ export default function Profile() {
             </div>
             <div className="grid grid-flow-row auto-rows-auto space-y-4">
               <div>
-                <h1 className="font-bold text-3xl">{profileInfo.display_name}</h1>
-                <h2>@{profileInfo.username}</h2>
+                <h1 className="font-bold text-3xl">{profileInfo.displayName}</h1>
               </div>
               <div className="grid grid-cols-[min-content,auto] space-x-3 text-left">
                 <div onClick={handleFollowersOpen} className="cursor-pointer">
-                  <p className="block whitespace-nowrap"><span className="font-bold">{profileInfo.followers}</span> Followers</p>
+                  <p className="block whitespace-nowrap"><span className="font-bold">{followers.length}</span> Followers</p>
                 </div>
                 <div onClick={handleFollowingOpen} className="cursor-pointer">
-                  <p className="block whitespace-nowrap"><span className="font-bold">{profileInfo.following}</span> Following</p>
+                  <p className="block whitespace-nowrap"><span className="font-bold">{following.length}</span> Following</p>
                 </div>
               </div>
               {
@@ -136,7 +161,7 @@ export default function Profile() {
                     <button type="submit" className='bg-neutral-200 rounded p-2 px-5'>View Deleted</button>
                   </div>
                 ) : (
-                  profileInfo.relationship === "NONE"? (
+                  relationship === "NONE"? (
                     <div className="space-x-3 flex">
                       <button className='bg-sky-400 rounded p-2 px-5' onClick={follow}>
                         Follow
@@ -145,11 +170,10 @@ export default function Profile() {
                   ) : (
                     <div className="space-x-3 flex">
                       <button className='bg-neutral-200 rounded p-2 px-5' disabled>
-                        {profileInfo.relationship}
+                        {relationship}
                       </button>
                     </div>
                   )
-                  
                 )
               }
             </div>
@@ -186,7 +210,7 @@ export default function Profile() {
           </div>
           <div>
             {followers.map((follower) => (
-              <AuthorResult author={follower} />
+              <User author={follower} />
             ))}
           </div>
         </Box>
@@ -216,7 +240,7 @@ export default function Profile() {
           </div>
           <div>
             {following.map((followingUser) => (
-              <AuthorResult author={followingUser} onClick={handleFollowingClose} />
+              <User author={followingUser} onClick={handleFollowingClose} />
             ))}
           </div>
         </Box>
