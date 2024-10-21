@@ -18,7 +18,7 @@ from .docs import (create_new_post_docs,list_recent_posts_docs,update_post_docs,
 import base64
 from django.http import HttpResponse, JsonResponse
 
-
+@list_recent_posts_docs
 # Main view that checks the request method and delegates to appropriate functions
 @api_view(['GET', 'POST'])
 def author_posts(request, author_id):
@@ -72,9 +72,8 @@ def create_new_post(request, author_id):
 
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-@list_recent_posts_docs
-@api_view(['GET'])
-# List recent posts by an author
+
+# # List recent posts by an author
 def list_recent_posts(request, author_id):
     author = get_object_or_404(Author, id=author_id)
     
