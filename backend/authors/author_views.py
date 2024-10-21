@@ -10,6 +10,15 @@ from rest_framework.authtoken.models import Token
 from django.db.models import Q
 
 
+
+'''
+Documentation 
+source: ChatGPT (OpenAI)
+prompt: "Give me a base template for Augmentating swagger doc to accomdate when how and why explanations for these views"
+date: October 21, 2024
+'''
+
+
 # for documentation 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -150,7 +159,7 @@ def signup(request):
                     "id": 1,
                     "username": "johndoe",
                     "display_name": "John Doe",
-                    "github": "http://github.com/johndoe",
+                    "github": "johndoe",
                     "page": "/authors/1"
                 }
             }
@@ -304,7 +313,7 @@ def edit_author(request, author_id):
                         "id": 1,
                         "username": "johndoe",
                         "display_name": "John Doe",
-                        "github": "http://github.com/johndoe",
+                        "github": "johndoe",
                         "page": "/authors/1"
                     }
                 ]
@@ -395,7 +404,7 @@ def follow(request):
                         "id": 2,
                         "username": "janedoe",
                         "display_name": "Jane Doe",
-                        "github": "http://github.com/janedoe",
+                        "github": "janedoe",
                         "page": "/authors/2"
                     }
                 ]
@@ -506,7 +515,7 @@ def manage_follow(request, author_id):
                         "id": 2,
                         "username": "janedoe",
                         "display_name": "Jane Doe",
-                        "github": "http://github.com/janedoe",
+                        "github": "janedoe123",
                         "page": "/authors/2"
                     }
                 ]
@@ -542,7 +551,7 @@ def get_followers(request, author_id):
                         "id": 1,
                         "username": "johndoe",
                         "display_name": "John Doe",
-                        "github": "http://github.com/johndoe",
+                        "github": "johndoe",
                         "page": "/authors/1"   
                     }
                 ]

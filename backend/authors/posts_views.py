@@ -14,6 +14,12 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 
+'''
+Documentation 
+source: ChatGPT (OpenAI)
+prompt: "Give me a base template for Augmentating swagger doc to accomdate when how and why explanations for these views"
+date: October 21, 2024
+'''
 
 # Main view that checks the request method and delegates to appropriate functions
 @api_view(['GET', 'POST'])
