@@ -13,6 +13,9 @@ urlpatterns = [
     # get author info and update/edit author info by author id
     path("<int:author_id>/", author_views.get_update_author, name="get_update_author"),
 
+    # get author info by fqid
+    # path("<int:author_fqid>/",),      #################### NOT DONE YET ####################
+
     # login
     path("login/", author_views.login, name="login"),
 
