@@ -47,7 +47,7 @@ def signup(request):
     django_side_login(request, user)
     token, _ = Token.objects.get_or_create(user=user)
 
-    return Response({"token": token.key, "userId": user.id}, status=200)
+    return Response({"token": token.key, "userId": user.id}, status=201)
 
 
 @api_view(['GET', 'PUT'])
