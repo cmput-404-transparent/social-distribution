@@ -118,7 +118,8 @@ def list_recent_posts(request, author_id):
     return Response(response_data, status=200)
 
 
-
+@update_post_docs
+@delete_post_docs
 # Main view to handle GET, PUT, and DELETE for a specific post
 @api_view(['GET', 'PUT', 'DELETE'])
 def post_detail(request, author_id, post_id):
@@ -147,8 +148,8 @@ def post_detail(request, author_id, post_id):
             return delete_post(request, author_id, post_id)
         return Response({"detail": "Must be authenticated to delete posts."}, status=401)
     
-@update_post_docs
-@api_view(['PUT'])
+
+
 def update_existing_post(request, author_id, post_id):
     author = get_object_or_404(Author, id=author_id)
     post = get_object_or_404(Post, id=post_id, author=author)
@@ -179,10 +180,8 @@ def update_existing_post(request, author_id, post_id):
 
     return Response(response_data, status=status.HTTP_200_OK)
 
-@delete_post_docs
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
 
+@permission_classes([IsAuthenticated])
 # Delete a post
 def delete_post(request, author_id, post_id):
     post = get_object_or_404(Post, id=post_id, author=request.user)
