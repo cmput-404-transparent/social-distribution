@@ -102,7 +102,27 @@ def get_all_authors(request):
     authors = Author.objects.all()
     result_page = paginator.paginate_queryset(authors, request)
     serializer = AuthorSerializer(result_page, many=True)
-    return paginator.get_paginated_response(serializer.data)
+
+    # format the output
+    authors_data = []
+    for author in serializer.data:
+        author_data = {
+            "type": "author",
+            "id": f"{author['host']}authors/{author['id']}",
+            "host": author['host'],
+            "displayName": author['display_name'],
+            "github": author['github'],
+            "profileImage": author.get('profile_image', None),
+            "page": author['page']
+        }
+        authors_data.append(author_data)
+    
+    response_data = {
+        "type": "authors",
+        "authors": authors_data
+    }
+
+    return Response(response_data)
     
 
 @api_view(['GET'])
