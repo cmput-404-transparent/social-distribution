@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.conf import settings
 
@@ -17,11 +18,12 @@ class Post(models.Model):
         ('image/jpeg;base64', 'JPEG Image'),
     ]
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     content = models.TextField()
     description = models.TextField(blank=True)
-    contentType = models.CharField(choices=CONTENT_TYPE_CHOICES, max_length=20, default= 'text/plain')
+    contentType = models.CharField(choices=CONTENT_TYPE_CHOICES, max_length=20, default='text/plain')
     published = models.DateTimeField(auto_now_add=True)
     visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='PUBLIC')
     is_shared = models.BooleanField(default=False)
@@ -43,6 +45,7 @@ class Post(models.Model):
         return self.title
 
 class Share(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     sharer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shares')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='shared_by')
     shared_at = models.DateTimeField(auto_now_add=True)
