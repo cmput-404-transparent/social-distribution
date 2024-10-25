@@ -35,14 +35,16 @@ urlpatterns = [
     # follow author
     path("follow/", author_views.follow, name="follow"),
 
+    # FOLLOWING AND FRIENDS URLS ------------------------------------------------------------------------------
+
     # get follow requests
     path("<int:author_id>/follow_requests/", author_views.get_follow_requests, name="get_follow_requests"),
 
     # manage follow request
     path("<int:author_id>/follow_request/", author_views.manage_follow, name="manage_follow"),
 
-    # get followers
-    path("<int:author_id>/followers/", author_views.get_followers, name="get_followers"),
+    # get followers (GET method)    # unfollow (DELETE method)
+    path("<int:author_id>/followers/", author_views.followers, name="followers"),
 
     # get users that an author follows
     path("<int:author_id>/following/", author_views.get_following, name="get_following"),

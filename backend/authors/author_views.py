@@ -243,7 +243,14 @@ def manage_follow(request, author_id):
     return Response("author and/or follower doesn't exist", status=400)
 
 @get_follows_docs
-@api_view(['GET'])
+@api_view(['GET', 'DELETE'])
+def followers(request, author_id):
+    if request.method == "GET":
+        return get_followers(request, author_id)
+    elif request.method == "DELETE":
+        return unfollow(request, author_id)
+    
+
 def get_followers(request, author_id):
     author = Author.objects.get(id=author_id)
     followers_id = Follow.objects.filter(user=author, status="FOLLOWED").values_list('follower')
@@ -254,6 +261,13 @@ def get_followers(request, author_id):
         "followers": serialized_followers
     }
     return Response(response_data, status=200)
+
+def unfollow(request, author_id):
+    follower_id = request.POST.get('follower', None)
+    follow = get_object_or_404(Follow, user__id=follower_id, follower__id=author_id)
+    if follow:
+        follow.delete()
+    return Response(status=200)
 
 @get_following_docs
 @api_view(['GET'])

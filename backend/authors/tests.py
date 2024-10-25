@@ -105,10 +105,18 @@ class AuthorAPITests(APITestCase):
         # Test the get_followers endpoint
         follower = Author.objects.create(username="follower", display_name="Follower", host="http://localhost/api/")
         Follow.objects.create(user=self.author, follower=follower, status="FOLLOWED")
-        url = reverse('api:authors:get_followers', args=[self.author.id])
+        url = reverse('api:authors:followers', args=[self.author.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['followers']), 1)
+    
+    def test_delete_follower(self):
+        follower = Author.objects.create(username="follower", display_name="Follower", host="http://localhost/api/")
+        Follow.objects.create(user=follower, follower=self.author, status="FOLLOWED")
+        url = reverse('api:authors:followers', args=[self.author.id])
+        data = {'follower': follower.id}
+        response = self.client.delete(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_following(self):
         # Test the get_following endpoint
