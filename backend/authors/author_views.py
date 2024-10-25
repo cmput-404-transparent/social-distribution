@@ -243,15 +243,8 @@ def manage_follow(request, author_id):
     return Response("author and/or follower doesn't exist", status=400)
 
 @get_follows_docs
-@api_view(['GET', 'DELETE'])
+@api_view(['GET'])
 def followers(request, author_id):
-    if request.method == "GET":
-        return get_followers(request, author_id)
-    elif request.method == "DELETE":
-        return unfollow(request, author_id)
-    
-
-def get_followers(request, author_id):
     author = Author.objects.get(id=author_id)
     followers_id = Follow.objects.filter(user=author, status="FOLLOWED").values_list('follower')
     followers = Author.objects.filter(id__in=followers_id)
@@ -262,21 +255,27 @@ def get_followers(request, author_id):
     }
     return Response(response_data, status=200)
 
+
 def unfollow(request, author_id):
-    follower_id = request.POST.get('follower', None)
-    follow = get_object_or_404(Follow, user__id=follower_id, follower__id=author_id)
+    following_id = request.POST.get('following', None)
+    follow = get_object_or_404(Follow, user__id=following_id, follower__id=author_id)
     if follow:
         follow.delete()
     return Response(status=200)
 
 @get_following_docs
-@api_view(['GET'])
-def get_following(request, author_id):
-    author = Author.objects.get(id=author_id)
-    following_ids = Follow.objects.filter(follower=author, status="FOLLOWED").values_list('user')
-    following = Author.objects.filter(id__in=following_ids)
-    serialized_following = [AuthorSummarySerializer(following_user).data for following_user in following]
-    return Response(serialized_following, status=200)
+@api_view(['GET', 'DELETE'])
+def following(request, author_id):
+    if request.method == 'GET':
+        author = Author.objects.get(id=author_id)
+        following_ids = Follow.objects.filter(follower=author, status="FOLLOWED").values_list('user')
+        following = Author.objects.filter(id__in=following_ids)
+        serialized_following = [AuthorSummarySerializer(following_user).data for following_user in following]
+        return Response(serialized_following, status=200)
+    elif request.method == 'DELETE':
+        return unfollow(request, author_id)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 @relationship_docs
 @api_view(['GET'])
