@@ -118,6 +118,19 @@ class AuthorAPITests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
+    
+    def test_get_friends(self):
+        # make them friends (two people that follow each other)
+        following = Author.objects.create(username="follower", display_name="Follower", host="http://localhost/api/")
+        Follow.objects.create(user=following, follower=self.author, status="FOLLOWED")
+        Follow.objects.create(user=self.author, follower=following, status="FOLLOWED")
+
+        self.assertTrue(Follow.are_friends(following, self.author))
+
+        url = reverse('api:authors:friends', args=[self.author.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['friends']), 1)
 
 
 class PostAPITests(APITestCase):

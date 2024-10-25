@@ -47,8 +47,10 @@ export default function Profile() {
   const [posts, setPosts] = useState([]);
   const [relationship, setRelationship] = useState([]);
   const [self, setSelf] = useState(false);
+
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
+  const [friends, setFriends] = useState([]);
 
   const authorId = localStorage.getItem('authorId');
   const { profileAuthorId } = useParams();
@@ -88,8 +90,17 @@ export default function Profile() {
       setFollowing(data)
     });
 
+    // get friends of the author
+    fetch(`/api/authors/${profileAuthorId}/friends/`)
+    .then((r) => r.json())
+    .then((data) => {
+      setFriends(data.friends)
+    });
+
     setFollowersOpen(false);
     setFollowingOpen(false);
+    setFriendsOpen(false);
+    
 
     // eslint-disable-next-line
   }, [profileAuthorId]);
@@ -128,6 +139,11 @@ export default function Profile() {
   const handleFollowingOpen = () => setFollowingOpen(true);
   const handleFollowingClose = () => setFollowingOpen(false);
 
+  // for viewing friends modal
+  const [friendsOpen, setFriendsOpen] = useState(false);
+  const handleFriendsOpen = () => setFriendsOpen(true);
+  const handleFriendsClose = () => setFriendsOpen(false);
+
   return(
     <div className="page overflow-scroll max-h-screen">
       <div className="w-4/5 pt-16">
@@ -142,12 +158,15 @@ export default function Profile() {
               <div>
                 <h1 className="font-bold text-3xl">{profileInfo.displayName}</h1>
               </div>
-              <div className="grid grid-cols-[min-content,auto] space-x-3 text-left">
+              <div className="grid grid-cols-[min-content,min-content,auto] space-x-3 text-left">
                 <div onClick={handleFollowersOpen} className="cursor-pointer">
                   <p className="block whitespace-nowrap"><span className="font-bold">{followers.length}</span> Followers</p>
                 </div>
                 <div onClick={handleFollowingOpen} className="cursor-pointer">
                   <p className="block whitespace-nowrap"><span className="font-bold">{following.length}</span> Following</p>
+                </div>
+                <div onClick={handleFriendsOpen} className="cursor-pointer">
+                  <p className="block whitespace-nowrap"><span className="font-bold">{friends.length}</span> Friends</p>
                 </div>
               </div>
               {
@@ -241,6 +260,36 @@ export default function Profile() {
           <div>
             {following.map((followingUser) => (
               <User author={followingUser} onClick={handleFollowingClose} />
+            ))}
+          </div>
+        </Box>
+      </Modal>
+
+      {/* friends modal */}
+      {/**
+       * source: Material UI Documentation
+       * link: https://mui.com/material-ui/react-modal/
+       * date: October 20, 2024
+       */}
+      <Modal
+        open={friendsOpen}
+        onClose={handleFriendsClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="grid grid-cols-2">
+            <h2 className="font-bold text-3xl">
+              Friends
+            </h2>
+            <div className="flex justify-end">
+              <CloseIcon sx={{ color: '#bbb' }} onClick={handleFriendsClose} className="cursor-pointer" />
+            </div>
+            
+          </div>
+          <div>
+            {friends.map((friend) => (
+              <User author={friend} onClick={handleFriendsClose} />
             ))}
           </div>
         </Box>
