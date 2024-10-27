@@ -7,6 +7,11 @@ import Box from '@mui/material/Box';
 import CloseIcon from '@mui/icons-material/Close';
 import Modal from '@mui/material/Modal';
 import { NavLink } from "react-router-dom";
+import { ButtonGroup } from "@mui/material";
+import { Button } from "@mui/material";
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import {Menu} from "@mui/material";
+import {MenuItem} from "@mui/material";
 
 /**
   * source: Material UI Documentation
@@ -129,6 +134,29 @@ export default function Profile() {
     }
   }
 
+  function unfollow() {
+    const data = new URLSearchParams();
+    data.append('following', profileAuthorId);
+    
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      fetch(`/api/authors/${authorId}/following/`, {
+        method: "DELETE",
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken,
+        },
+        body: data.toString(),
+      })
+      .then((r) => {
+        window.location.reload();
+      });
+    } catch (error) {
+      console.error('Unfollow user failed:', error);
+    }
+  }
+
   // for viewing followers modal
   const [followersOpen, setFollowersOpen] = useState(false);
   const handleFollowersOpen = () => setFollowersOpen(true);
@@ -138,6 +166,16 @@ export default function Profile() {
   const [followingOpen, setFollowingOpen] = useState(false);
   const handleFollowingOpen = () => setFollowingOpen(true);
   const handleFollowingClose = () => setFollowingOpen(false);
+
+  // for the manage follow menu
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const clickManageFollowMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const closeManageFollowMenu = () => {
+    setAnchorEl(null);
+  };
 
   // for viewing friends modal
   const [friendsOpen, setFriendsOpen] = useState(false);
@@ -188,9 +226,15 @@ export default function Profile() {
                     </div>
                   ) : (
                     <div className="space-x-3 flex">
-                      <button className='bg-neutral-200 rounded p-2 px-5' disabled>
-                        {relationship}
-                      </button>
+                      <ButtonGroup variant="contained" aria-label="Basic button group">
+                        <Button className="!drop-shadow-none !bg-neutral-200 !text-black !border-none" disabled disableElevation>{relationship}</Button>
+                        <Button className="!drop-shadow-none !bg-neutral-200 !text-black" id="manage-follow-btn" disableElevation onClick={clickManageFollowMenu}>
+                          <KeyboardArrowDownIcon />
+                        </Button>
+                      </ButtonGroup>
+                      <Menu anchorEl={anchorEl} open={open} onClose={closeManageFollowMenu} MenuListProps={{ 'aria-labelledby': 'manage-follow-btn' }}>
+                        <MenuItem onClick={unfollow}>Unfollow</MenuItem>
+                      </Menu>
                     </div>
                   )
                 )
