@@ -282,7 +282,8 @@ export default function Post({ post }) {
     // eslint-disable-next-line
   }, []);
 
-  const sharePostURL = async () => {
+  const sharePostURL = async (e) => {
+    e.preventDefault();
     const authorId = author.id.split('/').pop(); 
     const postId = post.id.split('/').pop(); 
     const postUrl = `${window.location.origin}/authors/${authorId}/posts/${postId}`;    

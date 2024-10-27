@@ -39,10 +39,14 @@ const SharePost = () => {
     fetchPost();
   }, [author_id, post_id]);
 
+  const handlePrompt = (e) => {
+    e.preventDefault(); 
+  };
+
   return (
-    <div>
+    <div className = "page">
       
-      {postData && <Post post={postData}  postState = {'ViewPost'}/>} 
+      {postData && <Post post={postData}  postState = {'ViewPost'} />} 
     </div>
   );
 };
