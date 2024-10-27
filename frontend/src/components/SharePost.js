@@ -40,9 +40,10 @@ const SharePost = () => {
   }, [author_id, post_id]);
 
   return (
-    <div>
-      
-      {postData && <Post post={postData}  postState = {'ViewPost'}/>} 
+    <div className="page max-h-screen overflow-scroll">
+      <div className="flex flex-col space-y-5 items-center w-full">
+        {postData && <Post post={postData}  postState = {'ViewPost'}/>} 
+      </div>
     </div>
   );
 };
