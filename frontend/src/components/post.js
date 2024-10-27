@@ -3,6 +3,7 @@ import getCookie from '../getCSRFToken';
 import { marked } from 'marked';
 import PeopleIcon from '@mui/icons-material/People';
 import LinkIcon from '@mui/icons-material/Link';
+import ShareIcon from '@mui/icons-material/Share';
 
 const PostState = {
   ViewPost: "ViewPost",
@@ -281,6 +282,15 @@ export default function Post({ post }) {
     // eslint-disable-next-line
   }, []);
 
+  const sharePostURL = async () => {
+    const authorId = author.id.split('/').pop(); 
+    const postId = post.id.split('/').pop(); 
+    const postUrl = `${window.location.origin}/authors/${authorId}/posts/${postId}`;    
+    const title = "Share URL";
+    const userResponse = window.prompt(title, postUrl);
+  };
+
+
   const dropdown = (e) => {
     const option = e.target.value
     if (option === "edit") {
@@ -341,6 +351,16 @@ export default function Post({ post }) {
                     </div>
                   ) : (<div></div>)
                 }
+                <div className="relative">
+                {post.visibility === "PUBLIC"  ? (
+                <button 
+                  onClick={sharePostURL}
+                  className="flex items-center justify-center bg-sky-500 hover:bg-sky-700 text-white font-bold py-1 px-2 text-sm rounded border focus:shadow-outline relative top-2 -ml-10">
+                   <ShareIcon className="ml-1" />
+                </button>
+              ) : null}
+                </div>
+
                 {
                   ((post.visibility === "FRIENDS") && (
                     <div className="text-right text-neutral-400">

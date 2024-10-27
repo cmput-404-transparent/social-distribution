@@ -11,6 +11,7 @@ import EditProfile from './pages/editProfile';
 import Search from './pages/search';
 import { useEffect } from 'react';
 import Notifications from './pages/notifications';
+import SharePost from './components/SharePost';
 
 
 function App() {
@@ -42,6 +43,12 @@ function App() {
               <EditProfile/>
             </ProtectedRoute>
           } />
+          <Route path={`/authors/:author_id/posts/:post_id`} element={
+          <ProtectedRoute>
+              <SharePost/>
+          </ProtectedRoute>
+          } />
+
           <Route path="/login" element={<Login/>} />
           <Route path="/signup" element={<SignUp/>} />
           <Route path="/search" element={<Search/>} />
