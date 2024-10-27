@@ -49,6 +49,9 @@ urlpatterns = [
     # get users that an author follows (GET method)     # unfollow (DELETE method)
     path("<int:author_id>/following/", author_views.following, name="following"),
 
+    # get users that an author is friends with
+    path("<int:author_id>/friends/", author_views.friends, name="friends"),
+
     # get relationship between two authors
     path("<int:author_1_id>/relationship/<int:author_2_id>/", author_views.get_relationship, name="get_relationship"),
 

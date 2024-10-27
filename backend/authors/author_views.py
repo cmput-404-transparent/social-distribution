@@ -289,3 +289,11 @@ def get_relationship(request, author_1_id, author_2_id):
 def get_full_author(request, author_id):
     author = Author.objects.get(id=author_id)
     return Response(AuthorSerializer(author).data, status=200)
+
+@api_view(['GET'])
+def friends(request, author_id):
+    author = Author.objects.get(id=author_id)
+    friend_ids = Follow.get_friends(author)
+    friends = Author.objects.filter(id__in=friend_ids)
+    friends_serialized = [AuthorSummarySerializer(friend).data for friend in friends]
+    return Response({'friends': friends_serialized}, status=200)
