@@ -4,6 +4,7 @@ import { marked } from 'marked';
 import PeopleIcon from '@mui/icons-material/People';
 import LinkIcon from '@mui/icons-material/Link';
 import ShareIcon from '@mui/icons-material/Share';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const PostState = {
   ViewPost: "ViewPost",
@@ -352,12 +353,12 @@ export default function Post({ post }) {
                     </div>
                   ) : (<div></div>)
                 }
-                <div className="relative">
-                {post.visibility === "PUBLIC"  ? (
+                <div className="flex justify-end"> 
+                {post.visibility === "PUBLIC" || post.visibility === "UNLISTED" ? (
                 <button 
                   onClick={sharePostURL}
-                  className="flex items-center justify-center bg-sky-500 hover:bg-sky-700 text-white font-bold py-1 px-2 text-sm rounded border focus:shadow-outline relative top-2 -ml-10">
-                   <ShareIcon className="ml-1" />
+                  className={`flex bg-neutral-200 hover:bg-sky-700 text-white font-bold py-1 px-2 text-sm rounded border focus:shadow-outline relative mb-2 top-1 ${post.visibility === "UNLISTED" ? 'absolute -left-0 -mt-3' : 'ml-10 mt-4'}`}>
+                   <ContentCopyIcon className="ml-1" />
                 </button>
               ) : null}
                 </div>
@@ -369,7 +370,7 @@ export default function Post({ post }) {
                     </div>
                   )) ||
                   ((post.visibility === "UNLISTED") && (
-                    <div className="text-right text-neutral-400">
+                    <div className="text-right text-neutral-400 mr-12 -mt-9">
                       UNLISTED <LinkIcon className="ml-1" />
                     </div>
                   ))
