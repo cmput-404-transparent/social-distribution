@@ -290,6 +290,8 @@ export default function Post({ post }) {
     const postUrl = `${window.location.origin}/authors/${authorId}/posts/${postId}`;    
     const title = "Link";
     const userResponse = window.prompt(title, postUrl);
+    
+    e.target.value = "none";
   };
 
 
@@ -348,7 +350,7 @@ export default function Post({ post }) {
               <div className="grid grid-rows-2 text-right space-y-1">
                 <div>
                   <select id="Dropdown" onChange={dropdown} className="border rounded p-1 text-sm absolute top-3 right-3">
-                    <option>Options</option>
+                    <option value="none">Options</option>
                     <option value="edit">Edit</option>
                     <option value="delete">Delete</option>
                     {
