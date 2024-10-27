@@ -288,7 +288,7 @@ export default function Post({ post }) {
     const authorId = author.id.split('/').pop(); 
     const postId = post.id.split('/').pop(); 
     const postUrl = `${window.location.origin}/authors/${authorId}/posts/${postId}`;    
-    const title = "Share URL";
+    const title = "Link";
     const userResponse = window.prompt(title, postUrl);
   };
 
@@ -300,6 +300,9 @@ export default function Post({ post }) {
     }
     else if (option === "delete") {
       Delete()
+    }
+    else if (option === "link") {
+      sharePostURL(e)
     }
   }
 
@@ -331,46 +334,44 @@ export default function Post({ post }) {
   return (
 
     <div className="grid auto-rows-auto grid-flow-row border w-4/5 rounded relative">
-      <a href={`${author.page}`} onClick={!isStream ? (e) => { e.preventDefault() } : null} className={!isStream ? "cursor-default" : "cursor-pointer"}>
         <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
           <div className="pr-8">
             profile picture
           </div>
           <div className="grid grid-flow-row auto-rows-auto space-y-4">
-            <div className="grid grid-cols-[auto,auto]">
-              <div className="flex justify-start items-center">
-                <h1 className="font-bold text-l">{post.author.displayName}</h1>
-              </div>
-              <div className={post.visibility !== "PUBLIC" && isOwn ? "grid grid-rows-2" : "items-center flex justify-end"}>
-                {
-                  (!isStream && isOwn) ? (
-                    <div>
-                      <select id="Dropdown" onChange={dropdown} className="absolute top-2 right-2 border rounded p-1 text-sm">
-                        <option>Options</option>
-                        <option value="edit">Edit</option>
-                        <option value="delete">Delete</option>
-                      </select>
-                    </div>
-                  ) : (<div></div>)
-                }
-                <div className="flex justify-end"> 
-                {post.visibility === "PUBLIC" || post.visibility === "UNLISTED" ? (
-                <button 
-                  onClick={sharePostURL}
-                  className={`flex bg-neutral-200 hover:bg-sky-700 text-white font-bold py-1 px-2 text-sm rounded border focus:shadow-outline relative mb-2 top-1 ${post.visibility === "UNLISTED" ? 'absolute -left-0 -mt-3' : 'ml-10 mt-4'}`}>
-                   <ContentCopyIcon className="ml-1" />
-                </button>
-              ) : null}
+            <div className="grid grid-cols-[auto,min-content]">
+              <a href={`${author.page}`} onClick={!isStream ? (e) => { e.preventDefault() } : null} className={`${!isStream ? "cursor-default" : "cursor-pointer"} flex items-center-justify-start`} >
+                <div className="flex justify-start items-center">
+                  <h1 className="font-bold text-l">{post.author.displayName}</h1>
+                </div>
+              </a>
+              <div className="grid grid-rows-2 text-right space-y-1">
+                <div>
+                  <select id="Dropdown" onChange={dropdown} className="border rounded p-1 text-sm absolute top-3 right-3">
+                    <option>Options</option>
+                    <option value="edit">Edit</option>
+                    <option value="delete">Delete</option>
+                    {
+                      post.visibility === "UNLISTED" && !isStream && isOwn && (
+                        <option value="link">Copy Link</option>
+                      )
+                    }
+                    {
+                      post.visibility === "PUBLIC" && (
+                        <option value="link">Share</option>
+                      )
+                    }
+                  </select>
                 </div>
 
                 {
                   ((post.visibility === "FRIENDS") && (
-                    <div className="text-right text-neutral-400">
+                    <div className="text-right text-neutral-400 whitespace-nowrap">
                       FRIENDS ONLY <PeopleIcon className="ml-1" />
                     </div>
                   )) ||
                   ((post.visibility === "UNLISTED") && (
-                    <div className="text-right text-neutral-400 mr-12 -mt-9">
+                    <div className="text-right text-neutral-400 whitespace-nowrap">
                       UNLISTED <LinkIcon className="ml-1" />
                     </div>
                   ))
@@ -378,10 +379,9 @@ export default function Post({ post }) {
               </div>
 
             </div>
-
+          
           </div>
         </div>
-      </a>
       <Content post={post} postState={postState} />
     </div>
   )
