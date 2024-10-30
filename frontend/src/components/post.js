@@ -347,23 +347,35 @@ export default function Post({ post }) {
                   <h1 className="font-bold text-l">{post.author.displayName}</h1>
                 </div>
               </a>
-              <div className="grid grid-rows-2 text-right space-y-1">
+              <div className={`grid grid-rows-${post.visibility !== "FRIENDS" || isOwn? "2" : "1"} text-right space-y`}>
                 <div>
-                  <select id="Dropdown" onChange={dropdown} className="border rounded p-1 text-sm absolute top-3 right-3">
-                    <option value="none">Options</option>
-                    <option value="edit">Edit</option>
-                    <option value="delete">Delete</option>
-                    {
-                      post.visibility === "UNLISTED" && !isStream && isOwn && (
-                        <option value="link">Copy Link</option>
-                      )
-                    }
-                    {
-                      post.visibility === "PUBLIC" && (
-                        <option value="link">Share</option>
-                      )
-                    }
-                  </select>
+                  {
+                    (post.visibility !== "FRIENDS" || isOwn) && (
+                      <select id="Dropdown" onChange={dropdown} className="border rounded p-1 text-sm absolute top-3 right-3">
+                        <option value="none">Options</option>
+                        {
+                          !isStream && isOwn && (
+                            <option value="edit">Edit</option>
+                          )
+                        }
+                        {
+                          !isStream && isOwn && (
+                            <option value="delete">Delete</option>
+                          )
+                        }
+                        {
+                          post.visibility === "UNLISTED" && !isStream && isOwn && (
+                            <option value="link">Copy Link</option>
+                          )
+                        }
+                        {
+                          post.visibility === "PUBLIC" && (
+                            <option value="link">Share</option>
+                          )
+                        }
+                      </select>
+                    )
+                  }
                 </div>
 
                 {
