@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import *
 from .serializers import *
 from rest_framework.response import Response
@@ -297,3 +298,32 @@ def friends(request, author_id):
     friends = Author.objects.filter(id__in=friend_ids)
     friends_serialized = [AuthorSummarySerializer(friend).data for friend in friends]
     return Response({'friends': friends_serialized}, status=200)
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def create_author(request):
+    """Admin endpoint to create a new author"""
+    serializer = AuthorSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def modify_author(request, author_id):
+    """Admin endpoint to modify an existing author"""
+    author = get_object_or_404(Author, pk=author_id)
+    serializer = AuthorSerializer(author, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_author(request, author_id):
+    """Admin endpoint to delete an author"""
+    author = get_object_or_404(Author, pk=author_id)
+    author.delete()
+    return Response({"detail": "Author deleted successfully"}, status=status.HTTP_204_NO_CONTENT)

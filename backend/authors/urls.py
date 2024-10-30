@@ -79,4 +79,12 @@ urlpatterns = [
     # IMAGE URLS ------------------------------------------------------------------------------
 
     path('<int:author_id>/posts/<uuid:post_id>/image/', posts_views.get_image_post, name='get_image_post'),
+
+    path('upload_image/', posts_views.upload_image, name='upload_image'),
+
+    # Admin-only ------------------------------------------------------------------------------
+
+    path('create/', author_views.create_author, name='create_author'),
+    path('<int:author_id>/modify/', author_views.modify_author, name='modify_author'),
+    path('<int:author_id>/delete/', author_views.delete_author, name='delete_author'),
 ]
