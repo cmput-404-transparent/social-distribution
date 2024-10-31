@@ -10,6 +10,7 @@ import json
 from datetime import datetime
 import base64
 from django.http import HttpResponse, JsonResponse
+from django.core.paginator import Paginator
 
 '''
 Documentation 
@@ -204,3 +205,45 @@ def get_image_post_by_fqid(request, post_fqid):
 
     # Return the image as a binary
     return HttpResponse(image_data, content_type=post.contentType)
+
+
+@api_view(['GET'])
+def get_likes(request, object_id):
+    likes = Like.objects.filter(object=object_id).order_by('-published')
+    paginator = Paginator(likes, 50)  # 50 likes per page
+    page_number = request.query_params.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    serializer = LikesSerializer({
+        'page': request.build_absolute_uri(),
+        'id': f"{request.build_absolute_uri()}/likes",
+        'page_number': page_obj.number,
+        'size': paginator.per_page,
+        'count': paginator.count,
+        'src': page_obj.object_list,
+    })
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def like_object(request, object_id):
+    author = request.user
+    like, created = Like.objects.get_or_create(
+        author=author,
+        object=object_id,
+    )
+    serializer = LikeSerializer(like)
+    return Response(serializer.data, status=201 if created else 200)
+
+
+@api_view(['POST'])
+def send_like_to_inbox(request, author_id):
+    # Assuming you have an Inbox model
+    # And an Author model with a relation to Inbox
+    author = get_object_or_404(Author, id=author_id)
+    serializer = LikeSerializer(data=request.data)
+    if serializer.is_valid():
+        # Save the like
+        serializer.save()
+        # Add to inbox
+        author.inbox.add(serializer.instance)
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)

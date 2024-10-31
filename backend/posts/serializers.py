@@ -65,14 +65,36 @@ class PostSummarySerializer(serializers.ModelSerializer):
     type = serializers.CharField(default='post', read_only=True)
     id = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
 
     def get_id(self, obj):
         return f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}"
     
-    def get_author(self, obj):
-        return AuthorSummarySerializer(obj.author).data
-    
+
+    def get_likes_count(self, obj):
+        return Like.objects.filter(object=obj.get_absolute_url()).count()
+
     class Meta:
         model = Post
-        fields = ['type', 'title', 'id', 'description', 'contentType', 'content', 'author', 'published', 'visibility']
+        fields = [
+            'type', 'title', 'id', 'description', 'contentType', 'content',
+            'author', 'published', 'visibility', 'likes_count'
+        ]
 
+
+class LikeSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(default='like', read_only=True)
+    author = AuthorSummarySerializer(read_only=True)
+
+    class Meta:
+        model = Like
+        fields = ['type', 'author', 'published', 'id', 'object']
+
+class LikesSerializer(serializers.Serializer):
+    type = serializers.CharField(default='likes', read_only=True)
+    page = serializers.CharField()
+    id = serializers.CharField()
+    page_number = serializers.IntegerField()
+    size = serializers.IntegerField()
+    count = serializers.IntegerField()
+    src = LikeSerializer(many=True)

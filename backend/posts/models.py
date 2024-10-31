@@ -55,3 +55,13 @@ class Share(models.Model):
 
     def __str__(self):
         return f"{self.sharer.username} shared {self.post.title}"
+    
+class Like(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    type = models.CharField(default='like', max_length=10)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    object = models.CharField(max_length=200)  # URL of the liked object
+    published = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.author} liked {self.object}"
