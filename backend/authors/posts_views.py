@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from .models import *
@@ -9,6 +9,7 @@ from posts.serializers import *
 from posts.models import *
 from posts.views import get_post
 from rest_framework.pagination import PageNumberPagination
+from django.core.files.storage import default_storage
 
 #documentation
 from .docs import (create_new_post_docs,list_recent_posts_docs,update_post_docs, delete_post_docs, get_all_public_posts_docs,
@@ -55,6 +56,10 @@ def create_new_post(request, author_id):
     content_type = data.get('contentType', '')
     content = data.get('content', '')
     visibility = data.get('visibility', 'PUBLIC')
+
+    # If the content includes an image URL, format it for CommonMark
+    if 'image_url' in data:
+        content += f"![Image]({data['image_url']})"  # Append the image URL to the content
 
     new_post = Post(
         title=title,
@@ -296,3 +301,22 @@ def get_image_post(request, author_id, post_id):
 
     # Return the image as a binary
     return HttpResponse(image_data, content_type=post.contentType)
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])  # Restrict this to node admins
+def upload_image(request):
+    image_data = request.data.get('image_data')
+    content_type = request.data.get('content_type', 'image/png')
+
+    if not image_data or not image_data.startswith('data:'):
+        return Response({"error": "Invalid image data"}, status=400)
+
+    format, imgstr = image_data.split(';base64,')
+    img_ext = format.split('/')[-1]
+    img_data = base64.b64decode(imgstr)
+
+    image_name = f"images/{uuid.uuid4()}.{img_ext}"
+    path = default_storage.save(image_name, ContentFile(img_data))
+
+    image_url = default_storage.url(path)  # Get URL of stored image
+    return Response({"image_url": image_url}, status=201)

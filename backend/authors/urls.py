@@ -79,4 +79,7 @@ urlpatterns = [
     # IMAGE URLS ------------------------------------------------------------------------------
 
     path('<int:author_id>/posts/<uuid:post_id>/image/', posts_views.get_image_post, name='get_image_post'),
+
+    path('upload_image/', posts_views.upload_image, name='upload_image'),
+
 ]
