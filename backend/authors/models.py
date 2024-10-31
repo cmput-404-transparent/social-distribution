@@ -34,6 +34,7 @@ class AuthorManager(BaseUserManager):
         # Automatically set the host and page fields
         author.host = f"http://localhost:3000/api"
         author.page = f"{author.host}/authors/{author.id}"
+        author.github = "http://github.com/"
         author.save(using=self._db)
 
         return author
