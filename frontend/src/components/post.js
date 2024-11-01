@@ -7,10 +7,27 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import IconButton from '@mui/material/IconButton';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
+import CloseIcon from '@mui/icons-material/Close';
+import SendIcon from '@mui/icons-material/Send';
+
 
 const PostState = {
   ViewPost: "ViewPost",
   ModifyPost: "ModifyPost"
+};
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '40%',
+  bgcolor: 'background.paper',
+  borderRadius: "0.25rem",
+  p: 4,
+  maxHeight: '80%',
 };
 
 const Content = ({ post, postState }) => {
@@ -265,6 +282,14 @@ const Content = ({ post, postState }) => {
   }
 }
 
+const Comment = ({data}) => {
+  return(
+    <div>
+
+    </div>
+  )
+}
+
 export default function Post({ post }) {
   const [author, setAuthor] = useState("");
   const [self, setSelf] = useState({});
@@ -276,6 +301,14 @@ export default function Post({ post }) {
 
   const [likeNum, setLikeNum] = useState(0);
   const [selfLiked, setSelfLiked] = useState(false);
+
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const handleCommentsOpen = () => setCommentsOpen(true);
+  const handleCommentsClose = () => setCommentsOpen(false);
+
+  const [commentsNum, setCommentsNum] = useState(0);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
     fetch(post.author.id)
@@ -301,6 +334,14 @@ export default function Post({ post }) {
     .then(r => r.json())
     .then(data => {
       setLikeNum(data.count);
+    })
+
+    // get comments for the post
+    fetch(`${post.id}/comments`)
+    .then(r => r.json())
+    .then(data => {
+      setComments(data.src);
+      setCommentsNum(data.count);
     })
 
     // eslint-disable-next-line
@@ -451,10 +492,9 @@ export default function Post({ post }) {
         </div>
       </div>
       <Content post={post} postState={postState} />
-      <div className="grid grid-cols-[min-content,min-content,auto] border-t px-5">
+      <div className="grid grid-cols-[min-content,min-content,auto] border-t px-2 space-x-3">
         <div className="flex items-center">
-          {likeNum}
-          <IconButton onClick={manageLike}>
+          <IconButton onClick={manageLike} className="!mr-[-2px]">
             {
               selfLiked? (
                 <FavoriteIcon />
@@ -463,11 +503,65 @@ export default function Post({ post }) {
               )
             }
           </IconButton>
+          {likeNum}
         </div>
-        
-        <IconButton>
-          <ChatBubbleOutlineIcon />
-        </IconButton>
+        <div className="flex items-center">
+          <IconButton onClick={handleCommentsOpen}>
+            <ChatBubbleOutlineIcon />
+          </IconButton>
+          {commentsNum}
+        </div>
+
+        <Modal
+          open={commentsOpen}
+          onClose={handleCommentsClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style} className="space-y-4">
+            <div className="grid grid-cols-2 border-b pb-4">
+              <h2 className="font-bold text-3xl">
+                {post.author.displayName}'s Post
+              </h2>
+              <div className="flex justify-end">
+                <CloseIcon sx={{ color: '#bbb' }} onClick={handleCommentsClose} className="cursor-pointer" />
+              </div>
+            </div>
+
+            {/* comments section */}
+            {
+              commentsNum !== 0? (
+                <div className="border-b pb-4">
+                  {comments.map((comment) => (
+                    <Comment data={comment} />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex justify-center border-b pb-4">
+                  No comments yet
+                </div>
+              )
+            }
+
+            {/* create comment section */}
+            <div>
+              <div className="mb-4">
+                <textarea type="text" value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write a comment..."
+                  required
+                  className="w-full border rounded p-2"
+                ></textarea>
+              </div>
+              <div className="mt-[-20px] flex justify-end">
+                <IconButton>
+                  <SendIcon />
+                </IconButton>
+              </div>
+            </div>
+
+          </Box>
+        </Modal>
       </div>
     </div>
   )
