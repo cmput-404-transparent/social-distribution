@@ -282,10 +282,49 @@ const Content = ({ post, postState }) => {
   }
 }
 
+/**
+ * source: ChatGPT (OpenAI)
+ * prompt: "i have a time stamp like this in javascript "2024-11-01T21:50:39.064723Z" this is for a comment
+ *          on a social media site i'm building. i want to get a string that says 'November11, 2024 at
+ *          [time in current time zone]'"
+ * date: November 1, 2024
+ */
+function formatDate(timestamp) {
+  const date = new Date(timestamp);
+
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: '2-digit',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  }).format(date);
+
+  return formattedDate;
+}
+
 const Comment = ({data}) => {
   return(
-    <div>
-
+    <div className="border rounded p-4">
+      <div className="grid grid-cols-[min-content,auto] space-x-4">
+        <a href={data.author.page}>
+          <div>
+            {
+              data.author.profileImage? (
+                <img src={data.profileImage}></img>
+              ) : (
+                <p>profile image</p>
+              )
+            }
+          </div>
+        </a>
+        <div className="grid grid-rows-[min-content,auto,auto]">
+          <a href={data.author.page}><h1 className="font-bold text-l">{data.author.displayName}</h1></a>
+          <p>{data.comment}</p>
+          <p className="font-light italic text-sm pt-2">{formatDate(data.published)}</p>
+        </div>
+      </div>
     </div>
   )
 }
@@ -310,12 +349,20 @@ export default function Post({ post }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
 
+  function getPostInfo() {
+    fetch(post.id)
+    .then(r => r.json())
+    .then(data => {
+      setAuthor(data.author);
+      setLikeNum(data.likes.count);
+      setComments(data.comments.src);
+      setCommentsNum(data.comments.count);
+    })
+  }
+
   useEffect(() => {
-    fetch(post.author.id)
-      .then((r) => r.json())
-      .then((data) => {
-        setAuthor(data);
-      });
+
+    getPostInfo();
 
     let baseAuthorAPIUrl = post.author.id.split("/").slice(0, -1).join("/");
     fetch(`${baseAuthorAPIUrl}/${authorId}`)
@@ -329,20 +376,6 @@ export default function Post({ post }) {
     let postAuthorId = post.author.id.split("/").pop();
 
     setIsOwn(postAuthorId === authorId);
-
-    fetch(`${post.id}/likes`)
-    .then(r => r.json())
-    .then(data => {
-      setLikeNum(data.count);
-    })
-
-    // get comments for the post
-    fetch(`${post.id}/comments`)
-    .then(r => r.json())
-    .then(data => {
-      setComments(data.src);
-      setCommentsNum(data.count);
-    })
 
     // eslint-disable-next-line
   }, []);
@@ -422,10 +455,40 @@ export default function Post({ post }) {
         },
       })
       .then(r => {
-        setSelfLiked(true);
-        setLikeNum(likeNum + 1);
+        getPostInfo();
       })
     }
+  }
+
+  const commentOnPost = async () => {
+    const csrftoken = getCookie('csrftoken');
+
+    const data = new URLSearchParams();
+    data.append('comment', newComment);
+
+    fetch(`${post.id}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrftoken,
+      },
+      body: data.toString(),
+    })
+    .then(r => {
+      if (r.ok) {
+        setNewComment("");
+        getPostInfo();
+      }
+    })
+  }
+
+  function getMoreComments() {
+    let nextPageNum = (comments.length) % 5 + 2;
+    fetch(`${post.id}/comments?page=${nextPageNum}`)
+    .then(r => r.json())
+    .then(data => {
+      setComments(comments.concat(data.src));
+    })
   }
 
   return (
@@ -497,7 +560,7 @@ export default function Post({ post }) {
           <IconButton onClick={manageLike} className="!mr-[-2px]">
             {
               selfLiked? (
-                <FavoriteIcon />
+                <FavoriteIcon sx={{ color: '#dd0000' }} />
               ) : (
                 <FavoriteBorderIcon />
               )
@@ -532,9 +595,20 @@ export default function Post({ post }) {
             {
               commentsNum !== 0? (
                 <div className="border-b pb-4">
-                  {comments.map((comment) => (
-                    <Comment data={comment} />
-                  ))}
+                  <div className="space-y-3 overflow-y-scroll !max-h-[32rem]">
+                    {comments.map((comment) => (
+                      <Comment data={comment} />
+                    ))}
+                  </div>
+
+                  {
+                    (commentsNum !== comments.length) && (
+                      <div className="pt-3 flex justify-center">
+                        <button className='bg-sky-400 rounded p-2 px-5' onClick={getMoreComments}>Load More</button>
+                      </div>
+                    )
+                  }
+                  
                 </div>
               ) : (
                 <div className="flex justify-center border-b pb-4">
@@ -554,7 +628,7 @@ export default function Post({ post }) {
                 ></textarea>
               </div>
               <div className="mt-[-20px] flex justify-end">
-                <IconButton>
+                <IconButton onClick={commentOnPost}>
                   <SendIcon />
                 </IconButton>
               </div>
