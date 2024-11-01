@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import *
+from authors.models import *
+from .views import Paginator
 import commonmark
 from django.core.files.base import ContentFile
 import base64
@@ -73,19 +75,61 @@ class PostSummarySerializer(serializers.ModelSerializer):
     type = serializers.CharField(default='post', read_only=True)
     id = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
-    likes_count = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
+    likes = serializers.SerializerMethodField()
 
     def get_id(self, obj):
         return f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}"
+
+    def __init__(self, *args, **kwargs):
+        self.page = kwargs.pop('page', 1)
+        super().__init__(*args, **kwargs)
     
-    def get_likes_count(self, obj):
-        return Like.objects.filter(object=obj.get_absolute_url()).count()
+    def get_author(self, obj):
+        author = Author.objects.get(id=obj.author.id)
+        return AuthorSummarySerializer(author).data
+    
+    def get_comments(self, obj):
+
+        comment_objects = Comment.objects.filter(post__id=obj.id).order_by('-published')
+
+        paginator = Paginator(comment_objects, 5)
+        page_obj = paginator.get_page(self.page)
+
+        serializer = CommentsSerializer({
+            'page': f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}",
+            'id': f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}/comments",
+            'page_number': page_obj.number,
+            'size': paginator.per_page,
+            'count': paginator.count,
+            'src': page_obj.object_list,
+        })
+
+        return serializer.data
+    
+    def get_likes(self, obj):
+        post_id = self.get_id(obj)
+        like_objects = Like.objects.filter(object=post_id).order_by('-published')
+
+        paginator = Paginator(like_objects, 5)
+        page_obj = paginator.get_page(self.page)
+
+        serializer = LikesSerializer({
+            'page': f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}",
+            'id': f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}/likes",
+            'page_number': page_obj.number,
+            'size': paginator.per_page,
+            'count': paginator.count,
+            'src': page_obj.object_list,
+        })
+
+        return serializer.data
 
     class Meta:
         model = Post
         fields = [
             'type', 'title', 'id', 'description', 'contentType', 'content',
-            'author', 'published', 'visibility', 'likes_count'
+            'author', 'comments', 'likes', 'published', 'visibility'
         ]
 
 # Serializer for Like model
