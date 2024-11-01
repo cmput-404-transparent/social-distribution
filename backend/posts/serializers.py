@@ -97,7 +97,7 @@ class PostSummarySerializer(serializers.ModelSerializer):
         page_obj = paginator.get_page(self.page)
 
         serializer = CommentsSerializer({
-            'page': f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}",
+            'page': f"{obj.author.page}/posts/{obj.id}",
             'id': f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}/comments",
             'page_number': page_obj.number,
             'size': paginator.per_page,
@@ -108,14 +108,14 @@ class PostSummarySerializer(serializers.ModelSerializer):
         return serializer.data
     
     def get_likes(self, obj):
-        post_id = self.get_id(obj)
+        post_id = f"{obj.author.page}/posts/{obj.id}"
         like_objects = Like.objects.filter(object=post_id).order_by('-published')
 
         paginator = Paginator(like_objects, 5)
         page_obj = paginator.get_page(self.page)
 
         serializer = LikesSerializer({
-            'page': f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}",
+            'page': f"{obj.author.page}/posts/{obj.id}",
             'id': f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}/likes",
             'page_number': page_obj.number,
             'size': paginator.per_page,
@@ -166,10 +166,10 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ['type', 'author', 'comment', 'contentType', 'published', 'id', 'post', 'page', 'likes']
 
     def get_id(self, obj):
-        return f"{obj.author.host}api/authors/{obj.author.id}/commented/{obj.id}"
+        return f"{obj.author.host}authors/{obj.author.id}/commented/{obj.id}"
 
     def get_post(self, obj):
-        return f"{obj.post.author.host}api/authors/{obj.post.author.id}/posts/{obj.post.id}"
+        return f"{obj.post.author.host}authors/{obj.post.author.id}/posts/{obj.post.id}"
 
     def get_page(self, obj):
         # URL to view the comment in HTML (if available)
