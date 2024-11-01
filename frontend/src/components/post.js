@@ -329,6 +329,28 @@ const Comment = ({data}) => {
   )
 }
 
+/**
+ * source: ChatGPT (OpenAI)
+ * prompt: "i have a number that can be really big or small. i need it as a string. if
+ *          number > 999 then i want it to be like 1.0k or 1.0m or 1.0b etc."
+ * date: November 1, 2024
+ */
+function formatNumber(num) {
+  if (Math.abs(num) >= 1.0e+9) {
+    // Billions
+    return (num / 1.0e+9).toFixed(1) + "b";
+  } else if (Math.abs(num) >= 1.0e+6) {
+    // Millions
+    return (num / 1.0e+6).toFixed(1) + "m";
+  } else if (Math.abs(num) >= 1.0e+3) {
+    // Thousands
+    return (num / 1.0e+3).toFixed(1) + "k";
+  } else {
+    // Less than 1,000, return the number as-is
+    return num.toString();
+  }
+}
+
 export default function Post({ post }) {
   const [author, setAuthor] = useState("");
   const [self, setSelf] = useState({});
@@ -566,13 +588,13 @@ export default function Post({ post }) {
               )
             }
           </IconButton>
-          {likeNum}
+          {formatNumber(likeNum)}
         </div>
         <div className="flex items-center">
           <IconButton onClick={handleCommentsOpen}>
             <ChatBubbleOutlineIcon />
           </IconButton>
-          {commentsNum}
+          {formatNumber(commentsNum)}
         </div>
 
         <Modal
