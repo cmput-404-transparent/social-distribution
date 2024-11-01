@@ -178,8 +178,8 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_likes(self, obj):
         likes = Like.objects.filter(object=self.get_id(obj))
         likes_serializer = LikesSerializer({
-            'page': f"{obj.author.host}authors/{obj.author.id}/commented/{obj.id}/likes",
-            'id': f"{obj.author.host}api/authors/{obj.author.id}/commented/{obj.id}/likes",
+            'page': f"{obj.author.page}/commented/{obj.id}/likes",
+            'id': f"{obj.author.host}authors/{obj.author.id}/commented/{obj.id}/likes",
             'page_number': 1,
             'size': 50,
             'count': likes.count(),
