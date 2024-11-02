@@ -7,10 +7,27 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import IconButton from '@mui/material/IconButton';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
+import CloseIcon from '@mui/icons-material/Close';
+import SendIcon from '@mui/icons-material/Send';
+
 
 const PostState = {
   ViewPost: "ViewPost",
   ModifyPost: "ModifyPost"
+};
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '40%',
+  bgcolor: 'background.paper',
+  borderRadius: "0.25rem",
+  p: 4,
+  maxHeight: '80%',
 };
 
 const Content = ({ post, postState }) => {
@@ -265,6 +282,75 @@ const Content = ({ post, postState }) => {
   }
 }
 
+/**
+ * source: ChatGPT (OpenAI)
+ * prompt: "i have a time stamp like this in javascript "2024-11-01T21:50:39.064723Z" this is for a comment
+ *          on a social media site i'm building. i want to get a string that says 'November11, 2024 at
+ *          [time in current time zone]'"
+ * date: November 1, 2024
+ */
+function formatDate(timestamp) {
+  const date = new Date(timestamp);
+
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: '2-digit',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  }).format(date);
+
+  return formattedDate;
+}
+
+const Comment = ({data}) => {
+  return(
+    <div className="border rounded p-4">
+      <div className="grid grid-cols-[min-content,auto] space-x-4">
+        <a href={data.author.page}>
+          <div>
+            {
+              data.author.profileImage? (
+                <img src={data.profileImage}></img>
+              ) : (
+                <p>profile image</p>
+              )
+            }
+          </div>
+        </a>
+        <div className="grid grid-rows-[min-content,auto,auto]">
+          <a href={data.author.page}><h1 className="font-bold text-l">{data.author.displayName}</h1></a>
+          <p>{data.comment}</p>
+          <p className="font-light italic text-sm pt-2">{formatDate(data.published)}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * source: ChatGPT (OpenAI)
+ * prompt: "i have a number that can be really big or small. i need it as a string. if
+ *          number > 999 then i want it to be like 1.0k or 1.0m or 1.0b etc."
+ * date: November 1, 2024
+ */
+function formatNumber(num) {
+  if (Math.abs(num) >= 1.0e+9) {
+    // Billions
+    return (num / 1.0e+9).toFixed(1) + "b";
+  } else if (Math.abs(num) >= 1.0e+6) {
+    // Millions
+    return (num / 1.0e+6).toFixed(1) + "m";
+  } else if (Math.abs(num) >= 1.0e+3) {
+    // Thousands
+    return (num / 1.0e+3).toFixed(1) + "k";
+  } else {
+    // Less than 1,000, return the number as-is
+    return num.toString();
+  }
+}
+
 export default function Post({ post }) {
   const [author, setAuthor] = useState("");
   const [self, setSelf] = useState({});
@@ -277,12 +363,28 @@ export default function Post({ post }) {
   const [likeNum, setLikeNum] = useState(0);
   const [selfLiked, setSelfLiked] = useState(false);
 
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const handleCommentsOpen = () => setCommentsOpen(true);
+  const handleCommentsClose = () => setCommentsOpen(false);
+
+  const [commentsNum, setCommentsNum] = useState(0);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+
+  function getPostInfo() {
+    fetch(post.id)
+    .then(r => r.json())
+    .then(data => {
+      setAuthor(data.author);
+      setLikeNum(data.likes.count);
+      setComments(data.comments.src);
+      setCommentsNum(data.comments.count);
+    })
+  }
+
   useEffect(() => {
-    fetch(post.author.id)
-      .then((r) => r.json())
-      .then((data) => {
-        setAuthor(data);
-      });
+
+    getPostInfo();
 
     let baseAuthorAPIUrl = post.author.id.split("/").slice(0, -1).join("/");
     fetch(`${baseAuthorAPIUrl}/${authorId}`)
@@ -296,12 +398,6 @@ export default function Post({ post }) {
     let postAuthorId = post.author.id.split("/").pop();
 
     setIsOwn(postAuthorId === authorId);
-
-    fetch(`${post.id}/likes`)
-    .then(r => r.json())
-    .then(data => {
-      setLikeNum(data.count);
-    })
 
     // eslint-disable-next-line
   }, []);
@@ -381,10 +477,40 @@ export default function Post({ post }) {
         },
       })
       .then(r => {
-        setSelfLiked(true);
-        setLikeNum(likeNum + 1);
+        getPostInfo();
       })
     }
+  }
+
+  const commentOnPost = async () => {
+    const csrftoken = getCookie('csrftoken');
+
+    const data = new URLSearchParams();
+    data.append('comment', newComment);
+
+    fetch(`${post.id}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrftoken,
+      },
+      body: data.toString(),
+    })
+    .then(r => {
+      if (r.ok) {
+        setNewComment("");
+        getPostInfo();
+      }
+    })
+  }
+
+  function getMoreComments() {
+    let nextPageNum = (comments.length) % 5 + 2;
+    fetch(`${post.id}/comments?page=${nextPageNum}`)
+    .then(r => r.json())
+    .then(data => {
+      setComments(comments.concat(data.src));
+    })
   }
 
   return (
@@ -451,23 +577,87 @@ export default function Post({ post }) {
         </div>
       </div>
       <Content post={post} postState={postState} />
-      <div className="grid grid-cols-[min-content,min-content,auto] border-t px-5">
+      <div className="grid grid-cols-[min-content,min-content,auto] border-t px-2 space-x-3">
         <div className="flex items-center">
-          {likeNum}
-          <IconButton onClick={manageLike}>
+          <IconButton onClick={manageLike} className="!mr-[-2px]">
             {
               selfLiked? (
-                <FavoriteIcon />
+                <FavoriteIcon sx={{ color: '#dd0000' }} />
               ) : (
                 <FavoriteBorderIcon />
               )
             }
           </IconButton>
+          {formatNumber(likeNum)}
         </div>
-        
-        <IconButton>
-          <ChatBubbleOutlineIcon />
-        </IconButton>
+        <div className="flex items-center">
+          <IconButton onClick={handleCommentsOpen}>
+            <ChatBubbleOutlineIcon />
+          </IconButton>
+          {formatNumber(commentsNum)}
+        </div>
+
+        <Modal
+          open={commentsOpen}
+          onClose={handleCommentsClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style} className="space-y-4">
+            <div className="grid grid-cols-2 border-b pb-4">
+              <h2 className="font-bold text-3xl">
+                {post.author.displayName}'s Post
+              </h2>
+              <div className="flex justify-end">
+                <CloseIcon sx={{ color: '#bbb' }} onClick={handleCommentsClose} className="cursor-pointer" />
+              </div>
+            </div>
+
+            {/* comments section */}
+            {
+              commentsNum !== 0? (
+                <div className="border-b pb-4">
+                  <div className="space-y-3 overflow-y-scroll !max-h-[32rem]">
+                    {comments.map((comment) => (
+                      <Comment data={comment} />
+                    ))}
+                  </div>
+
+                  {
+                    (commentsNum !== comments.length) && (
+                      <div className="pt-3 flex justify-center">
+                        <button className='bg-sky-400 rounded p-2 px-5' onClick={getMoreComments}>Load More</button>
+                      </div>
+                    )
+                  }
+                  
+                </div>
+              ) : (
+                <div className="flex justify-center border-b pb-4">
+                  No comments yet
+                </div>
+              )
+            }
+
+            {/* create comment section */}
+            <div>
+              <div className="mb-4">
+                <textarea type="text" value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write a comment..."
+                  required
+                  className="w-full border rounded p-2"
+                ></textarea>
+              </div>
+              <div className="mt-[-20px] flex justify-end">
+                <IconButton onClick={commentOnPost}>
+                  <SendIcon />
+                </IconButton>
+              </div>
+            </div>
+
+          </Box>
+        </Modal>
       </div>
     </div>
   )
