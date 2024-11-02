@@ -514,7 +514,7 @@ export default function Post({ post }) {
   }
 
   return (
-    <div className="grid auto-rows-auto grid-flow-row border-2 border-gray-400 rounded-md w-4/5 mx-auto relative px-12">
+    <div className="grid auto-rows-auto grid-flow-row border rounded-md w-4/5 mx-auto relative px-12">
       <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
         <div className="pr-8 min-w-[80px] min-h-[45px]">
           <img src="/pfp.png" alt="Profile" className="w-12 h-12 rounded-full object-cover" />
