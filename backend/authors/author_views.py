@@ -22,7 +22,8 @@ def login(request):
     password = request.POST.get('password', None)
     user = authenticate(request, username=username, password=password)
     if user is not None:
-        if not user.is_approved:
+        config = SiteConfiguration.objects.first()
+        if not user.is_approved and config.require_user_approval:
                return Response({"detail": "Your account is pending approval."}, status=403)
         django_side_login(request, user)
         token, _ = Token.objects.get_or_create(user=user)
