@@ -33,6 +33,12 @@ class Post(models.Model):
     is_deleted = models.BooleanField(default=False)  # Indicates if the post is deleted
     fqid = models.CharField(unique=True, max_length=200, blank=True, null=True)  # Fully qualified ID
 
+    def save(self, *args, **kwargs):
+        # Override save method to set fqid if not already set
+        if not self.fqid:
+            self.fqid = f"{self.author.host}authors/{self.author.id}/posts/{self.id}"
+        super().save(*args, **kwargs)
+
     @property
     def is_shareable(self):
         # Property to check if the post is shareable
@@ -92,7 +98,7 @@ class Comment(models.Model):
     def save(self, *args, **kwargs):
         # Override save method to set fqid if not already set
         if not self.fqid:
-            self.fqid = f"{self.author.host}api/authors/{self.author.id}/commented/{self.id}"
+            self.fqid = f"{self.author.host}authors/{self.author.id}/commented/{self.id}"
         super().save(*args, **kwargs)
 
     def __str__(self):
