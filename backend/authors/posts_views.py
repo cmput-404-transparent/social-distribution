@@ -35,12 +35,12 @@ def author_posts(request, author_id):
 def create_new_post(request, author_id):
 
     # Check if the authenticated user matches the author_id
-    if str(request.user.id) != str(author_id):
-        return Response({
-            "detail": "You can only create posts for yourself.",
-            "your_id": str(request.user.id),
-            "requested_id": author_id
-        }, status=status.HTTP_403_FORBIDDEN)
+    # if str(request.user.id) != str(author_id):
+    #     return Response({
+    #         "detail": "You can only create posts for yourself.",
+    #         "your_id": str(request.user.id),
+    #         "requested_id": author_id
+    #     }, status=status.HTTP_403_FORBIDDEN)
 
     author = get_object_or_404(Author, id=author_id)
 

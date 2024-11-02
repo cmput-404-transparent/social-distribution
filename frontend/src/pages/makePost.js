@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './makePost.css';
 import getCookie from '../getCSRFToken';
-import commonmark from 'commonmark';
 import { Parser, HtmlRenderer } from 'commonmark';
 
 
@@ -90,9 +88,11 @@ const MakePost = () => {
   }
 
   return (
-    <div className="post-div div-make-post">
-      <h1 className='post-title'>Make a Post</h1>
+    <div className="post-div-div-make-post">
+      
       <form onSubmit={handleSubmit} className='form-make-post'>
+      <h1 className='post-title'>Make a Post</h1>
+        <div className='alldiv'>
         <div className='div-make-post'>
           <label className='label-make-post'>Title:</label>
           <input
@@ -104,16 +104,19 @@ const MakePost = () => {
           />
         </div>
         <div className='div-make-post'>
-          <label>Description:</label>
+          <label className='label-make-post' >Description:</label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
+            className='input-make-post'
           />
-        </div>
 
+        </div>
+        <div className='div-make-post'>
         <label> Content Type:</label>
+        </div>
 
         <button
         className={`div-plain ${activeButton === 'plain' ? 'active' : ''}`} type="button"
@@ -150,23 +153,25 @@ const MakePost = () => {
           required
           className='make-post-textarea'
           
-
-          
           />
 
           )}
           
         </div>
 
-        <div className='div-make-post'>
-          <select value={visibility} onChange={handleChange}>
+        <div className='flex justify-end pr-20 pb-8'>
+          <select className='border-2' value={visibility} onChange={handleChange}>
                 <option value="PUBLIC">Public</option>
                 <option value="FRIENDS">Friends-Only</option>
                 <option value="UNLISTED">Unlisted</option>
           </select>
         </div>
-        <button type="submit" className='make-post-button'>Create Post</button>
-      
+
+        
+        <div className="flex justify-end pr-20">
+          <button type="submit" className="make-post-button">Create Post</button>
+        </div>
+      </div>
       </form>
     </div>
   );

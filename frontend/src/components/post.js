@@ -82,13 +82,13 @@ const Content = ({ post, postState }) => {
         {postState === PostState.ViewPost &&
           <>
             <div className="p-5">
-              <div className="font-bold text-2xl">
+              <div className="font-semibold text-xl font-mono">
                 {post.title}
               </div>
               <div className="italic text-neutral-700 pb-3">
                 {post.description}
               </div>
-              <div>
+              <div className="text-m">
                 {post.content}
               </div>
             </div>
@@ -98,7 +98,7 @@ const Content = ({ post, postState }) => {
         {postState === PostState.ModifyPost &&
           <>
             <div className="p-5">
-              <div className="font-bold text-2xl mb-4">
+              <div className="font-bold text-xl mb-4">
                 <input type="text" value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
@@ -335,16 +335,16 @@ export default function Post({ post }) {
 
   return (
 
-    <div className="grid auto-rows-auto grid-flow-row border w-4/5 rounded relative">
+    <div className="grid auto-rows-auto grid-flow-row border-2 biorder-gray-400 rounded-md w-4/5 mx-auto  relative px-12">
         <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
-          <div className="pr-8">
-            profile picture
+          <div className="pr-8 min-w-[80px] min-h-[45px]">
+            <img src="/pfp.png" alt="Profile" className="w-12 h-12 rounded-full object-cover " />
           </div>
           <div className="grid grid-flow-row auto-rows-auto space-y-4">
             <div className="grid grid-cols-[auto,min-content]">
               <a href={`${author.page}`} onClick={!isStream ? (e) => { e.preventDefault() } : null} className={`${!isStream ? "cursor-default" : "cursor-pointer"} flex items-center-justify-start`} >
                 <div className="flex justify-start items-center">
-                  <h1 className="font-bold text-l">{post.author.displayName}</h1>
+                  <h1 className="font-bold text-lg font-sans">{post.author.displayName}</h1>
                 </div>
               </a>
               <div className={`grid grid-rows-${post.visibility !== "FRIENDS" || isOwn? "2" : "1"} text-right space-y`}>
