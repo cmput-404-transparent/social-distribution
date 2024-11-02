@@ -38,13 +38,13 @@
 }
 
 .page {
-
+  padding-left: min(5%, 100px);
+  padding-right: min(5%, 100px);
   padding-top: 25px;
   max-width: 100%;
   min-width: 100%;
   display: flex;
-  justify-content: left;
-  padding-left: 65px;
+  justify-content: center;
 }
 
 .post-content h1, .post-content h2, .post-content h3, .post-content h4, .post-content h5, .post-content h6 {

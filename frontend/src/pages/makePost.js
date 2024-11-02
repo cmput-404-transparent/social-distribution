@@ -88,7 +88,7 @@ const MakePost = () => {
   }
 
   return (
-    <div className="post-div-div-make-post">
+    <div className="page">
       
       <form onSubmit={handleSubmit} className='form-make-post'>
       <h1 className='post-title'>Make a Post</h1>
