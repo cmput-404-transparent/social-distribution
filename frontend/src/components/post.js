@@ -426,16 +426,75 @@ export default function Post({ post }) {
         </div>
       </div>
       <Content post={post} postState={postState} />
-      <div className="grid grid-cols-[min-content,min-content,auto] border-t px-5">
+      <div className="grid grid-cols-[min-content,min-content,auto] border-t px-2 space-x-3">
         <div className="flex items-center">
-          {likeNum}
-          <IconButton onClick={manageLike}>
-            {selfLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+          <IconButton onClick={manageLike} className="!mr-[-2px]">
+            {selfLiked ? <FavoriteIcon sx={{ color: '#dd0000' }} /> : <FavoriteBorderIcon />}
           </IconButton>
+          {formatNumber(likeNum)}
         </div>
-        <IconButton>
-          <ChatBubbleOutlineIcon />
-        </IconButton>
+        <div className="flex items-center">
+          <IconButton onClick={handleCommentsOpen}>
+            <ChatBubbleOutlineIcon />
+          </IconButton>
+          {formatNumber(commentsNum)}
+        </div>
+  
+        <Modal
+          open={commentsOpen}
+          onClose={handleCommentsClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style} className="space-y-4">
+            <div className="grid grid-cols-2 border-b pb-4">
+              <h2 className="font-bold text-3xl">
+                {post.author.displayName}'s Post
+              </h2>
+              <div className="flex justify-end">
+                <CloseIcon sx={{ color: '#bbb' }} onClick={handleCommentsClose} className="cursor-pointer" />
+              </div>
+            </div>
+  
+            {/* comments section */}
+            {commentsNum !== 0 ? (
+              <div className="border-b pb-4">
+                <div className="space-y-3 overflow-y-scroll !max-h-[32rem]">
+                  {comments.map((comment) => (
+                    <Comment data={comment} />
+                  ))}
+                </div>
+  
+                {commentsNum !== comments.length && (
+                  <div className="pt-3 flex justify-center">
+                    <button className='bg-sky-400 rounded p-2 px-5' onClick={getMoreComments}>Load More</button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex justify-center border-b pb-4">
+                No comments yet
+              </div>
+            )}
+  
+            {/* create comment section */}
+            <div>
+              <div className="mb-4">
+                <textarea type="text" value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write a comment..."
+                  required
+                  className="w-full border rounded p-2"
+                ></textarea>
+              </div>
+              <div className="mt-[-20px] flex justify-end">
+                <IconButton onClick={commentOnPost}>
+                  <SendIcon />
+                </IconButton>
+              </div>
+            </div>
+          </Box>
+        </Modal>
       </div>
     </div>
   );
