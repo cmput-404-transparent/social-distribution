@@ -84,11 +84,14 @@ urlpatterns = [
 
     # LIKES URLS ------------------------------------------------------------------------------
 
-    # Get likes for a specific post
-    path('<int:author_id>/posts/<uuid:post_id>/likes', posts_views.get_likes),
+    # Get likes for a specific object
+    path('<int:author_id>/posts/<uuid:object_id>/likes', posts_views.get_likes),
     
-    # Like a specific post
-    path('<int:author_id>/posts/<uuid:post_id>/like', posts_views.like_object),
+    # Like a specific object
+    path('<int:author_id>/posts/<uuid:object_id>/like', posts_views.like_object),
+
+    # check if an author liked a post
+    path('<int:author_id>/liked/<uuid:post_id>', posts_views.check_liked),
 
     # COMMENTS URLS ------------------------------------------------------------------------------
     
