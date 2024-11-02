@@ -28,27 +28,22 @@ class AuthorAdmin(admin.ModelAdmin):
     
     def save_model(self, request, obj, form, change):
 
-        author = Author.objects.get(id=obj.id)
+        if not change:
+            super().save_model(request, obj, form, change)
 
-        old_password = author.password
-        
-        # Save the object first to get the ID
-        super().save_model(request, obj, form, change)
-
-        # Hash the password if it has been set or changed
+        # If password is provided, hash it; otherwise, retain the old password
         if form.cleaned_data.get('password'):
             obj.set_password(form.cleaned_data['password'])
-        else:
-            obj.password = old_password
-        obj.save()
+        elif change:  # For editing an existing user, preserve the old password
+            obj.password = Author.objects.get(id=obj.id).password
 
         # Automatically set the host and page fields if they are not provided
         if not obj.host:
-            obj.host = f"http://localhost:3000/api"
+            obj.host = "http://localhost:3000/api"
         if not obj.page:
             obj.page = f"{obj.host}/authors/{obj.id}"
         
-        # Save again to update the host and page fields
+        # Save the changes
         obj.save()
 
 admin.site.register(Author, AuthorAdmin)
