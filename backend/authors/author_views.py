@@ -298,3 +298,25 @@ def friends(request, author_id):
     friends = Author.objects.filter(id__in=friend_ids)
     friends_serialized = [AuthorSummarySerializer(friend).data for friend in friends]
     return Response({'friends': friends_serialized}, status=200)
+
+
+
+#view all remote node connections(GET)
+# add a remote node connection(POST)
+# will have to refactor acc how other groups do login 
+@api_view(['GET', 'POST'])
+@permission_classes([IsAdminUser])
+def manage_remote_nodes(request):
+    if request.method == 'GET':
+        nodes = RemoteNode.objects.all()
+        serializer = RemoteNodeSerializer(nodes, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = RemoteNodeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+

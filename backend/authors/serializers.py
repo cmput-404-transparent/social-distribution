@@ -91,3 +91,10 @@ class AuthorSummarySerializer(serializers.ModelSerializer):
 
     def get_url(self, obj):
         return self.get_id(obj)
+
+
+
+class RemoteNodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RemoteNode
+        fields = ['id', 'url', 'username', 'password']

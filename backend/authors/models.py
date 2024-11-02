@@ -80,3 +80,14 @@ class Follow(models.Model):
         friends_1 = Follow.objects.filter(user=user, status='FOLLOWED').values_list('follower')
         friends_2 = Follow.objects.filter(follower=user, status='FOLLOWED').values_list('user')
         return friends_1.intersection(friends_2)
+
+
+
+class RemoteNode(models.Model):
+    url = models.URLField(unique=True)  # the URL of the remote node
+    username = models.CharField(max_length=255)  
+    password = models.CharField(max_length=255)  
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Remote Node at {self.url}"
