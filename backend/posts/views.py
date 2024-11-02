@@ -10,6 +10,8 @@ import json
 from datetime import datetime
 import base64
 from django.http import HttpResponse, JsonResponse
+from django.core.paginator import Paginator
+from django.contrib.auth.models import User
 
 '''
 Documentation 
@@ -182,7 +184,6 @@ def post_github_activity(request, author_id):
 
         date_published = datetime.strptime(event['created_at'], "%Y-%m-%dT%H:%M:%SZ")
         new_post.published = date_published
-        new_post.fqid = new_post.id
         new_post.save()
 
     return Response(status=201)

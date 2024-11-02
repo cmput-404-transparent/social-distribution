@@ -3,8 +3,10 @@ import getCookie from '../getCSRFToken';
 import { marked } from 'marked';
 import PeopleIcon from '@mui/icons-material/People';
 import LinkIcon from '@mui/icons-material/Link';
-import ShareIcon from '@mui/icons-material/Share';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import IconButton from '@mui/material/IconButton';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 const PostState = {
   ViewPost: "ViewPost",
@@ -265,11 +267,15 @@ const Content = ({ post, postState }) => {
 
 export default function Post({ post }) {
   const [author, setAuthor] = useState("");
+  const [self, setSelf] = useState({});
   const [isStream, setIsStream] = useState(false);
   const [isOwn, setIsOwn] = useState(false);
 
   const authorId = localStorage.getItem('authorId');
   const [postState, setPostState] = useState(PostState.ViewPost);
+
+  const [likeNum, setLikeNum] = useState(0);
+  const [selfLiked, setSelfLiked] = useState(false);
 
   useEffect(() => {
     fetch(post.author.id)
@@ -277,11 +283,39 @@ export default function Post({ post }) {
       .then((data) => {
         setAuthor(data);
       });
+
+    let baseAuthorAPIUrl = post.author.id.split("/").slice(0, -1).join("/");
+    fetch(`${baseAuthorAPIUrl}/${authorId}`)
+    .then(r => r.json())
+    .then(data => {
+      setSelf(data);
+    })
+
     setIsStream(window.location.href.includes('stream'));
-    let postId = post.author.id.split("/").pop();
-    setIsOwn(postId === authorId);
+
+    let postAuthorId = post.author.id.split("/").pop();
+
+    setIsOwn(postAuthorId === authorId);
+
+    fetch(`${post.id}/likes`)
+    .then(r => r.json())
+    .then(data => {
+      setLikeNum(data.count);
+    })
+
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    if (Object.keys(self).length !== 0) {
+      let postId = post.id.split("/").pop();
+      fetch(`${self.id}` + "/liked/" + postId)
+      .then(r => r.json())
+      .then(data => {
+        setSelfLiked(data.liked);
+      })
+    }
+  }, [author]);
 
   const sharePostURL = async (e) => {
     e.preventDefault();
@@ -333,8 +367,27 @@ export default function Post({ post }) {
 
   }
 
-  return (
+  const manageLike = async () => {
+    let postId = post.id.split("/").pop();
+    const csrftoken = getCookie('csrftoken');
 
+    // can only like post that they haven't liked yet
+    if (!selfLiked) {
+      fetch(post.author.id + "/posts/" + postId + "/like", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken,
+        },
+      })
+      .then(r => {
+        setSelfLiked(true);
+        setLikeNum(likeNum + 1);
+      })
+    }
+  }
+
+  return (
     <div className="grid auto-rows-auto grid-flow-row border-2 biorder-gray-400 rounded-md w-4/5 mx-auto  relative px-12">
         <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
           <div className="pr-8 min-w-[80px] min-h-[45px]">
@@ -377,26 +430,72 @@ export default function Post({ post }) {
                     )
                   }
                 </div>
-
                 {
-                  ((post.visibility === "FRIENDS") && (
-                    <div className="text-right text-neutral-400 whitespace-nowrap">
-                      FRIENDS ONLY <PeopleIcon className="ml-1" />
-                    </div>
-                  )) ||
-                  ((post.visibility === "UNLISTED") && (
-                    <div className="text-right text-neutral-400 whitespace-nowrap">
-                      UNLISTED <LinkIcon className="ml-1" />
-                    </div>
-                  ))
+                  (post.visibility !== "FRIENDS" || isOwn) && (
+                    <select id="Dropdown" onChange={dropdown} className="border rounded p-1 text-sm absolute top-3 right-3">
+                      <option value="none">Options</option>
+                      {
+                        !isStream && isOwn && (
+                          <option value="edit">Edit</option>
+                        )
+                      }
+                      {
+                        !isStream && isOwn && (
+                          <option value="delete">Delete</option>
+                        )
+                      }
+                      {
+                        post.visibility === "UNLISTED" && !isStream && isOwn && (
+                          <option value="link">Copy Link</option>
+                        )
+                      }
+                      {
+                        post.visibility === "PUBLIC" && (
+                          <option value="link">Share</option>
+                        )
+                      }
+                    </select>
+                  )
                 }
               </div>
 
+              {
+                ((post.visibility === "FRIENDS") && (
+                  <div className="text-right text-neutral-400 whitespace-nowrap">
+                    FRIENDS ONLY <PeopleIcon className="ml-1" />
+                  </div>
+                )) ||
+                ((post.visibility === "UNLISTED") && (
+                  <div className="text-right text-neutral-400 whitespace-nowrap">
+                    UNLISTED <LinkIcon className="ml-1" />
+                  </div>
+                ))
+              }
             </div>
-          
+
           </div>
+        
         </div>
+      </div>
       <Content post={post} postState={postState} />
+      <div className="grid grid-cols-[min-content,min-content,auto] border-t px-5">
+        <div className="flex items-center">
+          {likeNum}
+          <IconButton onClick={manageLike}>
+            {
+              selfLiked? (
+                <FavoriteIcon />
+              ) : (
+                <FavoriteBorderIcon />
+              )
+            }
+          </IconButton>
+        </div>
+        
+        <IconButton>
+          <ChatBubbleOutlineIcon />
+        </IconButton>
+      </div>
     </div>
   )
 }

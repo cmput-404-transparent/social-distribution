@@ -79,4 +79,34 @@ urlpatterns = [
     # IMAGE URLS ------------------------------------------------------------------------------
 
     path('<int:author_id>/posts/<uuid:post_id>/image/', posts_views.get_image_post, name='get_image_post'),
+
+    path('upload_image/', posts_views.upload_image, name='upload_image'),
+
+    # LIKES URLS ------------------------------------------------------------------------------
+
+    # Get likes for a specific object
+    path('<int:author_id>/posts/<uuid:object_id>/likes', posts_views.get_likes),
+    
+    # Like a specific object
+    path('<int:author_id>/posts/<uuid:object_id>/like', posts_views.like_object),
+
+    # check if an author liked a post
+    path('<int:author_id>/liked/<uuid:post_id>', posts_views.check_liked),
+
+    # COMMENTS URLS ------------------------------------------------------------------------------
+    
+    # Comments API
+    # Get comments on a specific post
+    path('<int:author_serial>/posts/<uuid:post_serial>/comments', posts_views.comments_on_post),
+    
+    # Get a specific comment on a post
+    path('<int:author_serial>/posts/<uuid:post_serial>/comments/<uuid:comment_id>', posts_views.get_comment),
+    
+    # Commented API
+    # Get comments made by a specific author
+    path('<int:author_serial>/commented', posts_views.get_author_comments),
+    
+    # Get a specific comment made by a specific author
+    path('<int:author_serial>/commented/<uuid:comment_serial>', posts_views.get_author_comment),
+
 ]

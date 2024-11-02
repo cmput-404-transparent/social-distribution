@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import *
 from .serializers import *
 from rest_framework.response import Response
@@ -85,7 +86,7 @@ def get_update_author(request, author_id):
             except:
                 author.username = original_username
                 errors.append("Username is taken")
-        if password is not None and not author.check_password(password):     # checks if passwords are the same
+        if password is not None and password and not author.check_password(password):     # checks if passwords are the same
             author.set_password(password)           # if not then change it
         if display_name is not None and display_name != author.display_name:
             author.display_name = display_name

@@ -29,15 +29,23 @@ class AuthorManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError(_('Superuser must have is_superuser=True.'))
 
-        return self.create_user(username, password, **extra_fields)
+        author = self.create_user(username, password, **extra_fields)
+
+        # Automatically set the host and page fields
+        author.host = f"http://localhost:3000/api/"
+        author.page = f"{author.host}/authors/{author.id}"
+        author.github = "http://github.com/"
+        author.save(using=self._db)
+
+        return author
 
 
 class Author(AbstractBaseUser, PermissionsMixin):
-    host = models.URLField()
+    host = models.URLField(blank=True, null=True)
     display_name = models.CharField(max_length=100)
     github = models.URLField(blank=True, null=True)
     profile_image = models.URLField(blank=True, null=True)
-    page = models.URLField()
+    page = models.URLField(blank=True, null=True)
     username = models.CharField(max_length=100, unique=True)
     password = models.CharField(max_length=50)
 

@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from .models import *
@@ -9,6 +9,7 @@ from posts.serializers import *
 from posts.models import *
 from posts.views import get_post
 from rest_framework.pagination import PageNumberPagination
+from django.core.files.storage import default_storage
 
 #documentation
 from .docs import (create_new_post_docs,list_recent_posts_docs,update_post_docs, delete_post_docs, get_all_public_posts_docs,
@@ -56,6 +57,10 @@ def create_new_post(request, author_id):
     content = data.get('content', '')
     visibility = data.get('visibility', 'PUBLIC')
 
+    # If the content includes an image URL, format it for CommonMark
+    if 'image_url' in data:
+        content += f"![Image]({data['image_url']})"  # Append the image URL to the content
+
     new_post = Post(
         title=title,
         description=description,
@@ -64,8 +69,6 @@ def create_new_post(request, author_id):
         author=author,
         visibility=visibility
     )
-    new_post.save()
-    new_post.fqid = new_post.id
     new_post.save()
 
     serializer = PostSerializer(new_post)
@@ -296,3 +299,228 @@ def get_image_post(request, author_id, post_id):
 
     # Return the image as a binary
     return HttpResponse(image_data, content_type=post.contentType)
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])  # Restrict this to node admins
+def upload_image(request):
+    image_data = request.data.get('image_data')
+    content_type = request.data.get('content_type', 'image/png')
+
+    if not image_data or not image_data.startswith('data:'):
+        return Response({"error": "Invalid image data"}, status=400)
+
+    format, imgstr = image_data.split(';base64,')
+    img_ext = format.split('/')[-1]
+    img_data = base64.b64decode(imgstr)
+
+    image_name = f"images/{uuid.uuid4()}.{img_ext}"
+    path = default_storage.save(image_name, ContentFile(img_data))
+
+    image_url = default_storage.url(path)  # Get URL of stored image
+    return Response({"image_url": image_url}, status=201)
+
+@api_view(['GET'])
+def get_likes(request, author_id, object_id):
+
+    try:
+        post_object = Post.objects.get(id=object_id)
+        object_full_id = f"{post_object.author.page}/posts/{post_object.id}"
+        object_page = f"{post_object.author.page}/posts/{post_object.id}"
+    except Post.DoesNotExist:
+        try:
+            comment_object = Comment.objects.get(id=object_id)
+            object_full_id = comment_object.fqid
+            object_page = f"{post_object.author.page}/comments/{comment_object.id}/likes"
+        except:
+            return Response("only posts and comments have likes", status=status.HTTP_400_BAD_REQUEST)
+
+    likes = Like.objects.filter(object=object_full_id).order_by('-published')
+    paginator = Paginator(likes, 50)  # 50 likes per page
+    page_number = request.query_params.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    serializer = LikesSerializer({
+        'page': object_page,
+        'id': f"{request.build_absolute_uri()}",
+        'page_number': page_obj.number,
+        'size': paginator.per_page,
+        'count': paginator.count,
+        'src': page_obj.object_list,
+    })
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def like_object(request, author_id, object_id):
+
+    author = request.user
+
+    try:
+        post_object = Post.objects.get(id=object_id)
+        object_full_id = f"{post_object.author.page}/posts/{post_object.id}"
+    except Post.DoesNotExist:
+        try:
+            comment_object = Comment.objects.get(id=object_id)
+            object_full_id = comment_object.fqid
+        except:
+            return Response("only posts and comments have likes", status=status.HTTP_400_BAD_REQUEST)
+    
+    like, created = Like.objects.get_or_create(
+        author=author,
+        object=object_full_id,
+    )
+    serializer = LikeSerializer(like)
+    return Response(serializer.data, status=201 if created else 200)
+
+
+@api_view(['POST'])
+def send_like_to_inbox(request, author_id):
+    # Assuming you have an Inbox model
+    # And an Author model with a relation to Inbox
+    author = get_object_or_404(Author, id=author_id)
+    serializer = LikeSerializer(data=request.data)
+    if serializer.is_valid():
+        # Save the like
+        serializer.save()
+        # Add to inbox
+        author.inbox.add(serializer.instance)
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+
+@api_view(['GET', 'POST'])
+def comments_on_post(request, author_serial, post_serial):
+    """
+    GET: Retrieve comments on a post.
+    POST: Add a comment to a post.
+    """
+    post = get_object_or_404(Post, id=post_serial, author__id=author_serial)
+
+    # Handle GET request
+    if request.method == 'GET':
+        # Check visibility
+        if post.visibility in ['PUBLIC', 'UNLISTED']:
+            pass  # Anyone can see the comments
+        elif post.visibility == 'FRIENDS':
+            if not request.user.is_authenticated:
+                return Response({"detail": "Authentication required to view comments."}, status=401)
+            # Check if the user is a friend of the author
+            if not request.user.is_friend(post.author):
+                return Response({"detail": "You do not have permission to view these comments."}, status=403)
+        else:
+            return Response({"detail": "Invalid post visibility setting."}, status=400)
+
+        comments = Comment.objects.filter(post=post).order_by('-published')
+        paginator = Paginator(comments, 5)  # 5 comments per page
+        page_number = request.query_params.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+        serializer = CommentsSerializer({
+            'page': request.build_absolute_uri(),
+            'id': f"{request.build_absolute_uri()}",
+            'page_number': page_obj.number,
+            'size': paginator.per_page,
+            'count': paginator.count,
+            'src': page_obj.object_list,
+        })
+        return Response(serializer.data)
+
+    # Handle POST request
+    elif request.method == 'POST':
+        # Check if the user can comment on the post
+        if post.visibility in ['PUBLIC', 'UNLISTED']:
+            pass  # Anyone can comment
+        elif post.visibility == 'FRIENDS':
+            if not request.user.is_authenticated:
+                return Response({"detail": "Authentication required to comment."}, status=401)
+            if not request.user.is_friend(post.author):
+                return Response({"detail": "You do not have permission to comment on this post."}, status=403)
+        else:
+            return Response({"detail": "Invalid post visibility setting."}, status=400)
+
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            comment = serializer.save(author=request.user, post=post)
+            # Optionally, send the comment to the author's inbox here
+            return Response(CommentSerializer(comment).data, status=201)
+        else:
+            return Response(serializer.errors, status=400)
+
+@api_view(['GET'])
+def get_comment(request, author_serial, post_serial, comment_id):
+    """
+    Retrieve a specific comment on a post.
+    """
+    comment = get_object_or_404(Comment, id=comment_id, post__id=post_serial, post__author__id=author_serial)
+    post = comment.post
+
+    # Check visibility
+    if post.visibility in ['PUBLIC', 'UNLISTED']:
+        pass  # Anyone can see the comment
+    elif post.visibility == 'FRIENDS':
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication required to view this comment."}, status=401)
+        if request.user != comment.author and not request.user.is_friend(post.author):
+            return Response({"detail": "You do not have permission to view this comment."}, status=403)
+    else:
+        return Response({"detail": "Invalid post visibility setting."}, status=400)
+
+    serializer = CommentSerializer(comment)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def get_author_comments(request, author_serial):
+    """
+    Retrieve comments made by an author.
+    """
+    author = get_object_or_404(Author, id=author_serial)
+
+    if request.user == author:
+        comments = Comment.objects.filter(author=author).order_by('-published')
+    else:
+        comments = Comment.objects.filter(
+            author=author,
+            post__visibility__in=['PUBLIC', 'UNLISTED']
+        ).order_by('-published')
+
+    paginator = Paginator(comments, 10)  # 10 comments per page
+    page_number = request.query_params.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    serializer = CommentsSerializer({
+        'page': request.build_absolute_uri(),
+        'id': f"{request.build_absolute_uri()}",
+        'page_number': page_obj.number,
+        'size': paginator.per_page,
+        'count': paginator.count,
+        'src': page_obj.object_list,
+    })
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def get_author_comment(request, author_serial, comment_serial):
+    """
+    Retrieve a specific comment made by an author.
+    """
+    comment = get_object_or_404(Comment, id=comment_serial, author__id=author_serial)
+    post = comment.post
+
+    # Check visibility
+    if post.visibility in ['PUBLIC', 'UNLISTED']:
+        pass  # Anyone can see the comment
+    elif post.visibility == 'FRIENDS':
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication required to view this comment."}, status=401)
+        if request.user != comment.author and not request.user.is_friend(post.author):
+            return Response({"detail": "You do not have permission to view this comment."}, status=403)
+    else:
+        return Response({"detail": "Invalid post visibility setting."}, status=400)
+
+    serializer = CommentSerializer(comment)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def check_liked(request, author_id, post_id):
+    """
+    check if an author liked a post
+    """
+    post = get_object_or_404(Post, id=post_id)
+    post_object = f"{post.author.page}/posts/{post.id}"
+    liked = Like.objects.filter(author__id=author_id, object=post_object)
+
+    return Response({"liked": liked.exists()})
