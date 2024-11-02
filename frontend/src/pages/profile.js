@@ -211,16 +211,16 @@ export default function Profile() {
                 self? (
                   <div className="space-x-3 flex">
                     <a href={ `/authors/${authorId}/edit` }>
-                      <button type="submit" className='bg-neutral-200 rounded p-2 px-5'>
+                      <button type="submit" className='bg-customOrange rounded p-2 px-5'>
                         Edit Profile
                       </button>
                     </a>
-                    <button type="submit" className='bg-neutral-200 rounded p-2 px-5'>View Deleted</button>
+                    <button type="submit" className='bg-customOrange rounded p-2 px-5'>View Deleted</button>
                   </div>
                 ) : (
                   relationship === "NONE"? (
                     <div className="space-x-3 flex">
-                      <button className='bg-sky-400 rounded p-2 px-5' onClick={follow}>
+                      <button className='bg-customOrange rounded p-2 px-5' onClick={follow}>
                         Follow
                       </button>
                     </div>

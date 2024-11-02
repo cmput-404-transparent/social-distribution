@@ -101,13 +101,13 @@ const Content = ({ post, postState }) => {
         {postState === PostState.ViewPost &&
           <>
             <div className="p-5">
-              <div className="font-bold text-2xl">
+              <div className="font-semibold text-xl font-mono">
                 {post.title}
               </div>
               <div className="italic text-neutral-700 pb-3">
                 {post.description}
               </div>
-              <div>
+              <div className="text-m">
                 {post.content}
               </div>
             </div>
@@ -117,7 +117,7 @@ const Content = ({ post, postState }) => {
         {postState === PostState.ModifyPost &&
           <>
             <div className="p-5">
-              <div className="font-bold text-2xl mb-4">
+              <div className="font-bold text-xl mb-4">
                 <input type="text" value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
@@ -514,66 +514,41 @@ export default function Post({ post }) {
   }
 
   return (
-
-    <div className="grid auto-rows-auto grid-flow-row border w-4/5 rounded relative">
+    <div className="grid auto-rows-auto grid-flow-row border rounded-md w-4/5 mx-auto relative">
       <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
-        <div className="pr-8">
-          profile picture
+        <div className="pr-8 min-w-[80px] min-h-[45px]">
+          <img src="/pfp.png" alt="Profile" className="w-12 h-12 rounded-full object-cover" />
         </div>
         <div className="grid grid-flow-row auto-rows-auto space-y-4">
           <div className="grid grid-cols-[auto,min-content]">
-            <a href={`${author.page}`} onClick={!isStream ? (e) => { e.preventDefault() } : null} className={`${!isStream ? "cursor-default" : "cursor-pointer"} flex items-center-justify-start`} >
+            <a href={author.page} onClick={!isStream ? (e) => e.preventDefault() : null} className={`${!isStream ? "cursor-default" : "cursor-pointer"} flex items-center justify-start`}>
               <div className="flex justify-start items-center">
-                <h1 className="font-bold text-l">{post.author.displayName}</h1>
+                <h1 className="font-bold text-lg font-sans">{post.author.displayName}</h1>
               </div>
             </a>
-            <div className={`grid grid-rows-${post.visibility !== "FRIENDS" || isOwn? "2" : "1"} text-right space-y`}>
-              <div>
-                {
-                  (post.visibility !== "FRIENDS" || isOwn) && (
-                    <select id="Dropdown" onChange={dropdown} className="border rounded p-1 text-sm absolute top-3 right-3">
-                      <option value="none">Options</option>
-                      {
-                        !isStream && isOwn && (
-                          <option value="edit">Edit</option>
-                        )
-                      }
-                      {
-                        !isStream && isOwn && (
-                          <option value="delete">Delete</option>
-                        )
-                      }
-                      {
-                        post.visibility === "UNLISTED" && !isStream && isOwn && (
-                          <option value="link">Copy Link</option>
-                        )
-                      }
-                      {
-                        post.visibility === "PUBLIC" && (
-                          <option value="link">Share</option>
-                        )
-                      }
-                    </select>
-                  )
-                }
-              </div>
-
-              {
-                ((post.visibility === "FRIENDS") && (
-                  <div className="text-right text-neutral-400 whitespace-nowrap">
-                    FRIENDS ONLY <PeopleIcon className="ml-1" />
-                  </div>
-                )) ||
-                ((post.visibility === "UNLISTED") && (
-                  <div className="text-right text-neutral-400 whitespace-nowrap">
-                    UNLISTED <LinkIcon className="ml-1" />
-                  </div>
-                ))
-              }
+            <div className="text-right space-y">
+              {(post.visibility !== "FRIENDS" || isOwn) && (
+                <select id="Dropdown" onChange={dropdown} className="border rounded p-1 text-sm absolute top-3 right-3">
+                  <option value="none">Options</option>
+                  {!isStream && isOwn && <option value="edit">Edit</option>}
+                  {!isStream && isOwn && <option value="delete">Delete</option>}
+                  {post.visibility === "UNLISTED" && !isStream && isOwn && <option value="link">Copy Link</option>}
+                  {post.visibility === "PUBLIC" && <option value="link">Share</option>}
+                </select>
+              )}
             </div>
-
+            {post.visibility === "FRIENDS" ? (
+              <div className="text-right text-neutral-400 whitespace-nowrap">
+                FRIENDS ONLY <PeopleIcon className="ml-1" />
+              </div>
+            ) : (
+              post.visibility === "UNLISTED" && (
+                <div className="text-right text-neutral-400 whitespace-nowrap">
+                  UNLISTED <LinkIcon className="ml-1" />
+                </div>
+              )
+            )}
           </div>
-        
         </div>
       </div>
       <Content post={post} postState={postState} />
@@ -660,6 +635,7 @@ export default function Post({ post }) {
         </Modal>
       </div>
     </div>
-  )
+  );
 }
+
 
