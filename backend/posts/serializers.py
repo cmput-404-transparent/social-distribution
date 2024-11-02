@@ -98,7 +98,7 @@ class PostSummarySerializer(serializers.ModelSerializer):
 
         serializer = CommentsSerializer({
             'page': f"{obj.author.page}/posts/{obj.id}",
-            'id': f"{obj.author.host}/authors/{obj.author.id}/posts/{obj.id}/comments",
+            'id': f"{obj.author.host}authors/{obj.author.id}/posts/{obj.id}/comments",
             'page_number': page_obj.number,
             'size': paginator.per_page,
             'count': paginator.count,
