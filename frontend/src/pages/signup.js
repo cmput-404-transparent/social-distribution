@@ -77,7 +77,7 @@ export default function SignUp() {
               value={github}
               helperText="Can be set later"
             />
-            <button type="submit" className='bg-sky-400 rounded p-3 font-bold'>Sign Up</button>
+            <button type="submit" className='bg-customOrange rounded p-3 font-bold'>Sign Up</button>
           </div>
         </form>
       </div>

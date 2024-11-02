@@ -1,19 +1,41 @@
+.post-div-div-make-post {
+    padding: 75px;
+    padding-left: 200px;
+    padding-right: 200px;
+}
+
+
 .form-make-post {
-    padding: 10px;
+    padding: 50px;
+    padding-bottom: 150px;
     background-color: #FFF5CD;
     border-bottom: 8px;
+    text-align: center;
+    border-radius: 6px;
+    border: 1px solid black;
+    width: 75%;
+    height: min-content;
 }
 
 .post-title {
     text-align: center; 
     color: #333;
     padding-bottom: 30px;
+    font-weight: bold;
+    font-size: 18px;
 }
 
 .post-div {
     padding-left: 20px;
     padding-right: 20px;
 }
+
+.alldiv {
+    background-color: white;
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
 
 .div-make-post {
     padding-top: 20px;
@@ -44,6 +66,7 @@
     border: 1px solid #ccc; 
     border-radius: 4px; 
     font-size: 16px;
+    padding-bottom: 200px;
 
 }
 
@@ -55,6 +78,7 @@
     border-radius: 4px;  
     font-size: 16px;     
     cursor: pointer;     
+    
 }
 
 .make-post-button:hover {
@@ -115,7 +139,6 @@
 .div-image.active {
     background-color: #3f87d4;
 }
-
 
 
 

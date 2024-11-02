@@ -73,7 +73,7 @@ function FollowRequest({request, authorId}) {
         </a>
         <div className="grid grid-cols-1">
           <div className="space-x-2 flex justify-end">
-            <button type="submit" className='bg-sky-400 rounded p-2 px-4' onClick={accept}>Accept</button>
+            <button type="submit" className='bg-customOrange rounded p-2 px-4' onClick={accept}>Accept</button>
             <button type="submit" className='bg-neutral-200 rounded p-2 px-4' onClick={remove}>Delete</button>
           </div>
         </div>
