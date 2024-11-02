@@ -220,7 +220,7 @@ export default function Profile() {
                 ) : (
                   relationship === "NONE"? (
                     <div className="space-x-3 flex">
-                      <button className='bg-sky-400 rounded p-2 px-5' onClick={follow}>
+                      <button className='bg-customOrange rounded p-2 px-5' onClick={follow}>
                         Follow
                       </button>
                     </div>

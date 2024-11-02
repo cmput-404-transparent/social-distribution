@@ -60,10 +60,10 @@ const Login = () => {
                 required
                 className='border rounded p-2'
             />
-            <button type="submit" className='bg-sky-400 rounded'>Login</button>
+            <button type="submit" className='bg-customOrange rounded'>Login</button>
             <p>
               Don't have an account?
-              <NavLink to="/signup" className='text-sky-400'> Sign Up</NavLink>
+              <NavLink to="/signup" className='text-customOrange'> Sign Up</NavLink>
             </p>
           </div>
         </form>
