@@ -22,6 +22,8 @@ def login(request):
     password = request.POST.get('password', None)
     user = authenticate(request, username=username, password=password)
     if user is not None:
+        if not user.is_approved:
+               return Response({"detail": "Your account is pending approval."}, status=403)
         django_side_login(request, user)
         token, _ = Token.objects.get_or_create(user=user)
         return Response({"token": token.key, "userId": user.id}, status=200)
@@ -31,6 +33,9 @@ def login(request):
 @signup_docs
 @api_view(['POST'])
 def signup(request):
+    config = SiteConfiguration.objects.first()
+    is_approved = not config.require_user_approval if config else True
+
     username = request.POST.get('username', '')
     password = request.POST.get('password', '')
     display_name = request.POST.get('displayName', '')
@@ -41,7 +46,7 @@ def signup(request):
     if not display_name:
         display_name = username
 
-    new_author = Author(username=username, host=host, display_name=display_name, github=github_link)
+    new_author = Author(username=username, host=host, display_name=display_name, github=github_link, is_approved=is_approved)
     new_author.set_password(password)
     new_author.save()
     
@@ -49,11 +54,13 @@ def signup(request):
     new_author.page = page
     new_author.save()
 
-    user = authenticate(request, username=username, password=password)
-    django_side_login(request, user)
-    token, _ = Token.objects.get_or_create(user=user)
-
-    return Response({"token": token.key, "userId": user.id}, status=201)
+    if is_approved:
+        user = authenticate(request, username=username, password=password)
+        django_side_login(request, user)
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({"token": token.key, "userId": user.id}, status=201)
+    else:
+        return Response({"detail": "Your account is pending approval."}, status=201)
 
 
 @get_author_by_id_docs

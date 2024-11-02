@@ -2,7 +2,20 @@ from django.contrib import admin
 from .models import *
 from django import forms
 
+def approve_users(modeladmin, request, queryset):
+    for author in queryset:
+        if not author.is_approved:
+            author.is_approved = True
+            author.save()
+            
+approve_users.short_description = "Approve selected users"
+
+class SiteConfigurationAdmin(admin.ModelAdmin):
+    list_display = ['require_user_approval']
+
 class AuthorAdmin(admin.ModelAdmin):
+    list_display = ['username', 'is_approved', 'is_staff', 'is_active']
+    actions = [approve_users]
 
     '''
     source: ChatGPT (OpenAI)
@@ -48,3 +61,4 @@ class AuthorAdmin(admin.ModelAdmin):
 
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(Follow)
+admin.site.register(SiteConfiguration, SiteConfigurationAdmin)
