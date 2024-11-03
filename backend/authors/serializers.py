@@ -94,7 +94,9 @@ class AuthorSummarySerializer(serializers.ModelSerializer):
 
 
 
+
 class RemoteNodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = RemoteNode
-        fields = ['id', 'url', 'username', 'password']
+        fields = ['id','url','username', 'token']
+        read_only_fields = ['token'] 

@@ -83,11 +83,16 @@ class Follow(models.Model):
 
 
 
-class RemoteNode(models.Model):
-    url = models.URLField(unique=True)  # the URL of the remote node
-    username = models.CharField(max_length=255)  
-    password = models.CharField(max_length=255)  
-    created_at = models.DateTimeField(auto_now_add=True)
+# class RemoteNode(models.Model):
+#     url = models.URLField(unique=True)  # the URL of the remote node
+#     username = models.CharField(max_length=200)  
+#     password = models.CharField(max_length=250)  
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Remote Node at {self.url}"
+
+class RemoteNode(models.Model):
+    url = models.URLField(unique=True)
+    username = models.CharField(max_length=250)
+    token = models.CharField(max_length=250, blank=True, null=True) 
+
+
