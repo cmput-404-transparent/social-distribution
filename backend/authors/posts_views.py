@@ -212,16 +212,16 @@ def share_post(request, post_id):
         return Response({"detail": "This post cannot be shared."}, status=status.HTTP_403_FORBIDDEN)
     author = post.author
     share, created = Share.objects.get_or_create(sharer=request.user, post=post)
-    original_post_url = f" {author.page}/posts/{post_id}"
+    original_post_url = f"{author.page}/posts/{post_id}"
     
     if created:
         # Create a new post as a share
         shared_post = Post.objects.create(
             author=request.user,
             title=post.title,
-            content = post.content,
-            description = f"{request.user} shared <a href='{original_post_url}'>{post.author}'s post:</a> {post.description}",
-            contentType=post.contentType ,
+            content=post.content,
+            description=f"<b>{request.user.display_name} shared <a href='{original_post_url}'>{post.author.display_name}'s post</a></b>: {post.description}",
+            contentType=post.contentType,
             visibility='PUBLIC',  # Ensure shared posts are always public
             is_shared=True,
             original_post=post
