@@ -30,7 +30,7 @@ def login(request):
         token, _ = Token.objects.get_or_create(user=user)
         return Response({"token": token.key, "userId": user.id}, status=200)
     else:
-        return Response(status=401)
+        return Response({"detail": "Invalid username or password"}, status=401)
 
 @signup_docs
 @api_view(['POST'])
