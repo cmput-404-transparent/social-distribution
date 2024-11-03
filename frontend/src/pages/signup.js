@@ -34,11 +34,16 @@ export default function SignUp() {
 
       if (response.ok) {
         const data = await response.json();
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('authorId', data.userId);
-        window.location.href = "/stream";
+        if (data.detail) {
+          alert(data.detail); // Display the pending approval message to the user
+        } else {
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('authorId', data.userId);
+          window.location.href = "/stream";
+        }
       } else {
-        alert('Invalid credentials');
+        const errorData = await response.json();
+        alert(errorData.detail || 'Invalid credentials'); // Show error message from server
       }
     } catch (error) {
       console.error('Login failed:', error);
