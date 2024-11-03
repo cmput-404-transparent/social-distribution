@@ -109,4 +109,7 @@ urlpatterns = [
     # Get a specific comment made by a specific author
     path('<int:author_serial>/commented/<uuid:comment_serial>', posts_views.get_author_comment),
 
+    # remote nodes
+    path('remote-nodes/', author_views.manage_remote_nodes, name='manage_remote_nodes'),
+
 ]
