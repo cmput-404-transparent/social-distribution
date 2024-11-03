@@ -185,13 +185,14 @@ def update_existing_post(request, author_id, post_id):
 
 
 @permission_classes([IsAuthenticated])
-# Delete a post
 def delete_post(request, author_id, post_id):
     post = get_object_or_404(Post, id=post_id, author=request.user)
     if post.author == request.user:  # Ensure the user is the author of the post
-        post.delete()
+        post.is_deleted = True  # Mark as deleted
+        post.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_403_FORBIDDEN)  # Forbidden if not the author
+
 
 @get_all_public_posts_docs
 @api_view(['GET'])

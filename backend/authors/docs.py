@@ -8,7 +8,7 @@ date: October 21, 2024
 '''
 
 # Post views
-create_new_post_docs = swagger_auto_schema(
+create_new_post_docs = swagger_auto_schema(            
     method='post',
     operation_summary="Create a new post for a specific author",
     operation_description="""

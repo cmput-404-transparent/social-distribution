@@ -98,7 +98,7 @@ export default function EditProfile() {
               onChange={(e) => setGithub(e.target.value)}
               value={github}
             />
-            <button type="submit" className='bg-sky-400 rounded p-3 font-bold'>Save</button>
+            <button type="submit" className='bg-customOrange rounded p-3 font-bold'>Save</button>
           </div>
         </form>
       </div>

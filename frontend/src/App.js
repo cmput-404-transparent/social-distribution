@@ -24,7 +24,7 @@ function App() {
 
   return (
     <Router>
-      <div className='grid grid-cols-[auto,1fr] w-full'>
+      <div className='grid grid-cols-[auto,1fr] w-full gap-0 mx-0'>
         <NavBar />
         <Routes>
           <Route path="/stream" element={<StreamPage/>} />

@@ -46,7 +46,16 @@ export default function Search() {
           <h1 className="font-bold text-xl pb-3">Find Authors</h1>
           <form className="grid grid-cols-[auto,min-content] auto-cols-auto w-full space-x-4" onSubmit={searchAuthors}>
             <TextField id="outlined-search" label="Search" type="search" className="w-full" onChange={(e) => setKeyword(e.target.value)}/>
-            <Button variant="contained" type="submit"><SearchIcon /></Button>
+            <Button variant="contained" type="submit" 
+                        sx={{
+                        backgroundColor: '#E78F81', 
+                        '&:hover': {
+                          backgroundColor: '#FF8C00', 
+                        },
+                      }}>
+              
+               <SearchIcon />
+            </Button>
           </form>
           <div className="search-results">
             {results.map((author) => (
