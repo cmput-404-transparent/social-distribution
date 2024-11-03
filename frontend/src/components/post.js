@@ -567,9 +567,9 @@ export default function Post({ post }) {
                   <option value="none">Options</option>
                   {!isStream && isOwn && <option value="edit">Edit</option>}
                   {!isStream && isOwn && <option value="delete">Delete</option>}
-                  (post.visibility === "UNLISTED" || post.visibility === "PUBLIC") && (!isStream) && (isOwn) && (
-                            <option value="link">Copy Link</option>
-                          )
+                  {(post.visibility === "UNLISTED") && !isStream && isOwn && (
+                      <option value="link">Copy Link</option>
+                  )}
                   {post.visibility === "PUBLIC" && <option value="share">Share</option>}
                 </select>
               )}
