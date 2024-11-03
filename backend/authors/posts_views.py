@@ -34,8 +34,6 @@ def author_posts(request, author_id):
 # Function to handle post creation (POST)
 @permission_classes([IsAuthenticated])
 def create_new_post(request, author_id):
-    if not request.user.is_approved:
-        return Response({"error": "Your account is pending approval and cannot create posts."}, status=status.HTTP_403_FORBIDDEN)
 
     # Check if the authenticated user matches the author_id
     if str(request.user.id) != str(author_id):
