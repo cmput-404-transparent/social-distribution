@@ -11,5 +11,5 @@ urlpatterns = [
     path('<int:author_id>/github/', views.post_github_activity, name="post_github"),
     
     # Get an image post by its fqid
-    path("<int:fqid>/image/", views.get_image_post_by_fqid, name="get_image_post_by_fqid")
+    path("<str:fqid>/image/", views.get_image_post_by_fqid, name="get_image_post_by_fqid")
 ]

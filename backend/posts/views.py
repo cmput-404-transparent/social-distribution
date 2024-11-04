@@ -111,9 +111,9 @@ def post_github_activity(request, author_id):
 
 @get_image_post_by_fqid_docs
 @api_view(['GET'])
-def get_image_post_by_fqid(request, post_fqid):
+def get_image_post_by_fqid(request, fqid):
     # Fetch the post by FQID
-    post = get_object_or_404(Post, fqid=post_fqid, visibility='PUBLIC')
+    post = get_object_or_404(Post, fqid=fqid, visibility='PUBLIC')
 
     # Check if the contentType is an image
     if not post.contentType.startswith('image/'):
