@@ -88,23 +88,25 @@ def list_recent_posts(request, author_id):
             # Author sees all their own posts
             pass
         elif Follow.are_friends(author, request.user):
-            # Friends see public, friends-only, and unlisted posts
+            # Friends see public, friends-only, unlisted posts, and shared posts
             posts = posts.filter(
                 Q(visibility='PUBLIC') |
                 Q(visibility='FRIENDS') |
-                Q(visibility='UNLISTED')
+                Q(visibility='UNLISTED') |
+                Q(is_shared=True)
             )
-        elif Follow.are_friends(author, request.user):
-            # followers can see public and unlisted posts
+        elif Follow.objects.filter(user=author, follower=request.user).exists():
+            # followers can see public, unlisted posts, and shared posts
             posts = posts.filter(
                 Q(visibility='PUBLIC') |
-                Q(visibility='UNLISTED')
+                Q(visibility='UNLISTED') |
+                Q(is_shared=True)
             )
         else:
-            posts = posts.filter(visibility='PUBLIC')
+            posts = posts.filter(visibility='PUBLIC', is_shared=False)
     else:
         # Unauthenticated users see only public posts
-        posts = posts.filter(visibility='PUBLIC')
+        posts = posts.filter(visibility='PUBLIC', is_shared=False)
 
     # Apply pagination
     paginator = PageNumberPagination()
@@ -269,39 +271,48 @@ def list_shared_posts(request, author_id):
     serializer = PostSerializer(shared_posts, many=True)
     return Response(serializer.data)
 
-
 @stream_docs
-# Stream for showing all relevant posts
 @api_view(['GET'])
-def stream(request,author_id):
+def stream(request, author_id):
+    author = get_object_or_404(Author, id=author_id)
 
-    author = Author.objects.get(id=author_id)
+    # Initialize an empty queryset for posts
+    posts = Post.objects.none()  
 
-
-    # getting all the public posts
-    posts = Post.objects.filter(~Q(author=author), visibility='PUBLIC')  # public posts excluding the author's own posts
-    
-    if author.is_authenticated:
-        # see unlisted posts from people you follow
+    # Check for public posts
+    if request.user.is_authenticated:
+        # Get the user's friends and followers
         following = Follow.objects.filter(follower=author, status="FOLLOWED").values_list('user', flat=True)
-        following_posts = Post.objects.filter(author__in=following, visibility='UNLISTED')
-        
-        # see unlisted and friends-only posts from friends
         friends = Follow.get_friends(author)
+
+        # Public posts: include shared posts and also allow non-shared if the user is a follower
+        public_posts = Post.objects.filter(~Q(author=author), visibility='PUBLIC')
+        public_posts = public_posts.filter(Q(is_shared=True) & Q(author__in=following) | Q(is_shared=False))  # Allow public posts that are not shared
+
+        # Add public posts to the posts queryset
+        posts = posts | public_posts
+
+        # Unlisted posts: must be shared
+        following_posts = Post.objects.filter(author__in=following, visibility='UNLISTED')
+        posts = posts | following_posts
+
+        # Friends-only posts: must be shared
         friends_posts = Post.objects.filter(author__in=friends, visibility__in=['UNLISTED', 'FRIENDS'])
+        posts = posts | friends_posts
+    else:
+        # If the user is not authenticated, include all public posts
+        posts = Post.objects.filter(~Q(author=author), visibility='PUBLIC', is_shared=False)
 
-        # see public posts and relevant friends/unlisted posts
-        posts = posts | following_posts | friends_posts
-
-    # remove deleted posts
+    # Remove deleted posts
     posts = posts.exclude(is_deleted=True).order_by('-published')
 
-    # paginate the stream
+    # Paginate the stream
     paginator = PageNumberPagination()
     paginated_posts = paginator.paginate_queryset(posts, request)
 
     serializer = PostSummarySerializer(paginated_posts, many=True)
     return paginator.get_paginated_response(serializer.data)
+
 
 
 @get_image_post_docs
