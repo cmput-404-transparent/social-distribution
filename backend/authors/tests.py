@@ -2,7 +2,7 @@ from django.test import TestCase
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
-from authors.models import Author, Follow  # Import Follow model
+from authors.models import Author, Follow, RemoteNode  # Import Follow model
 from posts.models import Post
 
 from rest_framework.authtoken.models import Token
@@ -22,6 +22,8 @@ class AuthorAPITests(APITestCase):
         self.other_user.save()
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        self.admin_user = Author.objects.create(username="adminuser", password="test", display_name="Admin User", is_staff=True)
+        self.admin_user.set_password(self.password)
 
     def test_login(self):
         # Test the login endpoint
@@ -65,7 +67,7 @@ class AuthorAPITests(APITestCase):
         # Test the get_author endpoint
         url = reverse('api:authors:get_all_authors')
         response = self.client.get(url)
-        self.assertEqual(len(response.data['authors']), 2)
+        self.assertEqual(len(response.data['authors']), 3)
 
     def test_search_author(self):
         # Test the search_author endpoint
@@ -159,6 +161,13 @@ class AuthorAPITests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['friends']), 1)
+    
+    def get_remote_nodes(self):
+        self.client.login(username=self.admin_user.username, password=self.password)
+        RemoteNode.objects.create(url="http://localhost:3000", username="test_username", password=self.password)
+        url = reverse('api:authors:friends', args=[self.author.id])
+        response = self.client.get(url)
+        self.assertEqual(len(response.data), 1)
 
 
 class PostAPITests(APITestCase):
