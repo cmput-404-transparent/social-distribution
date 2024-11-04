@@ -153,7 +153,9 @@ const MakePost = () => {
           alt="Upload"
           className="w-10 h-10 cursor-pointer mx-auto hover:opacity-80"
           onClick={() => document.getElementById('imageInput').click()}
-        /></>):
+        />  <p className="text-m text-gray-800 mt-2">
+        {uploadedImage ? uploadedImage.name : 'No file chosen'}
+      </p></>):
           (
             
           <textarea
