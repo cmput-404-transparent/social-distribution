@@ -445,9 +445,7 @@ export default function Post({ post }) {
             alert("Post shared successfully!");
             window.location.reload()
         } else {
-
             alert('You have already shared this post');
-
         }
     } catch (error) {
         console.error('Error sharing post:', error);
@@ -469,6 +467,7 @@ export default function Post({ post }) {
     }
     else if(option == "share"){
       sharePost()
+      e.target.value = "none";
     }
 
   }
