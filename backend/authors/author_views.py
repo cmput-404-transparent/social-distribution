@@ -324,13 +324,13 @@ def manage_remote_nodes(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        url = request.data.get('url')
+        url = request.data.get('host')
         username = request.data.get('username')
         password = request.data.get('password')
 
         if not url or not username or not password:
             return Response(
-                {'error': 'URL, username, and password are required fields.'},
+                {'detail': 'URL, username, and password are required fields.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -341,7 +341,7 @@ def manage_remote_nodes(request):
                 token= response.json().get('token')  # get the tokem
                 
                 if not token:
-                    return Response({'error': 'Authentication token not provided by remote node.'},status=status.HTTP_400_BAD_REQUEST)                
+                    return Response({'detail': 'Authentication token not provided by remote node.'},status=status.HTTP_400_BAD_REQUEST)                
 
                 remote_node,created= RemoteNode.objects.update_or_create(url=url,defaults={'username': username,'token': token,} )
                 
@@ -349,10 +349,10 @@ def manage_remote_nodes(request):
                 return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
             else:
-                return Response({'error': 'Failed to authenticate with the remote node.'},status=response.status_code)
+                return Response({'detail': 'Failed to authenticate with the remote node.'},status=response.status_code)
                 
         except requests.RequestException as e:
             return Response(
-                {'error': f'Connection to remote node failed: {str(e)}'},
+                {'detail': f'Connection to remote node failed: {str(e)}'},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
