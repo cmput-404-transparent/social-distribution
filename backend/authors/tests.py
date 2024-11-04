@@ -220,6 +220,21 @@ class PostAPITests(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertTrue(Post.objects.get(id=self.post.id).is_deleted)
+    
+    def test_no_deleted_posts_on_stream(self):
+        # test that you can't see deleted posts on stream
+        self.client.login(username=self.author.username, password=self.password)
+        url = reverse('api:authors:stream', args=[self.author.id])
+        Post.objects.create(
+            title="Deleted Post",
+            description="Deleted post description",
+            content="Deleted post content",
+            author=self.other_user,
+            visibility="PUBLIC",
+            is_deleted=True
+        )
+        response = self.client.get(url).json()
+        self.assertEqual(response['count'], 0)
 
     def test_share_post(self):
         # Test POST request to share a post
