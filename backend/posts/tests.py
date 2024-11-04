@@ -7,6 +7,7 @@ from posts.models import Post
 from rest_framework.authtoken.models import Token
 from unittest.mock import patch
 import json
+import base64
 
 class PostAndGithubActivityTests(APITestCase):
 
@@ -134,3 +135,28 @@ class PostAndGithubActivityTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Post.objects.count(), 3)  # No new posts created
+
+    def test_get_image_post_by_fqid(self):
+         # Create an image post
+         with open('posts/test_image.jpg', 'rb') as image_file:
+             image_content = base64.b64encode(image_file.read()).decode('utf-8')
+
+         image_post = Post.objects.create(
+             title="Image Post",
+             content=image_content,
+             author=self.user,
+             contentType="image/jpeg;base64",
+             visibility="PUBLIC"
+         )
+
+         url = reverse('api:posts:get_image_post_by_fqid', args=[image_post.fqid])
+         response = self.client.get(url)
+         self.assertEqual(response.status_code, status.HTTP_200_OK)
+         self.assertEqual(response['Content-Type'], 'image/png')
+
+    def test_get_non_image_post_by_fqid(self):
+         # Test fetching a non-image post using the image endpoint
+         url = reverse('api:posts:get_image_post_by_fqid', args=[self.public_post.fqid])
+         response = self.client.get(url)
+         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+         self.assertIn("Not an image post", response.data['detail'])
