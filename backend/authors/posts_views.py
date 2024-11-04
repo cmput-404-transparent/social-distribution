@@ -574,3 +574,17 @@ def check_liked(request, author_id, post_id):
     liked = Like.objects.filter(author__id=author_id, object=post_object)
 
     return Response({"liked": liked.exists()})
+
+@api_view(['GET'])
+def get_all_hosted_images(request):
+    """
+    get all images that are hosted on this node
+    """
+    all_images = []
+
+    _, files = default_storage.listdir('images')
+    for file_name in files:
+        if file_name.lower().endswith(('.png', '.jpeg')):   # images are only png or jpeg
+            all_images.append("/media/images/" + file_name)
+
+    return Response({'images': all_images}, status=200)
