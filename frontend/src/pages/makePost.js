@@ -86,7 +86,7 @@ const MakePost = () => {
   }
 
   return (
-    <div className="page">
+    <div className="page max-h-screen overflow-scroll pb-[25px]">
       
       <form onSubmit={handleSubmit} className='form-make-post'>
       <h1 className='post-title'>Make a Post</h1>
