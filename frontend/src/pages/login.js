@@ -26,8 +26,13 @@ const Login = () => {
 
     const csrftoken = getCookie('csrftoken');
 
+    let loginURL = '/api/authors/login/';
+    if (host !== "") {
+      loginURL = '/api/authors/remote-nodes/';
+    }
+
     try {
-      const response = await fetch('/api/authors/login/', {
+      const response = await fetch(loginURL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
