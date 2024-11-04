@@ -430,7 +430,7 @@ export default function Post({ post }) {
     const csrftoken = getCookie('csrftoken');
     const uuidofPost = post.id.split('/').pop();
     try {
-        const response = await fetch(`api/authors/${uuidofPost}/share/` ,{
+        const response = await fetch(`/api/authors/${uuidofPost}/share/` ,{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
