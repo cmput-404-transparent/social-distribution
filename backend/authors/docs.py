@@ -907,12 +907,12 @@ manage_remote_nodes_docs = swagger_auto_schema(
             examples={
                 "application/json": [
                     {
-                        "url": "http://127.0.0.1:8000/remote-nodes",
+                        "url": "https://remote-host.com/",
                         "username": "admin",
                         "token": "abcd1234token"
                     },
                     {
-                        "url": "http://127.0.0.1:8000/remote-nodes",
+                        "url": "https://remote-host.com/",
                         "username": "nodeuser",
                         "token": "token5678efgh"
                     }
@@ -940,7 +940,7 @@ manage_remote_nodes_docs_post = swagger_auto_schema(
             'url': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description="The URL of the remote node.",
-                example="http://127.0.0.1:8000/remote-nodes"
+                example="https://remote-host.com/"
             ),
             'username': openapi.Schema(
                 type=openapi.TYPE_STRING,
@@ -959,7 +959,7 @@ manage_remote_nodes_docs_post = swagger_auto_schema(
             description="Remote node registered successfully",
             examples={
                 "application/json": {
-                    "url": "http://127.0.0.1:8000/remote-nodes",
+                    "url": "https://remote-host.com/",
                     "username": "admin",
                     "token": "newauthtoken"
                 }
@@ -969,7 +969,7 @@ manage_remote_nodes_docs_post = swagger_auto_schema(
             description="Remote node updated successfully",
             examples={
                 "application/json": {
-                    "url": "http://127.0.0.1:8000/remote-nodes",
+                    "url": "https://remote-host.com/",
                     "username": "admin",
                     "token": "updatedauthtoken"
                 }
