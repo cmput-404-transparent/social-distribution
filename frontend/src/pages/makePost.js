@@ -1,12 +1,31 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './makePost.css';
 import getCookie from '../getCSRFToken';
-import commonmark from 'commonmark';
 import { Parser, HtmlRenderer } from 'commonmark';
 
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
+import CloseIcon from '@mui/icons-material/Close';
 
+
+
+/**
+ * source: Material UI Documentation
+ * link: https://mui.com/material-ui/react-modal/
+ * date: November 4, 2024
+ */
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 700,
+  bgcolor: 'background.paper',
+  border: '1px solid',
+  borderRadius: '5px',
+  p: 4,
+};
 
 const MakePost = () => {
   const [title, setTitle] = useState('');
@@ -14,11 +33,14 @@ const MakePost = () => {
   const [content, setContent] = useState('');
   const [contentType, setContentType] = useState('text/plain');
   const [uploadedImage, setImage] = useState('')
-  const [activeButton, setActiveButton] = useState('');
+  const [activeButton, setActiveButton] = useState('plain');
   const [visibility, setVisbility] = useState('PUBLIC'); 
 
+  const [commonmarkImages, setCommonmarkImages] = useState([]);
+  const [commonmarkImage, setCommonmarkImage] = useState('');
 
-  //simple drown-down - https://medium.com/@maazmedia1/how-to-create-a-dropdown-menu-in-reactjs-36f27987dbc4
+  // upload image from <a href="https://www.flaticon.com/free-icons/upload" title="upload icons">Upload icons created by Kiranshastry - Flaticon</a>
+
   const handleChange = (event) => {
     setVisbility(event.target.value);
     };
@@ -27,6 +49,15 @@ const MakePost = () => {
   const authorId = localStorage.getItem('authorId');
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // get all hosted images
+    fetch('/api/authors/images/all/')
+    .then(r => r.json())
+    .then(data => {
+      setCommonmarkImages(data.images)
+    })
+  }, [])
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -89,10 +120,81 @@ const MakePost = () => {
     })
   }
 
+  const ImageSelector = ({images}) => {
+
+    const [open, setOpen] = useState(false);
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+  
+    const [imageUrls, setImageUrls] = useState([]);
+  
+    useEffect(() => {
+      const fetchImages = async () => {
+        const fetchedUrls = await Promise.all(
+          images.map(async (filename) => {
+            const response = await fetch(filename);
+            const blob = await response.blob();
+            return URL.createObjectURL(blob);
+          })
+        );
+  
+        setImageUrls(fetchedUrls);
+      };
+  
+      fetchImages();
+    }, []);
+
+    function setImage(event) {
+      setCommonmarkImage(event.target.id);
+      handleClose();
+    }
+  
+    return(
+      <div>
+        <button type="button" onClick={handleOpen} className='bg-customOrange rounded p-2 px-5'>Select Image</button>
+        <Modal
+          open={open}
+          onClose={handleClose}
+        >
+          <Box sx={style}>
+            <div className="grid grid-cols-2 pb-3 mb-3 border-b">
+              <h2 className="font-bold text-3xl">
+              Select Image
+              </h2>
+              <div className="flex justify-end">
+                <CloseIcon sx={{ color: '#bbb' }} onClick={handleClose} className="cursor-pointer" />
+              </div>
+            </div>
+  
+            <div className="grid grid-cols-3 gap-4">
+              {
+                imageUrls.length > 0? (
+                  imageUrls.map((image, index) => {
+                    return <img src={image} id={images[index].split("/").pop()} alt="Image not found" className='border rounded' onClick={setImage}></img>
+                  })
+                ) : (<p>No Images Found</p>)
+              }
+            </div>
+          </Box>
+        </Modal>
+      </div>
+    )
+  }
+
+  useEffect(() => {
+    if (commonmarkImage) {
+      let commonmarkImageText = `![Image](/media/images/${commonmarkImage})`
+      setContent(content + commonmarkImageText);
+      setCommonmarkImage('');
+    }
+  }, [commonmarkImage]);
+
   return (
-    <div className="post-div div-make-post">
-      <h1 className='post-title'>Make a Post</h1>
+    <div className="page max-h-screen overflow-scroll pb-[25px]">
+      
       <form onSubmit={handleSubmit} className='form-make-post'>
+      <h1 className='post-title'>Make a Post</h1>
+        <div className='alldiv'>
         <div className='div-make-post'>
           <label className='label-make-post'>Title:</label>
           <input
@@ -104,16 +206,19 @@ const MakePost = () => {
           />
         </div>
         <div className='div-make-post'>
-          <label>Description:</label>
+          <label className='label-make-post' >Description:</label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
+            className='input-make-post'
           />
-        </div>
 
+        </div>
+        <div className='div-make-post'>
         <label> Content Type:</label>
+        </div>
 
         <button
         className={`div-plain ${activeButton === 'plain' ? 'active' : ''}`} type="button"
@@ -140,8 +245,21 @@ const MakePost = () => {
         <div className='div-make-post'>
 
           {contentType === 'image' ? (
-          <><label>Upload File</label><input type="file" id="imageInput" onChange={(e) => setImage(e.target.files[0])}
-          required></input></>):
+          <><input
+          type="file"
+          id="imageInput"
+          onChange={(e) => setImage(e.target.files[0])}
+          className="hidden"
+        />
+      
+        <img
+          src="/upload.png" 
+          alt="Upload"
+          className="w-10 h-10 cursor-pointer mx-auto hover:opacity-80"
+          onClick={() => document.getElementById('imageInput').click()}
+        />  <p className="text-m text-gray-800 mt-2">
+        {uploadedImage ? uploadedImage.name : 'No file chosen'}
+      </p></>):
           (
             
           <textarea
@@ -150,23 +268,26 @@ const MakePost = () => {
           required
           className='make-post-textarea'
           
-
-          
           />
 
           )}
           
         </div>
 
-        <div className='div-make-post'>
-          <select value={visibility} onChange={handleChange}>
+        <div className={`flex ${activeButton === "markdown"? "justify-between" : "justify-end"} px-20 pb-8`}>
+          { activeButton === "markdown" && <ImageSelector images={commonmarkImages} />}
+          <select className='border rounded' value={visibility} onChange={handleChange}>
                 <option value="PUBLIC">Public</option>
                 <option value="FRIENDS">Friends-Only</option>
                 <option value="UNLISTED">Unlisted</option>
           </select>
         </div>
-        <button type="submit" className='make-post-button'>Create Post</button>
-      
+
+        
+        <div className="flex justify-end pr-20">
+          <button type="submit" className="make-post-button">Create Post</button>
+        </div>
+      </div>
       </form>
     </div>
   );

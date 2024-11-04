@@ -11,6 +11,7 @@ import EditProfile from './pages/editProfile';
 import Search from './pages/search';
 import { useEffect } from 'react';
 import Notifications from './pages/notifications';
+import SharePost from './components/SharePost';
 
 
 function App() {
@@ -23,7 +24,7 @@ function App() {
 
   return (
     <Router>
-      <div className='grid grid-cols-[auto,1fr] w-full'>
+      <div className='grid grid-cols-[auto,1fr] w-full gap-0 mx-0'>
         <NavBar />
         <Routes>
           <Route path="/stream" element={<StreamPage/>} />
@@ -42,6 +43,12 @@ function App() {
               <EditProfile/>
             </ProtectedRoute>
           } />
+          <Route path={`/authors/:author_id/posts/:post_id`} element={
+          <ProtectedRoute>
+              <SharePost/>
+          </ProtectedRoute>
+          } />
+
           <Route path="/login" element={<Login/>} />
           <Route path="/signup" element={<SignUp/>} />
           <Route path="/search" element={<Search/>} />

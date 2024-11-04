@@ -52,6 +52,7 @@
   margin-left: 0;
   margin-right: 0;
   font-weight: bold;
+  font-family: Georgia, 'Times New Roman', Times, serif;
 }
 
 .post-content h1 {
@@ -118,8 +119,10 @@
   font-weight: bold;
 }
 
-.post-content a {
-  color: rgb(14 165 233);
+.post-content a,
+.post-description a
+{
+   color: rgb(14 165 233);
   text-decoration: underline;
   cursor: auto;
 }

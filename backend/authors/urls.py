@@ -35,17 +35,22 @@ urlpatterns = [
     # follow author
     path("follow/", author_views.follow, name="follow"),
 
+    # FOLLOWING AND FRIENDS URLS ------------------------------------------------------------------------------
+
     # get follow requests
     path("<int:author_id>/follow_requests/", author_views.get_follow_requests, name="get_follow_requests"),
 
     # manage follow request
     path("<int:author_id>/follow_request/", author_views.manage_follow, name="manage_follow"),
 
-    # get followers
-    path("<int:author_id>/followers/", author_views.get_followers, name="get_followers"),
+    # get followers (GET method)
+    path("<int:author_id>/followers/", author_views.followers, name="followers"),
 
-    # get users that an author follows
-    path("<int:author_id>/following/", author_views.get_following, name="get_following"),
+    # get users that an author follows (GET method)     # unfollow (DELETE method)
+    path("<int:author_id>/following/", author_views.following, name="following"),
+
+    # get users that an author is friends with
+    path("<int:author_id>/friends/", author_views.friends, name="friends"),
 
     # get relationship between two authors
     path("<int:author_1_id>/relationship/<int:author_2_id>/", author_views.get_relationship, name="get_relationship"),
@@ -74,4 +79,39 @@ urlpatterns = [
     # IMAGE URLS ------------------------------------------------------------------------------
 
     path('<int:author_id>/posts/<uuid:post_id>/image/', posts_views.get_image_post, name='get_image_post'),
+
+    path('upload_image/', posts_views.upload_image, name='upload_image'),
+
+    path('images/all/', posts_views.get_all_hosted_images, name="get_all_images"),
+
+    # LIKES URLS ------------------------------------------------------------------------------
+
+    # Get likes for a specific object
+    path('<int:author_id>/posts/<uuid:object_id>/likes', posts_views.get_likes),
+    
+    # Like a specific object
+    path('<int:author_id>/posts/<uuid:object_id>/like', posts_views.like_object),
+
+    # check if an author liked a post
+    path('<int:author_id>/liked/<uuid:post_id>', posts_views.check_liked),
+
+    # COMMENTS URLS ------------------------------------------------------------------------------
+    
+    # Comments API
+    # Get comments on a specific post
+    path('<int:author_serial>/posts/<uuid:post_serial>/comments', posts_views.comments_on_post),
+    
+    # Get a specific comment on a post
+    path('<int:author_serial>/posts/<uuid:post_serial>/comments/<uuid:comment_id>', posts_views.get_comment),
+    
+    # Commented API
+    # Get comments made by a specific author
+    path('<int:author_serial>/commented', posts_views.get_author_comments),
+    
+    # Get a specific comment made by a specific author
+    path('<int:author_serial>/commented/<uuid:comment_serial>', posts_views.get_author_comment),
+
+    # remote nodes
+    path('remote-nodes/', author_views.manage_remote_nodes, name='manage_remote_nodes'),
+
 ]

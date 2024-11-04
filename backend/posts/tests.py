@@ -7,11 +7,13 @@ from posts.models import Post
 from rest_framework.authtoken.models import Token
 from unittest.mock import patch
 import json
+import base64
+from urllib.parse import quote
 
 class PostAndGithubActivityTests(APITestCase):
 
     def setUp(self):
-        self.user = Author.objects.create(username="testuser", display_name="Test User")
+        self.user = Author.objects.create(username="testuser", display_name="Test User", host="http://localhost:3000/api/")
         self.password = "testpass"
         self.user.set_password(self.password)
         self.user.save()
@@ -134,3 +136,32 @@ class PostAndGithubActivityTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Post.objects.count(), 3)  # No new posts created
+
+    def test_get_image_post_by_fqid(self):
+         # Create an image post
+         with open('posts/test_image.jpg', 'rb') as image_file:
+             image_content = base64.b64encode(image_file.read()).decode('utf-8')
+
+         image_post = Post.objects.create(
+             title="Image Post",
+             content=image_content,
+             author=self.user,
+             contentType="image/jpeg;base64",
+             visibility="PUBLIC"
+         )
+
+         encoded_fqid = quote(image_post.fqid, safe="")
+
+         url = reverse('api:posts:get_image_post_by_fqid', args=[encoded_fqid])
+         response = self.client.get(url)
+         self.assertEqual(response.status_code, status.HTTP_200_OK)
+         self.assertEqual(response['Content-Type'], 'image/jpeg;base64')
+
+    def test_get_non_image_post_by_fqid(self):
+         encoded_fqid = quote(self.public_post.fqid, safe="")
+
+         # Test fetching a non-image post using the image endpoint
+         url = reverse('api:posts:get_image_post_by_fqid', args=[encoded_fqid])
+         response = self.client.get(url)
+         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+         self.assertIn("Not an image post", response.json()['detail'])

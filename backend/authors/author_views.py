@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
+import requests
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import *
 from .serializers import *
 from rest_framework.response import Response
@@ -21,15 +23,21 @@ def login(request):
     password = request.POST.get('password', None)
     user = authenticate(request, username=username, password=password)
     if user is not None:
+        config = SiteConfiguration.objects.first()
+        if not user.is_approved and config and config.require_user_approval:
+               return Response({"detail": "Your account is pending approval."}, status=403)
         django_side_login(request, user)
         token, _ = Token.objects.get_or_create(user=user)
         return Response({"token": token.key, "userId": user.id}, status=200)
     else:
-        return Response(status=401)
+        return Response({"detail": "Invalid username or password"}, status=401)
 
 @signup_docs
 @api_view(['POST'])
 def signup(request):
+    config = SiteConfiguration.objects.first()
+    is_approved = not config.require_user_approval if config else True
+
     username = request.POST.get('username', '')
     password = request.POST.get('password', '')
     display_name = request.POST.get('displayName', '')
@@ -40,7 +48,7 @@ def signup(request):
     if not display_name:
         display_name = username
 
-    new_author = Author(username=username, host=host, display_name=display_name, github=github_link)
+    new_author = Author(username=username, host=host, display_name=display_name, github=github_link, is_approved=is_approved)
     new_author.set_password(password)
     new_author.save()
     
@@ -48,11 +56,13 @@ def signup(request):
     new_author.page = page
     new_author.save()
 
-    user = authenticate(request, username=username, password=password)
-    django_side_login(request, user)
-    token, _ = Token.objects.get_or_create(user=user)
-
-    return Response({"token": token.key, "userId": user.id}, status=201)
+    if is_approved:
+        user = authenticate(request, username=username, password=password)
+        django_side_login(request, user)
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({"token": token.key, "userId": user.id}, status=201)
+    else:
+        return Response({"detail": "Your account is pending approval."}, status=201)
 
 
 @get_author_by_id_docs
@@ -85,7 +95,7 @@ def get_update_author(request, author_id):
             except:
                 author.username = original_username
                 errors.append("Username is taken")
-        if password is not None and not author.check_password(password):     # checks if passwords are the same
+        if password is not None and password and not author.check_password(password):     # checks if passwords are the same
             author.set_password(password)           # if not then change it
         if display_name is not None and display_name != author.display_name:
             author.display_name = display_name
@@ -244,7 +254,7 @@ def manage_follow(request, author_id):
 
 @get_follows_docs
 @api_view(['GET'])
-def get_followers(request, author_id):
+def followers(request, author_id):
     author = Author.objects.get(id=author_id)
     followers_id = Follow.objects.filter(user=author, status="FOLLOWED").values_list('follower')
     followers = Author.objects.filter(id__in=followers_id)
@@ -255,14 +265,27 @@ def get_followers(request, author_id):
     }
     return Response(response_data, status=200)
 
+
+def unfollow(request, author_id):
+    following_id = request.POST.get('following', None)
+    follow = get_object_or_404(Follow, user__id=following_id, follower__id=author_id)
+    if follow:
+        follow.delete()
+    return Response(status=200)
+
 @get_following_docs
-@api_view(['GET'])
-def get_following(request, author_id):
-    author = Author.objects.get(id=author_id)
-    following_ids = Follow.objects.filter(follower=author, status="FOLLOWED").values_list('user')
-    following = Author.objects.filter(id__in=following_ids)
-    serialized_following = [AuthorSummarySerializer(following_user).data for following_user in following]
-    return Response(serialized_following, status=200)
+@api_view(['GET', 'DELETE'])
+def following(request, author_id):
+    if request.method == 'GET':
+        author = Author.objects.get(id=author_id)
+        following_ids = Follow.objects.filter(follower=author, status="FOLLOWED").values_list('user')
+        following = Author.objects.filter(id__in=following_ids)
+        serialized_following = [AuthorSummarySerializer(following_user).data for following_user in following]
+        return Response(serialized_following, status=200)
+    elif request.method == 'DELETE':
+        return unfollow(request, author_id)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 @relationship_docs
 @api_view(['GET'])
@@ -276,3 +299,61 @@ def get_relationship(request, author_1_id, author_2_id):
 def get_full_author(request, author_id):
     author = Author.objects.get(id=author_id)
     return Response(AuthorSerializer(author).data, status=200)
+
+@api_view(['GET'])
+def friends(request, author_id):
+    author = Author.objects.get(id=author_id)
+    friend_ids = Follow.get_friends(author)
+    friends = Author.objects.filter(id__in=friend_ids)
+    friends_serialized = [AuthorSummarySerializer(friend).data for friend in friends]
+    return Response({'friends': friends_serialized}, status=200)
+
+
+
+
+#view all remote node connections(GET)
+# add a remote node connection(POST)
+# will have to refactor acc how other groups do login 
+@manage_remote_nodes_docs
+@manage_remote_nodes_docs_post
+@api_view(['GET','POST'])
+@permission_classes([IsAdminUser])
+def manage_remote_nodes(request):
+    if request.method == 'GET':
+        nodes = RemoteNode.objects.all()
+        serializer = RemoteNodeSerializer(nodes, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        url = request.data.get('host')
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        if not url or not username or not password:
+            return Response(
+                {'detail': 'URL, username, and password are required fields.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            response = requests.post(f"{url}/login/", data={'username': username, 'password': password} )  #(remote_node + /login)
+
+            if response.status_code == 200:
+                token= response.json().get('token')  # get the tokem
+                
+                if not token:
+                    return Response({'detail': 'Authentication token not provided by remote node.'},status=status.HTTP_400_BAD_REQUEST)                
+
+                remote_node,created= RemoteNode.objects.update_or_create(url=url,defaults={'username': username,'token': token,} )
+                
+                serializer = RemoteNodeSerializer(remote_node)
+                return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+            else:
+                return Response({'detail': 'Failed to authenticate with the remote node.'},status=response.status_code)
+                
+        except requests.RequestException as e:
+            return Response(
+                {'detail': f'Connection to remote node failed: {str(e)}'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )

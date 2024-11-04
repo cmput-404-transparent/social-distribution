@@ -3,10 +3,31 @@ import getCookie from '../getCSRFToken';
 import { marked } from 'marked';
 import PeopleIcon from '@mui/icons-material/People';
 import LinkIcon from '@mui/icons-material/Link';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import IconButton from '@mui/material/IconButton';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
+import CloseIcon from '@mui/icons-material/Close';
+import SendIcon from '@mui/icons-material/Send';
+
 
 const PostState = {
   ViewPost: "ViewPost",
   ModifyPost: "ModifyPost"
+};
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '40%',
+  bgcolor: 'background.paper',
+  borderRadius: "0.25rem",
+  p: 4,
+  maxHeight: '80%',
 };
 
 const Content = ({ post, postState }) => {
@@ -80,14 +101,14 @@ const Content = ({ post, postState }) => {
         {postState === PostState.ViewPost &&
           <>
             <div className="p-5">
-              <div className="font-bold text-2xl">
+              <div className="font-semibold text-xl font-mono">
                 {post.title}
               </div>
-              <div className="italic text-neutral-700 pb-3">
-                {post.description}
-              </div>
               <div>
-                {post.content}
+              <div className="italic text-neutral-700 pb-3 post-description post-description" dangerouslySetInnerHTML={{ __html: post.description }}/> 
+              </div>
+              <div className="text-m">
+              <div className="post-content" dangerouslySetInnerHTML={{ __html: post.content }} />
               </div>
             </div>
           </>
@@ -96,7 +117,7 @@ const Content = ({ post, postState }) => {
         {postState === PostState.ModifyPost &&
           <>
             <div className="p-5">
-              <div className="font-bold text-2xl mb-4">
+              <div className="font-bold text-xl mb-4">
                 <input type="text" value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
@@ -145,15 +166,17 @@ const Content = ({ post, postState }) => {
               <div className="font-bold text-2xl">
                 {post.title}
               </div>
-              <div className="italic text-neutral-700 pb-3">
-                {post.description}
-              </div>
               <div>
+              <div className="italic text-neutral-700 pb-3 post-description" dangerouslySetInnerHTML={{ __html: post.description }}/> 
+              </div>
+              <div>              
+              
                 {/* Using dangerouslySetInnerHTML to render rich text into HTML 
                   Reference- https://blog.logrocket.com/using-dangerouslysetinnerhtml-react-application/ */}
-                <div dangerouslySetInnerHTML={{ __html: postContentHTML }} className="post-content" />
+                <div className = "post-content" dangerouslySetInnerHTML={{ __html: postContentHTML }}  />
               </div>
-            </div>
+              </div>
+            
           </>
         }
         {postState === PostState.ModifyPost &&
@@ -206,11 +229,11 @@ const Content = ({ post, postState }) => {
               <div className="font-bold text-2xl">
                 {post.title}
               </div>
-              <div className="italic text-neutral-700 pb-3">
-                {post.description}
+              <div className="italic text-neutral-700 pb-3 post-description post-description" dangerouslySetInnerHTML={{ __html: post.description }}/> 
+              <div>
+                 {/* eslint-disable-next-line */}
+              <div className="flex justify-center post-content"><img src={post.content} className="w-1/2" alt="Image Not Found" /></div>
               </div>
-              {/* eslint-disable-next-line */}
-              <div className="flex justify-center"><img src={post.content} className="w-1/2" alt="Image Not Found" /></div>
 
             </div>
           </>
@@ -261,25 +284,175 @@ const Content = ({ post, postState }) => {
   }
 }
 
+/**
+ * source: ChatGPT (OpenAI)
+ * prompt: "i have a time stamp like this in javascript "2024-11-01T21:50:39.064723Z" this is for a comment
+ *          on a social media site i'm building. i want to get a string that says 'November11, 2024 at
+ *          [time in current time zone]'"
+ * date: November 1, 2024
+ */
+function formatDate(timestamp) {
+  const date = new Date(timestamp);
+
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: '2-digit',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  }).format(date);
+
+  return formattedDate;
+}
+
+const Comment = ({data}) => {
+  return(
+    <div className="border rounded p-4">
+      <div className="grid grid-cols-[min-content,auto] space-x-4">
+        <a href={data.author.page}>
+          <div>
+            {
+              data.author.profileImage? (
+                <img src={data.profileImage}></img>
+              ) : (
+                <p>profile image</p>
+              )
+            }
+          </div>
+        </a>
+        <div className="grid grid-rows-[min-content,auto,auto]">
+          <a href={data.author.page}><h1 className="font-bold text-l">{data.author.displayName}</h1></a>
+          <p>{data.comment}</p>
+          <p className="font-light italic text-sm pt-2">{formatDate(data.published)}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * source: ChatGPT (OpenAI)
+ * prompt: "i have a number that can be really big or small. i need it as a string. if
+ *          number > 999 then i want it to be like 1.0k or 1.0m or 1.0b etc."
+ * date: November 1, 2024
+ */
+function formatNumber(num) {
+  if (Math.abs(num) >= 1.0e+9) {
+    // Billions
+    return (num / 1.0e+9).toFixed(1) + "b";
+  } else if (Math.abs(num) >= 1.0e+6) {
+    // Millions
+    return (num / 1.0e+6).toFixed(1) + "m";
+  } else if (Math.abs(num) >= 1.0e+3) {
+    // Thousands
+    return (num / 1.0e+3).toFixed(1) + "k";
+  } else {
+    // Less than 1,000, return the number as-is
+    return num.toString();
+  }
+}
+
 export default function Post({ post }) {
   const [author, setAuthor] = useState("");
+  const [self, setSelf] = useState({});
   const [isStream, setIsStream] = useState(false);
   const [isOwn, setIsOwn] = useState(false);
 
   const authorId = localStorage.getItem('authorId');
   const [postState, setPostState] = useState(PostState.ViewPost);
 
+  const [likeNum, setLikeNum] = useState(0);
+  const [selfLiked, setSelfLiked] = useState(false);
+
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const handleCommentsOpen = () => setCommentsOpen(true);
+  const handleCommentsClose = () => setCommentsOpen(false);
+
+  const [commentsNum, setCommentsNum] = useState(0);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+
+  function getPostInfo() {
+    fetch(post.id)
+    .then(r => r.json())
+    .then(data => {
+      setAuthor(data.author);
+      setLikeNum(data.likes.count);
+      setComments(data.comments.src);
+      setCommentsNum(data.comments.count);
+    })
+  }
+
   useEffect(() => {
-    fetch(post.author.id)
-      .then((r) => r.json())
-      .then((data) => {
-        setAuthor(data);
-      });
+
+    getPostInfo();
+
+    let baseAuthorAPIUrl = post.author.id.split("/").slice(0, -1).join("/");
+    fetch(`${baseAuthorAPIUrl}/${authorId}`)
+    .then(r => r.json())
+    .then(data => {
+      setSelf(data);
+    })
+
     setIsStream(window.location.href.includes('stream'));
-    let postId = post.author.id.split("/").pop();
-    setIsOwn(postId === authorId);
+
+    let postAuthorId = post.author.id.split("/").pop();
+
+    setIsOwn(postAuthorId === authorId);
+
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    if (Object.keys(self).length !== 0) {
+      let postId = post.id.split("/").pop();
+      fetch(`${self.id}` + "/liked/" + postId)
+      .then(r => r.json())
+      .then(data => {
+        setSelfLiked(data.liked);
+      })
+    }
+  }, [author]);
+
+  const sharePostURL = async (e) => {
+    e.preventDefault();
+    const authorId = author.id.split('/').pop(); 
+    const postId = post.id.split('/').pop(); 
+    const postUrl = `${window.location.origin}/authors/${authorId}/posts/${postId}`;    
+    const title = "Link";
+    const userResponse = window.prompt(title, postUrl);
+    
+    e.target.value = "none";
+  };
+
+  const sharePost = async () => {
+    const csrftoken = getCookie('csrftoken');
+    const uuidofPost = post.id.split('/').pop();
+    try {
+        const response = await fetch(`/api/authors/${uuidofPost}/share/` ,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+                'Authorization': `Token ${localStorage.getItem('authToken')}`,
+            },
+        });
+
+        if (response.ok) {
+            const sharedPostData = await response.json();
+
+            alert("Post shared successfully!");
+            window.location.reload()
+        } else {
+            alert('You have already shared this post');
+        }
+    } catch (error) {
+        console.error('Error sharing post:', error);
+        alert("An error occurred. Please try again.");
+    }
+};
+
 
   const dropdown = (e) => {
     const option = e.target.value
@@ -289,6 +462,14 @@ export default function Post({ post }) {
     else if (option === "delete") {
       Delete()
     }
+    else if (option === "link") {
+      sharePostURL(e)
+    }
+    else if(option == "share"){
+      sharePost()
+      e.target.value = "none";
+    }
+
   }
 
   const Edit = () => {
@@ -316,52 +497,181 @@ export default function Post({ post }) {
 
   }
 
+  const manageLike = async () => {
+    let postId = post.id.split("/").pop();
+    const csrftoken = getCookie('csrftoken');
+
+    // can only like post that they haven't liked yet
+    if (!selfLiked) {
+      fetch(post.author.id + "/posts/" + postId + "/like", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken,
+        },
+      })
+      .then(r => {
+        getPostInfo();
+      })
+    }
+  }
+
+  const commentOnPost = async () => {
+    const csrftoken = getCookie('csrftoken');
+
+    const data = new URLSearchParams();
+    data.append('comment', newComment);
+
+    fetch(`${post.id}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrftoken,
+      },
+      body: data.toString(),
+    })
+    .then(r => {
+      if (r.ok) {
+        setNewComment("");
+        getPostInfo();
+      }
+    })
+  }
+
+  function getMoreComments() {
+    let nextPageNum = (comments.length) % 5 + 2;
+    fetch(`${post.id}/comments?page=${nextPageNum}`)
+    .then(r => r.json())
+    .then(data => {
+      setComments(comments.concat(data.src));
+    })
+  }
+
   return (
-
-    <div className="grid auto-rows-auto grid-flow-row border w-4/5 rounded relative">
-      <a href={`${author.page}`} onClick={!isStream ? (e) => { e.preventDefault() } : null} className={!isStream ? "cursor-default" : "cursor-pointer"}>
-        <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
-          <div className="pr-8">
-            profile picture
-          </div>
-          <div className="grid grid-flow-row auto-rows-auto space-y-4">
-            <div className="grid grid-cols-[auto,auto]">
+    <div className="grid auto-rows-auto grid-flow-row border rounded-md w-4/5 mx-auto relative">
+      <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
+        <div className="pr-8 min-w-[80px] min-h-[45px]">
+          <img src="/pfp.png" alt="Profile" className="w-12 h-12 rounded-full object-cover" />
+        </div>
+        <div className="grid grid-flow-row auto-rows-auto space-y-4">
+          <div className="grid grid-cols-[auto,min-content]">
+            <a href={author.page} onClick={!isStream ? (e) => e.preventDefault() : null} className={`${!isStream ? "cursor-default" : "cursor-pointer"} flex items-center justify-start`}>
               <div className="flex justify-start items-center">
-                <h1 className="font-bold text-l">{post.author.displayName}</h1>
+                <h1 className="font-bold text-lg font-sans">{post.author.displayName}</h1>
               </div>
-              <div className={post.visibility !== "PUBLIC" && isOwn ? "grid grid-rows-2" : "items-center flex justify-end"}>
-                {
-                  (!isStream && isOwn) ? (
-                    <div>
-                      <select id="Dropdown" onChange={dropdown} className="absolute top-2 right-2 border rounded p-1 text-sm">
-                        <option>Options</option>
-                        <option value="edit">Edit</option>
-                        <option value="delete">Delete</option>
-                      </select>
-                    </div>
-                  ) : (<div></div>)
-                }
-                {
-                  ((post.visibility === "FRIENDS") && (
-                    <div className="text-right text-neutral-400">
-                      FRIENDS ONLY <PeopleIcon className="ml-1" />
-                    </div>
-                  )) ||
-                  ((post.visibility === "UNLISTED") && (
-                    <div className="text-right text-neutral-400">
-                      UNLISTED <LinkIcon className="ml-1" />
-                    </div>
-                  ))
-                }
-              </div>
-
+            </a>
+            <div className="text-right space-y">
+              {(post.visibility !== "FRIENDS" || isOwn) && (
+                <select id="Dropdown" onChange={dropdown} className="border rounded p-1 text-sm absolute top-3 right-3">
+                  <option value="none">Options</option>
+                  {!isStream && isOwn && <option value="edit">Edit</option>}
+                  {!isStream && isOwn && <option value="delete">Delete</option>}
+                  {(post.visibility === "UNLISTED") && !isStream && isOwn && (
+                      <option value="link">Copy Link</option>
+                  )}
+                  {post.visibility === "PUBLIC" && <option value="share">Share</option>}
+                </select>
+              )}
             </div>
-
+            {post.visibility === "FRIENDS" ? (
+              <div className="text-right text-neutral-400 whitespace-nowrap">
+                FRIENDS ONLY <PeopleIcon className="ml-1" />
+              </div>
+            ) : (
+              post.visibility === "UNLISTED" && (
+                <div className="text-right text-neutral-400 whitespace-nowrap">
+                  UNLISTED <LinkIcon className="ml-1" />
+                </div>
+              )
+            )}
           </div>
         </div>
-      </a>
+      </div>
       <Content post={post} postState={postState} />
+      <div className="grid grid-cols-[min-content,min-content,auto] border-t px-2 space-x-3">
+        <div className="flex items-center">
+          <IconButton onClick={manageLike} className="!mr-[-2px]">
+            {
+              selfLiked? (
+                <FavoriteIcon sx={{ color: '#dd0000' }} />
+              ) : (
+                <FavoriteBorderIcon />
+              )
+            }
+          </IconButton>
+          {formatNumber(likeNum)}
+        </div>
+        <div className="flex items-center">
+          <IconButton onClick={handleCommentsOpen}>
+            <ChatBubbleOutlineIcon />
+          </IconButton>
+          {formatNumber(commentsNum)}
+        </div>
+
+        <Modal
+          open={commentsOpen}
+          onClose={handleCommentsClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style} className="space-y-4">
+            <div className="grid grid-cols-2 border-b pb-4">
+              <h2 className="font-bold text-3xl">
+                {post.author.displayName}'s Post
+              </h2>
+              <div className="flex justify-end">
+                <CloseIcon sx={{ color: '#bbb' }} onClick={handleCommentsClose} className="cursor-pointer" />
+              </div>
+            </div>
+
+            {/* comments section */}
+            {
+              commentsNum !== 0? (
+                <div className="border-b pb-4">
+                  <div className="space-y-3 overflow-y-scroll !max-h-[32rem]">
+                    {comments.map((comment) => (
+                      <Comment data={comment} />
+                    ))}
+                  </div>
+
+                  {
+                    (commentsNum !== comments.length) && (
+                      <div className="pt-3 flex justify-center">
+                        <button className='bg-sky-400 rounded p-2 px-5' onClick={getMoreComments}>Load More</button>
+                      </div>
+                    )
+                  }
+                  
+                </div>
+              ) : (
+                <div className="flex justify-center border-b pb-4">
+                  No comments yet
+                </div>
+              )
+            }
+
+            {/* create comment section */}
+            <div>
+              <div className="mb-4">
+                <textarea type="text" value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write a comment..."
+                  required
+                  className="w-full border rounded p-2"
+                ></textarea>
+              </div>
+              <div className="mt-[-20px] flex justify-end">
+                <IconButton onClick={commentOnPost}>
+                  <SendIcon />
+                </IconButton>
+              </div>
+            </div>
+
+          </Box>
+        </Modal>
+      </div>
     </div>
-  )
+  );
 }
+
 

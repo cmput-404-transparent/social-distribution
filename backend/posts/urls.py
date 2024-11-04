@@ -4,7 +4,12 @@ from . import views
 app_name = "posts"
 
 urlpatterns = [
+    # Get a specific post by its fqid
     path("<int:fqid>/", views.get_post, name="get_post"),
+    
+    # Post GitHub activity for a specific author
     path('<int:author_id>/github/', views.post_github_activity, name="post_github"),
-    path("<int:fqid>/image/", views.get_image_post_by_fqid, name="get_image_post_by_fqid")
+    
+    # Get an image post by its fqid
+    path("<str:fqid>/image/", views.get_image_post_by_fqid, name="get_image_post_by_fqid")
 ]

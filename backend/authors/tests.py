@@ -105,19 +105,54 @@ class AuthorAPITests(APITestCase):
         # Test the get_followers endpoint
         follower = Author.objects.create(username="follower", display_name="Follower", host="http://localhost/api/")
         Follow.objects.create(user=self.author, follower=follower, status="FOLLOWED")
-        url = reverse('api:authors:get_followers', args=[self.author.id])
+        url = reverse('api:authors:followers', args=[self.author.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['followers']), 1)
+    
+    def test_delete_follower(self):
+        following = Author.objects.create(username="follower", display_name="Follower", host="http://localhost/api/")
+        Follow.objects.create(user=following, follower=self.author, status="FOLLOWED")
+        url = reverse('api:authors:following', args=[self.author.id])
+        data = {'following': following.id}
+        response = self.client.delete(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_unfollow_friend(self):
+        # make them friends (two people that follow each other)
+        following = Author.objects.create(username="follower", display_name="Follower", host="http://localhost/api/")
+        Follow.objects.create(user=following, follower=self.author, status="FOLLOWED")
+        Follow.objects.create(user=self.author, follower=following, status="FOLLOWED")
+
+        self.assertTrue(Follow.are_friends(following, self.author))
+
+        url = reverse('api:authors:following', args=[self.author.id])
+        data = {'following': following.id}
+        response = self.client.delete(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(Follow.are_friends(following, self.author))
 
     def test_get_following(self):
         # Test the get_following endpoint
         following = Author.objects.create(username="following", display_name="Following", host="http://localhost/api/")
         Follow.objects.create(user=following, follower=self.author, status="FOLLOWED")
-        url = reverse('api:authors:get_following', args=[self.author.id])
+        url = reverse('api:authors:following', args=[self.author.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
+    
+    def test_get_friends(self):
+        # make them friends (two people that follow each other)
+        following = Author.objects.create(username="follower", display_name="Follower", host="http://localhost/api/")
+        Follow.objects.create(user=following, follower=self.author, status="FOLLOWED")
+        Follow.objects.create(user=self.author, follower=following, status="FOLLOWED")
+
+        self.assertTrue(Follow.are_friends(following, self.author))
+
+        url = reverse('api:authors:friends', args=[self.author.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['friends']), 1)
 
 
 class PostAPITests(APITestCase):
@@ -184,7 +219,7 @@ class PostAPITests(APITestCase):
         url = reverse('api:authors:get_post', args=[self.user.id, self.post.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Post.objects.filter(id=self.post.id).exists())
+        self.assertTrue(Post.objects.get(id=self.post.id).is_deleted)
 
     def test_share_post(self):
         # Test POST request to share a post
