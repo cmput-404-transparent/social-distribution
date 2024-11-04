@@ -300,7 +300,7 @@ def stream(request, author_id):
         posts = posts | friends_posts
     else:
         # If the user is not authenticated, include all public posts
-        posts = Post.objects.filter(~Q(author=author), visibility='PUBLIC')
+        posts = Post.objects.filter(~Q(author=author), visibility='PUBLIC', is_shared=False)
 
     # Remove deleted posts
     posts = posts.exclude(is_deleted=True).order_by('-published')
