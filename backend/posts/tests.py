@@ -8,11 +8,12 @@ from rest_framework.authtoken.models import Token
 from unittest.mock import patch
 import json
 import base64
+from urllib.parse import quote
 
 class PostAndGithubActivityTests(APITestCase):
 
     def setUp(self):
-        self.user = Author.objects.create(username="testuser", display_name="Test User")
+        self.user = Author.objects.create(username="testuser", display_name="Test User", host="http://localhost:3000/api/")
         self.password = "testpass"
         self.user.set_password(self.password)
         self.user.save()
@@ -149,14 +150,18 @@ class PostAndGithubActivityTests(APITestCase):
              visibility="PUBLIC"
          )
 
-         url = reverse('api:posts:get_image_post_by_fqid', args=[image_post.fqid])
+         encoded_fqid = quote(image_post.fqid, safe="")
+
+         url = reverse('api:posts:get_image_post_by_fqid', args=[encoded_fqid])
          response = self.client.get(url)
          self.assertEqual(response.status_code, status.HTTP_200_OK)
-         self.assertEqual(response['Content-Type'], 'image/png')
+         self.assertEqual(response['Content-Type'], 'image/jpeg;base64')
 
     def test_get_non_image_post_by_fqid(self):
+         encoded_fqid = quote(self.public_post.fqid, safe="")
+
          # Test fetching a non-image post using the image endpoint
-         url = reverse('api:posts:get_image_post_by_fqid', args=[self.public_post.fqid])
+         url = reverse('api:posts:get_image_post_by_fqid', args=[encoded_fqid])
          response = self.client.get(url)
          self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-         self.assertIn("Not an image post", response.data['detail'])
+         self.assertIn("Not an image post", response.json()['detail'])
