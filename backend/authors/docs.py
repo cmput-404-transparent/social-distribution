@@ -1466,3 +1466,36 @@ check_liked_docs = swagger_auto_schema(
         404: openapi.Response(description="Post not found")
     }
 )
+
+get_all_hosted_images_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Get all hosted images",
+    operation_description="""
+    **When to use**: Use this endpoint to retrieve a list of all images hosted on this node.
+
+    **How to use**: Send a GET request to this endpoint. The user must be authenticated.
+
+    **Why**: This helps users retrieve all stored images, specifically PNG and JPEG files, from the server.
+    """,
+    responses={
+        200: openapi.Response(
+            description="List of hosted images retrieved",
+            examples={
+                "application/json": {
+                    "images": [
+                        "/media/images/example1.png",
+                        "/media/images/example2.jpeg"
+                    ]
+                }
+            }
+        ),
+        401: openapi.Response(
+            description="Unauthorized",
+            examples={
+                "application/json": {
+                    "detail": "user must be authenticated to view images on node"
+                }
+            }
+        )
+    }
+)
