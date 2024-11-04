@@ -82,6 +82,8 @@ urlpatterns = [
 
     path('upload_image/', posts_views.upload_image, name='upload_image'),
 
+    path('images/all/', posts_views.get_all_hosted_images, name="get_all_images"),
+
     # LIKES URLS ------------------------------------------------------------------------------
 
     # Get likes for a specific object
