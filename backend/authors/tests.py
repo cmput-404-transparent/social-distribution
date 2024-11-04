@@ -219,7 +219,7 @@ class PostAPITests(APITestCase):
         url = reverse('api:authors:get_post', args=[self.user.id, self.post.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Post.objects.filter(id=self.post.id).exists())
+        self.assertTrue(Post.objects.get(id=self.post.id).is_deleted)
 
     def test_share_post(self):
         # Test POST request to share a post
