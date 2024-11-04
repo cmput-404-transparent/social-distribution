@@ -575,16 +575,21 @@ def check_liked(request, author_id, post_id):
 
     return Response({"liked": liked.exists()})
 
+@get_all_hosted_images_docs
 @api_view(['GET'])
 def get_all_hosted_images(request):
     """
     get all images that are hosted on this node
     """
-    all_images = []
 
-    _, files = default_storage.listdir('images')
-    for file_name in files:
-        if file_name.lower().endswith(('.png', '.jpeg')):   # images are only png or jpeg
-            all_images.append("/media/images/" + file_name)
+    if request.user.is_authenticated:
+        all_images = []
 
-    return Response({'images': all_images}, status=200)
+        _, files = default_storage.listdir('images')
+        for file_name in files:
+            if file_name.lower().endswith(('.png', '.jpeg')):   # images are only png or jpeg
+                all_images.append("/media/images/" + file_name)
+
+        return Response({'images': all_images}, status=200)
+
+    return Response({'detail': 'user must be authenticated to view images on node'}, status=401)
