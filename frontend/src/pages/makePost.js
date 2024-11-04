@@ -4,8 +4,6 @@ import './makePost.css';
 import getCookie from '../getCSRFToken';
 import { Parser, HtmlRenderer } from 'commonmark';
 
-
-
 const MakePost = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -15,8 +13,8 @@ const MakePost = () => {
   const [activeButton, setActiveButton] = useState('');
   const [visibility, setVisbility] = useState('PUBLIC'); 
 
+// upload image from <a href="https://www.flaticon.com/free-icons/upload" title="upload icons">Upload icons created by Kiranshastry - Flaticon</a>
 
-  //simple drown-down - https://medium.com/@maazmedia1/how-to-create-a-dropdown-menu-in-reactjs-36f27987dbc4
   const handleChange = (event) => {
     setVisbility(event.target.value);
     };
@@ -143,8 +141,19 @@ const MakePost = () => {
         <div className='div-make-post'>
 
           {contentType === 'image' ? (
-          <><label>Upload File</label><input type="file" id="imageInput" onChange={(e) => setImage(e.target.files[0])}
-          required></input></>):
+          <><input
+          type="file"
+          id="imageInput"
+          onChange={(e) => setImage(e.target.files[0])}
+          className="hidden"
+        />
+      
+        <img
+          src="/upload.png" 
+          alt="Upload"
+          className="w-10 h-10 cursor-pointer mx-auto hover:opacity-80"
+          onClick={() => document.getElementById('imageInput').click()}
+        /></>):
           (
             
           <textarea
