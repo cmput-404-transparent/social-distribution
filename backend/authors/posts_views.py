@@ -89,23 +89,25 @@ def list_recent_posts(request, author_id):
             # Author sees all their own posts
             pass
         elif Follow.are_friends(author, request.user):
-            # Friends see public, friends-only, and unlisted posts
+            # Friends see public, friends-only, unlisted posts, and shared posts
             posts = posts.filter(
                 Q(visibility='PUBLIC') |
                 Q(visibility='FRIENDS') |
-                Q(visibility='UNLISTED')
+                Q(visibility='UNLISTED') |
+                Q(is_shared=True)
             )
-        elif Follow.are_friends(author, request.user):
-            # followers can see public and unlisted posts
+        elif Follow.objects.filter(user=author, follower=request.user).exists():
+            # followers can see public, unlisted posts, and shared posts
             posts = posts.filter(
                 Q(visibility='PUBLIC') |
-                Q(visibility='UNLISTED')
+                Q(visibility='UNLISTED') |
+                Q(is_shared=True)
             )
         else:
-            posts = posts.filter(visibility='PUBLIC')
+            posts = posts.filter(visibility='PUBLIC', is_shared=False)
     else:
         # Unauthenticated users see only public posts
-        posts = posts.filter(visibility='PUBLIC')
+        posts = posts.filter(visibility='PUBLIC', is_shared=False)
 
     # Apply pagination
     paginator = PageNumberPagination()
@@ -188,6 +190,12 @@ def update_existing_post(request, author_id, post_id):
 def delete_post(request, author_id, post_id):
     post = get_object_or_404(Post, id=post_id, author=request.user)
     if post.author == request.user:  # Ensure the user is the author of the post
+
+        shared_exists = Share.objects.filter(post=post).exists()
+        if shared_exists:
+            shared_posts = Post.objects.filter(original_post=post)
+            shared_posts.update(is_deleted=True)
+
         post.is_deleted = True  # Mark as deleted
         post.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -210,21 +218,36 @@ def share_post(request, post_id):
     
     if not post.is_shareable:
         return Response({"detail": "This post cannot be shared."}, status=status.HTTP_403_FORBIDDEN)
-    
+    author = post.author
     share, created = Share.objects.get_or_create(sharer=request.user, post=post)
+    original_post_url = f"{author.page}/posts/{post_id}"
+
+    shared_post_deleted = False
+    shared_post_objects = Post.objects.filter(author=request.user, original_post=post)
+
+    if not created:
+        shared_post_object = shared_post_objects.first()
+        shared_post_deleted = shared_post_object.is_deleted
     
-    if created:
+    if created or shared_post_deleted:
         # Create a new post as a share
         shared_post = Post.objects.create(
             author=request.user,
-            title=f"Shared: {post.title}",
+            title=post.title,
             content=post.content,
-            description=post.description,
+            description=f"<b>{request.user.display_name} shared <a href='{original_post_url}'>{post.author.display_name}'s post</a></b>: {post.description}",
             contentType=post.contentType,
             visibility='PUBLIC',  # Ensure shared posts are always public
             is_shared=True,
             original_post=post
         )
+
+        # if was shared before, but original post got deleted, reset the share status
+        if shared_post_deleted:
+            shared_post = shared_post_objects.first()
+            shared_post.is_deleted = False
+            shared_post.save()
+
         # Increment the shares count of the original post
         post.shares_count += 1
         post.save()
@@ -249,39 +272,49 @@ def list_shared_posts(request, author_id):
     serializer = PostSerializer(shared_posts, many=True)
     return Response(serializer.data)
 
-
 @stream_docs
-# Stream for showing all relevant posts
 @api_view(['GET'])
-def stream(request,author_id):
+def stream(request, author_id):
+    author = get_object_or_404(Author, id=author_id)
 
-    author = Author.objects.get(id=author_id)
+    # Initialize an empty queryset for posts
+    posts = Post.objects.none()  
 
-
-    # getting all the public posts
-    posts = Post.objects.filter(~Q(author=author), visibility='PUBLIC')  # public posts excluding the author's own posts
-    
-    if author.is_authenticated:
-        # see unlisted posts from people you follow
+    # Check for public posts
+    if request.user.is_authenticated:
+        # Get the user's friends and followers
         following = Follow.objects.filter(follower=author, status="FOLLOWED").values_list('user', flat=True)
-        following_posts = Post.objects.filter(author__in=following, visibility='UNLISTED')
-        
-        # see unlisted and friends-only posts from friends
         friends = Follow.get_friends(author)
+
+        # Public posts: include shared posts and also allow non-shared if the user is a follower
+        public_posts = Post.objects.filter(~Q(author=author), visibility='PUBLIC')
+        public_posts = public_posts.filter(Q(is_shared=True) & Q(author__in=following) | Q(is_shared=False))  # Allow public posts that are not shared
+
+        # Add public posts to the posts queryset
+        posts = posts | public_posts
+
+        # Unlisted posts: must be shared
+        following_posts = Post.objects.filter(author__in=following, visibility='UNLISTED')
+        posts = posts | following_posts
+
+        # Friends-only posts: must be shared
         friends_posts = Post.objects.filter(author__in=friends, visibility__in=['UNLISTED', 'FRIENDS'])
+        posts = posts | friends_posts
+    else:
+        # If the user is not authenticated, include all public posts
+        posts = Post.objects.filter(~Q(author=author), visibility='PUBLIC', is_shared=False)
 
-        # see public posts and relevant friends/unlisted posts
-        posts = posts | following_posts | friends_posts
-
-    # remove deleted posts
+    # Remove deleted posts
     posts = posts.exclude(is_deleted=True).order_by('-published')
 
-    # paginate the stream
+    # Paginate the stream
     paginator = PageNumberPagination()
     paginated_posts = paginator.paginate_queryset(posts, request)
 
     serializer = PostSummarySerializer(paginated_posts, many=True)
     return paginator.get_paginated_response(serializer.data)
+
+
 
 @api_view(['GET'])
 def get_image_post(request, author_id, post_id):

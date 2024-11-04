@@ -31,9 +31,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
-CSRF_ALLOWED_ORIGINS = ["http://localhost:3000"]
-CORS_ORIGINS_WHITELIST = ["http://localhost:3000"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000","http://localhost:8000"]
+CSRF_ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:8000"]
+CORS_ORIGIN_WHITELIST = ["http://localhost:3000", "http://localhost:8000"]
+
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 
@@ -54,17 +56,17 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Must be high in the list
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # CSRF middleware should come after SessionMiddleware
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -175,6 +177,11 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 AUTH_USER_MODEL = 'authors.Author'
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        # Add other authentication classes if needed
+    ],
+    
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,  # Default page size
 }

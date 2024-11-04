@@ -104,11 +104,11 @@ const Content = ({ post, postState }) => {
               <div className="font-semibold text-xl font-mono">
                 {post.title}
               </div>
-              <div className="italic text-neutral-700 pb-3">
-                {post.description}
+              <div>
+              <div className="italic text-neutral-700 pb-3 post-description post-description" dangerouslySetInnerHTML={{ __html: post.description }}/> 
               </div>
               <div className="text-m">
-                {post.content}
+              <div className="post-content" dangerouslySetInnerHTML={{ __html: post.content }} />
               </div>
             </div>
           </>
@@ -166,15 +166,17 @@ const Content = ({ post, postState }) => {
               <div className="font-bold text-2xl">
                 {post.title}
               </div>
-              <div className="italic text-neutral-700 pb-3">
-                {post.description}
-              </div>
               <div>
+              <div className="italic text-neutral-700 pb-3 post-description" dangerouslySetInnerHTML={{ __html: post.description }}/> 
+              </div>
+              <div>              
+              
                 {/* Using dangerouslySetInnerHTML to render rich text into HTML 
                   Reference- https://blog.logrocket.com/using-dangerouslysetinnerhtml-react-application/ */}
-                <div dangerouslySetInnerHTML={{ __html: postContentHTML }} className="post-content" />
+                <div className = "post-content" dangerouslySetInnerHTML={{ __html: postContentHTML }}  />
               </div>
-            </div>
+              </div>
+            
           </>
         }
         {postState === PostState.ModifyPost &&
@@ -227,11 +229,11 @@ const Content = ({ post, postState }) => {
               <div className="font-bold text-2xl">
                 {post.title}
               </div>
-              <div className="italic text-neutral-700 pb-3">
-                {post.description}
+              <div className="italic text-neutral-700 pb-3 post-description post-description" dangerouslySetInnerHTML={{ __html: post.description }}/> 
+              <div>
+                 {/* eslint-disable-next-line */}
+              <div className="flex justify-center post-content"><img src={post.content} className="w-1/2" alt="Image Not Found" /></div>
               </div>
-              {/* eslint-disable-next-line */}
-              <div className="flex justify-center"><img src={post.content} className="w-1/2" alt="Image Not Found" /></div>
 
             </div>
           </>
@@ -424,6 +426,33 @@ export default function Post({ post }) {
     e.target.value = "none";
   };
 
+  const sharePost = async () => {
+    const csrftoken = getCookie('csrftoken');
+    const uuidofPost = post.id.split('/').pop();
+    try {
+        const response = await fetch(`/api/authors/${uuidofPost}/share/` ,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+                'Authorization': `Token ${localStorage.getItem('authToken')}`,
+            },
+        });
+
+        if (response.ok) {
+            const sharedPostData = await response.json();
+
+            alert("Post shared successfully!");
+            window.location.reload()
+        } else {
+            alert('You have already shared this post');
+        }
+    } catch (error) {
+        console.error('Error sharing post:', error);
+        alert("An error occurred. Please try again.");
+    }
+};
+
 
   const dropdown = (e) => {
     const option = e.target.value
@@ -436,6 +465,11 @@ export default function Post({ post }) {
     else if (option === "link") {
       sharePostURL(e)
     }
+    else if(option == "share"){
+      sharePost()
+      e.target.value = "none";
+    }
+
   }
 
   const Edit = () => {
@@ -532,8 +566,10 @@ export default function Post({ post }) {
                   <option value="none">Options</option>
                   {!isStream && isOwn && <option value="edit">Edit</option>}
                   {!isStream && isOwn && <option value="delete">Delete</option>}
-                  {post.visibility === "UNLISTED" && !isStream && isOwn && <option value="link">Copy Link</option>}
-                  {post.visibility === "PUBLIC" && <option value="link">Share</option>}
+                  {(post.visibility === "UNLISTED") && !isStream && isOwn && (
+                      <option value="link">Copy Link</option>
+                  )}
+                  {post.visibility === "PUBLIC" && <option value="share">Share</option>}
                 </select>
               )}
             </div>

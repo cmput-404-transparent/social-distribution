@@ -84,6 +84,8 @@ class Follow(models.Model):
         friends_2 = Follow.objects.filter(follower=user, status='FOLLOWED').values_list('user')
         return friends_1.intersection(friends_2)
 
+
+
 class SiteConfiguration(models.Model):
     require_user_approval = models.BooleanField(default=True)  # Toggle for requiring approval
 
@@ -92,3 +94,9 @@ class SiteConfiguration(models.Model):
 
     class Meta:
         verbose_name = "Site Configuration"
+
+
+class RemoteNode(models.Model):
+    url = models.URLField(unique=True)
+    username = models.CharField(max_length=250)
+    token = models.CharField(max_length=250, blank=True, null=True) 

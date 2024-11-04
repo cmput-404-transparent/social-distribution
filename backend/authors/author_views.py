@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+import requests
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import *
@@ -29,7 +30,7 @@ def login(request):
         token, _ = Token.objects.get_or_create(user=user)
         return Response({"token": token.key, "userId": user.id}, status=200)
     else:
-        return Response(status=401)
+        return Response({"detail": "Invalid username or password"}, status=401)
 
 @signup_docs
 @api_view(['POST'])
@@ -306,3 +307,52 @@ def friends(request, author_id):
     friends = Author.objects.filter(id__in=friend_ids)
     friends_serialized = [AuthorSummarySerializer(friend).data for friend in friends]
     return Response({'friends': friends_serialized}, status=200)
+
+
+
+
+#view all remote node connections(GET)
+# add a remote node connection(POST)
+# will have to refactor acc how other groups do login 
+
+@api_view(['GET','POST'])
+@permission_classes([IsAdminUser])
+def manage_remote_nodes(request):
+    if request.method == 'GET':
+        nodes = RemoteNode.objects.all()
+        serializer = RemoteNodeSerializer(nodes, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        url = request.data.get('host')
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        if not url or not username or not password:
+            return Response(
+                {'detail': 'URL, username, and password are required fields.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            response = requests.post(f"{url}/login/", data={'username': username, 'password': password} )  #(remote_node + /login)
+
+            if response.status_code == 200:
+                token= response.json().get('token')  # get the tokem
+                
+                if not token:
+                    return Response({'detail': 'Authentication token not provided by remote node.'},status=status.HTTP_400_BAD_REQUEST)                
+
+                remote_node,created= RemoteNode.objects.update_or_create(url=url,defaults={'username': username,'token': token,} )
+                
+                serializer = RemoteNodeSerializer(remote_node)
+                return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+            else:
+                return Response({'detail': 'Failed to authenticate with the remote node.'},status=response.status_code)
+                
+        except requests.RequestException as e:
+            return Response(
+                {'detail': f'Connection to remote node failed: {str(e)}'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
