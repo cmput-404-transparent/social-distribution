@@ -60,6 +60,12 @@ class AuthorAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.author.refresh_from_db()
         self.assertEqual(self.author.username, 'updatedauthor')
+    
+    def test_get_all_authors(self):
+        # Test the get_author endpoint
+        url = reverse('api:authors:get_all_authors')
+        response = self.client.get(url)
+        self.assertEqual(len(response.data['authors']), 2)
 
     def test_search_author(self):
         # Test the search_author endpoint
