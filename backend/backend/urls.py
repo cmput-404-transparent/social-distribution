@@ -24,7 +24,7 @@ from django.conf.urls.static import static
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Your Project API",
+        title="SocialDistribution API",
         default_version='v1',
         description="Documentation",
         terms_of_service= None,
