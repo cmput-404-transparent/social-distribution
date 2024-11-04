@@ -12,8 +12,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.core.files.storage import default_storage
 
 #documentation
-from .docs import (create_new_post_docs,list_recent_posts_docs,update_post_docs, delete_post_docs, get_all_public_posts_docs,
-                   share_post_docs, list_shared_posts_docs, stream_docs)
+from .docs import *
 
 
 import base64
@@ -316,6 +315,7 @@ def stream(request, author_id):
 
 
 
+@get_image_post_docs
 @api_view(['GET'])
 def get_image_post(request, author_id, post_id):
     # Get the post by author_serial and post_serial
@@ -334,6 +334,8 @@ def get_image_post(request, author_id, post_id):
     # Return the image as a binary
     return HttpResponse(image_data, content_type=post.contentType)
 
+
+@upload_image_docs
 @api_view(['POST'])
 @permission_classes([IsAdminUser])  # Restrict this to node admins
 def upload_image(request):
@@ -353,6 +355,8 @@ def upload_image(request):
     image_url = default_storage.url(path)  # Get URL of stored image
     return Response({"image_url": image_url}, status=201)
 
+
+@get_likes_docs
 @api_view(['GET'])
 def get_likes(request, author_id, object_id):
 
@@ -382,6 +386,8 @@ def get_likes(request, author_id, object_id):
     })
     return Response(serializer.data)
 
+
+@like_object_docs
 @api_view(['POST'])
 def like_object(request, author_id, object_id):
 
@@ -404,7 +410,7 @@ def like_object(request, author_id, object_id):
     serializer = LikeSerializer(like)
     return Response(serializer.data, status=201 if created else 200)
 
-
+@send_like_to_inbox_docs
 @api_view(['POST'])
 def send_like_to_inbox(request, author_id):
     # Assuming you have an Inbox model
@@ -419,6 +425,9 @@ def send_like_to_inbox(request, author_id):
         return Response(serializer.data, status=201)
     return Response(serializer.errors, status=400)
 
+
+@comments_on_post_docs
+@comments_on_post_post_docs
 @api_view(['GET', 'POST'])
 def comments_on_post(request, author_serial, post_serial):
     """
@@ -476,6 +485,8 @@ def comments_on_post(request, author_serial, post_serial):
         else:
             return Response(serializer.errors, status=400)
 
+
+@get_comment_docs
 @api_view(['GET'])
 def get_comment(request, author_serial, post_serial, comment_id):
     """
@@ -498,6 +509,7 @@ def get_comment(request, author_serial, post_serial, comment_id):
     serializer = CommentSerializer(comment)
     return Response(serializer.data)
 
+@get_author_comments_docs
 @api_view(['GET'])
 def get_author_comments(request, author_serial):
     """
@@ -526,6 +538,8 @@ def get_author_comments(request, author_serial):
     })
     return Response(serializer.data)
 
+
+@get_author_comment_docs
 @api_view(['GET'])
 def get_author_comment(request, author_serial, comment_serial):
     """
@@ -548,6 +562,8 @@ def get_author_comment(request, author_serial, comment_serial):
     serializer = CommentSerializer(comment)
     return Response(serializer.data)
 
+
+@check_liked_docs
 @api_view(['GET'])
 def check_liked(request, author_id, post_id):
     """

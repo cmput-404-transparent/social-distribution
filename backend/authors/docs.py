@@ -4,7 +4,7 @@ from drf_yasg import openapi
 '''
 source: ChatGPT (OpenAI)
 prompt: "Give me a base template for Augmentating swagger doc to accomdate when how and why explanations for these views"
-date: October 21, 2024
+date: October 21, 2024s
 '''
 
 # Post views
@@ -886,5 +886,583 @@ relationship_docs = swagger_auto_schema(
                 }
             }
         )
+    }
+)
+
+
+# Retrieve all remote nodes
+manage_remote_nodes_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Retrieve all registered remote nodes",
+    operation_description="""
+    **When to use**: Use this endpoint to retrieve a list of all registered remote nodes.
+
+    **How to use**: Send a GET request. The response will include details for each node, such as URL, username, and token.
+
+    **Why/Why not**: This endpoint provides administrators with an overview of all nodes that are connected.
+    """,
+    responses={
+        200: openapi.Response(
+            description="List of remote nodes",
+            examples={
+                "application/json": [
+                    {
+                        "url": "https://remote-host.com/",
+                        "username": "admin",
+                        "token": "abcd1234token"
+                    },
+                    {
+                        "url": "https://remote-host.com/",
+                        "username": "nodeuser",
+                        "token": "token5678efgh"
+                    }
+                ]
+            }
+        ),
+    }
+)
+
+# Register or update a remote node
+manage_remote_nodes_docs_post = swagger_auto_schema(
+    method='post',
+    operation_summary="Register or update a remote node",
+    operation_description="""
+    **When to use**: Use this endpoint to add or update a remote node's authentication information.
+
+    **How to use**: Send a POST request with `url`, `username`, and `password` fields. The endpoint will attempt to authenticate with the remote node using Basic Authentication and retrieve a token if successful.
+
+    **Why/Why not**: This allows administrators to add new remote nodes and store their authentication tokens. If the node is already registered, its authentication token will be updated.
+    """,
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        required=['url', 'username', 'password'],
+        properties={
+            'url': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="The URL of the remote node.",
+                example="https://remote-host.com/"
+            ),
+            'username': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="The username for authentication on the remote node.",
+                example="admin"
+            ),
+            'password': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="The password for authentication on the remote node.",
+                example="pass123"
+            ),
+        },
+    ),
+    responses={
+        201: openapi.Response(
+            description="Remote node registered successfully",
+            examples={
+                "application/json": {
+                    "url": "https://remote-host.com/",
+                    "username": "admin",
+                    "token": "newauthtoken"
+                }
+            }
+        ),
+        200: openapi.Response(
+            description="Remote node updated successfully",
+            examples={
+                "application/json": {
+                    "url": "https://remote-host.com/",
+                    "username": "admin",
+                    "token": "updatedauthtoken"
+                }
+            }
+        ),
+        400: openapi.Response(
+            description="Missing required fields",
+            examples={
+                "application/json": {
+                    "error": "URL, username, and password are required fields."
+                }
+            }
+        ),
+        503: openapi.Response(
+            description="Failed to connect to remote node",
+            examples={
+                "application/json": {
+                    "error": "Connection to remote node failed: <error message>"
+                }
+            }
+        )
+    }
+)
+
+
+get_image_post_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="get an image post",
+    operation_description="""
+    **When to use**: Retrieve an image post from a specific author.
+
+    **How to use**: Send a GET request with `author_id` and `post_id` in the URL.
+
+    **Why**: Use this endpoint to retrieve image content posts.
+    """,
+    manual_parameters=[
+        openapi.Parameter('author_id', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Author ID", example="111"),
+        openapi.Parameter('post_id', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Post ID", example="222")
+    ],
+    responses={
+        200: openapi.Response(
+            description="Image post retrieved successfully",
+            examples={
+                "image/jpeg": "<binary image data>"
+            }
+        ),
+        404: openapi.Response(
+            description="Not an image post",
+            examples={"application/json": {"detail": "Not an image post"}}
+        ),
+        400: openapi.Response(
+            description="Invalid image data",
+            examples={"application/json": {"detail": "Invalid image data"}}
+        )
+    }
+)
+
+
+upload_image_docs = swagger_auto_schema(
+    method='post',
+    operation_summary="Upload an image",
+    operation_description="""
+    **When to use**: Upload a new image post.
+
+    **How to use**: Send a POST request with `image_data` (base64-encoded) and `content-type`.
+
+    **Why**: Allows admins to upload new images for authors 
+    """,
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        required=['image_data'],
+        properties={
+            'image_data': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="The base64-encoded image data",
+                example="data:image/png;base64,iVBORw0KGgoAAAANS..."
+            ),
+            'content_type': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="The MIME type of the image",
+                example="image/jpeg"
+            ),
+        },
+    ),
+    responses={
+        201: openapi.Response(
+            description="Image uploaded successfully",
+            examples={"application/json": {"image_url": "http://localhost:8000/media/images/12345.png"}}
+        ),
+        400: openapi.Response(
+            description="Invalid image data",
+            examples={"application/json": {"error": "Invalid image data"}}
+        )
+    }
+)
+
+get_likes_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Retrieve likes for a post or comment",
+    operation_description="""
+    **When to use**: Retrieve likes on a specific post or comment.
+
+    **How to use**: Send a GET request with `author_id` and `object_id`.
+
+    **Why**: View the likes on a post or comment.
+
+    supports pagination, max 50 likes per page. Use the "page" query param to navigate through the pages of likes
+    """,
+    manual_parameters=[
+        openapi.Parameter('author_id', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Author ID", example="111"),
+        openapi.Parameter('object_id', openapi.IN_PATH, type=openapi.TYPE_STRING, description="ID of post or comment", example="249")
+    ],
+    responses={
+        200: openapi.Response(
+            description="Likes retrieved successfully",
+            examples={
+                "application/json": {
+                    "type": "likes",
+                    "page": "http://127.0.0.1:8000/authors/222/posts/249",
+                    "id": "http://127.0.0.1:8000/api/authors/222/posts/249/likes",
+                    "page_number": 1,
+                    "size": 50,
+                    "count": 9001,
+                    "src": [
+                        {
+                            "type": "like",
+                            "author": {
+                                "type": "author",
+                                "id": "http://127.0.0.1:8000/api/authors/111",
+                                "displayName": "Greg Johnson",
+                                "github": "http://github.com/gjohnson",
+                                "profileImage": "https://i.imgur.com/k7XVwpB.jpeg"
+                            },
+                            "published": "2015-03-09T13:07:04+00:00",
+                            "id": "http://127.0.0.1:8000/api/authors/111/liked/166",
+                            "object": "http://nodebbbb/authors/222/posts/249"
+                        }
+                    ]
+                }
+            }
+        ),
+        400: openapi.Response(
+            description="Invalid object type",
+            examples={"application/json": {"detail": "Only posts and comments have likes"}}
+        )
+    }
+)
+
+
+like_object_docs = swagger_auto_schema(
+    method='post',
+    operation_summary="Like a post or comment",
+    operation_description="""
+    **When to use**: Add a like to a post or comment.
+
+    **How to use**: Send a POST request with `author_id` and `object_id`.
+
+    **Why**: Allows users to have the functonality to like posts or comments
+    """,
+    manual_parameters=[
+        openapi.Parameter('author_id', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Author ID", example="111"),
+        openapi.Parameter('object_id', openapi.IN_PATH, type=openapi.TYPE_STRING, description="ID of post or comment to like", example="249")
+    ],
+    responses={
+        201: openapi.Response(
+            description="Like created successfully",
+            examples={
+                "application/json": {
+                    "type": "like",
+                    "id": "http://localhost:8000/api/authors/111/likes/1",
+                    "author": {
+                        "type": "author",
+                        "id": "http://localhost:8000/api/authors/111",
+                        "displayName": "Jane Doe"
+                    },
+                    "object": "http://localhost:8000/api/authors/111/posts/249"
+                }
+            }
+        ),
+        200: openapi.Response(
+            description="Like already exists",
+            examples={
+                "application/json": {
+                    "type": "like",
+                    "id": "http://localhost:8000/api/authors/111/likes/1",
+                    "author": {
+                        "type": "author",
+                        "id": "http://localhost:8000/api/authors/111",
+                        "displayName": "Jane Doe"
+                    },
+                    "object": "http://localhost:8000/api/authors/111/posts/249"
+                }
+            }
+        ),
+        400: openapi.Response(
+            description="Invalid object type",
+            examples={"application/json": {"detail": "Only posts and comments can be liked"}}
+        )
+    }
+)
+
+
+send_like_to_inbox_docs = swagger_auto_schema(
+    method='post',
+    operation_summary="Send like to an author's inbox",
+    operation_description="""
+    **When to use**: Send a like to an author's inbox.
+
+    **How to use**: Send a POST request with the `author_id` of the inbox owner.
+
+    **Why**: Useful for notifying authors of likes on their content.
+    """,
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "type": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Type of object",
+                example="like"
+            ),
+            "object": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="The ID of the liked object",
+                example="http://nodebbbb/api/authors/222/posts/249"
+            )
+        },
+    ),
+    responses={
+        201: openapi.Response(
+            description="Like sent to inbox",
+            examples={
+                "application/json": {
+                    "type": "like",
+                    "id": "http://localhost:8000/api/authors/111/liked/123",
+                    "author": {
+                        "type": "author",
+                        "id": "http://localhost:8000/api/authors/111",
+                        "displayName": "Jane Doe"
+                    },
+                    "object": "http://nodebbbb/api/authors/222/posts/249"
+                }
+            }
+        ),
+        400: openapi.Response(
+            description="Invalid like data",
+            examples={"application/json": {"error": "Invalid like data"}}
+        )
+    }
+)
+
+
+
+comments_on_post_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Retrieve comments on a post",
+    operation_description="""
+    **When to use**: Retrieve comments on a specific post.
+
+    **How to use**: Send a GET request with `author_serial` and `post_serial`. This endpoint supports pagination with up to 5 comments per page.
+
+    **Why**: Provides access to comments on posts based on visibility.
+    
+     Pagination  isw supported, Use the `page` query parameter to navigate through pages of comments
+    """,
+    manual_parameters=[
+        openapi.Parameter('author_serial', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Author ID", example="111"),
+        openapi.Parameter('post_serial', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Post ID", example="249"),
+        openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER, default=1, description="Page number for pagination of comments")
+    ],
+    responses={
+        200: openapi.Response(
+            description="Paginated list of comments on the post",
+            examples={
+                "application/json": {
+                    "type": "comments",
+                    "page": "http://localhost:8000/authors/222/posts/249/comments",
+                    "id": "http://localhost:8000/api/authors/222/posts/249/comments",
+                    "page_number": 1,
+                    "size": 5,
+                    "count": 25,
+                    "src": [
+                        {
+                            "type": "comment",
+                            "author": {
+                                "type": "author",
+                                "id": "http://localhost:8000/api/authors/111",
+                                "displayName": "Greg Johnson",
+                                "host":"http://localhost:8000/api/",
+                                "github": "http://github.com/gjohnson",
+                                "profileImage": "https://i.imgur.com/k7XVwpB.jpeg"
+                            },
+                            "comment": "Interesting post!",
+                            "contentType": "text/markdown",
+                            "published": "2024-11-02T13:07:04+00:00",
+                            "id": "http://localhost:8000/api/authors/111/commented/130",
+                            "post": "http://localhost:8000/api/authors/222/posts/249"
+                        }
+                    ]
+                }
+            }
+        ),
+        401: openapi.Response(description="Authentication required"),
+        403: openapi.Response(description="No permission to view comments"),
+        400: openapi.Response(description="Invalid post visibility setting")
+    }
+)
+
+comments_on_post_post_docs = swagger_auto_schema(
+    method='post',
+    operation_summary="Add a comment to a post",
+    operation_description="""
+    **When to use**: Add a comment to a specific post.
+
+    **How to use**: Send a POST request with the comment data. Only authenticated users with permission can comment based on the post visibility.
+
+    **Why**: Allows users to interact with posts by commenting.
+    """,
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "comment": openapi.Schema(type=openapi.TYPE_STRING, description="Comment text", example="Great post!"),
+            "contentType": openapi.Schema(type=openapi.TYPE_STRING, description="Content type of the comment", example="text/markdown")
+        },
+    ),
+    responses={
+        201: openapi.Response(description="Comment added successfully"),
+        401: openapi.Response(description="Authentication required"),
+        403: openapi.Response(description="No permission to comment on this post"),
+        400: openapi.Response(description="Invalid post visibility setting")
+    }
+)
+
+
+get_comment_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Retrieve a specific comment on a post",
+    operation_description="""
+    **When to use**: Retrieve a specific comment by its ID on a given post.
+
+    **How to use**: Send a GET request with `author_serial`, `post_serial`, and `comment_id`. Visibility checks apply based on the post's visibility.
+
+    **Why**: Useful for accessing detailed information about a single comment.
+    """,
+    manual_parameters=[
+        openapi.Parameter('author_serial', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Author ID", example="111"),
+        openapi.Parameter('post_serial', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Post ID", example="249"),
+        openapi.Parameter('comment_id', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Comment ID", example="130")
+    ],
+    responses={
+        200: openapi.Response(
+            description="Comment retrieved successfully",
+            examples={
+                "application/json": {
+                    "type": "comment",
+                    "author": {
+                        "type": "author",
+                        "id": "http://localhost:8000/api/authors/111",
+                        "displayName": "Greg Johnson",
+                        "host":"http://localhost:8000/api/",
+                        "github": "http://github.com/gjohnson",
+                        "profileImage": "https://i.imgur.com/k7XVwpB.jpeg"
+                    },
+                    "comment": "This is a detailed comment.",
+                    "contentType": "text/markdown",
+                    "published": "2024-11-02T13:07:04+00:00",
+                    "id": "http://localhost:8000/api/authors/111/commented/130",
+                    "post": "http://localhost:8000/api/authors/222/posts/249"
+                }
+            }
+        ),
+        401: openapi.Response(description="Authentication required"),
+        403: openapi.Response(description="No permission to view this comment"),
+        400: openapi.Response(description="Invalid post visibility setting")
+    }
+)
+
+
+
+get_author_comments_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Retrieve comments made by a specific author",
+    operation_description="""
+    **When to use**: Retrieve all comments made by a given author.
+
+    **How to use**: Send a GET request with `author_serial`. This endpoint supports pagination with up to 10 comments per page.
+
+    **Why**: Useful for viewing a history of comments made by a particular author.
+
+    Pagination is supported, use the `page` query parameter to navigate through pages of comments
+    """,
+    manual_parameters=[
+        openapi.Parameter('author_serial', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Author ID", example="111"),
+        openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER, default=1, description="Page number for pagination of comments")
+    ],
+    responses={
+        200: openapi.Response(
+            description="Paginated list of comments by the author",
+            examples={
+                "application/json": {
+                    "type": "comments",
+                    "page": "http://localhost:8000/authors/111/comments",
+                    "id": "http://localhost:8000/api/authors/111/comments",
+                    "page_number": 1,
+                    "size": 10,
+                    "count": 50,
+                    "src": [
+                        {
+                            "type": "comment",
+                            "author": {
+                                "type": "author",
+                                "id": "http://localhost:8000/api/authors/111",
+                                "displayName": "Greg Johnson",
+                                "host":"http://localhost:8000/api/",
+                                "github": "http://github.com/gjohnson",
+                                "profileImage": "https://i.imgur.com/k7XVwpB.jpeg"
+                            },
+                            "comment": "This is a comment on a post.",
+                            "contentType": "text/plain",
+                            "published": "2024-11-02T13:07:04+00:00",
+                            "id": "http://localhost:8000/api/authors/111/commented/130",
+                            "post": "http://localhost:8000/api/authors/222/posts/249"
+                        }
+                    ]
+                }
+            }
+        ),
+        401: openapi.Response(description="Authentication required")
+    }
+)
+
+
+get_author_comment_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Retrieve a specific comment made by an author",
+    operation_description="""
+    **When to use**: Retrieve a specific comment made by an author on any post.
+
+    **How to use**: Send a GET request with `author_serial` and `comment_serial`.
+
+    **Why**: Useful for retrieving a single comment made by an author based on visibility checks.
+    """,
+    manual_parameters=[
+        openapi.Parameter('author_serial', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Author ID", example="111"),
+        openapi.Parameter('comment_serial', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Comment ID", example="130")
+    ],
+    responses={
+        200: openapi.Response(
+            description="Comment retrieved successfully",
+            examples={
+                "application/json": {
+                    "type": "comment",
+                    "author": {
+                        "type": "author",
+                        "id": "http://localhost:8000/api/authors/111",
+                        "host":"http://localhost:8000/api/",
+                        "github": "http://github.com/gjohnson",
+                        "displayName": "Greg Johnson",
+                        "profileImage": "https://i.imgur.com/k7XVwpB.jpeg"
+                    },
+                    "comment": "Here's a detailed comment.",
+                    "contentType": "text/markdown",
+                    "published": "2024-11-02T13:07:04+00:00",
+                    "id": "http://localhost:8000/api/authors/111/commented/130",
+                    "post": "http://localhost:8000/api/authors/222/posts/249"
+                }
+            }
+        ),
+        401: openapi.Response(description="Authentication required"),
+        403: openapi.Response(description="No permission to view this comment"),
+        400: openapi.Response(description="Invalid post visibility setting")
+    }
+)
+
+
+check_liked_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Check if an author liked a post",
+    operation_description="""
+    **When to use**: Use this endpoint to check if a specific author has liked a given post.
+
+    **How to use**: Send a GET request with `author_id` and `post_id`.
+
+    **Why**: Useful for determining if a user has interacted with a post by liking it.
+    """,
+    manual_parameters=[
+        openapi.Parameter('author_id', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Author ID", example="111"),
+        openapi.Parameter('post_id', openapi.IN_PATH, type=openapi.TYPE_STRING, description="Post ID", example="249")
+    ],
+    responses={
+        200: openapi.Response(
+            description="Like status retrieved",
+            examples={"application/json": {"liked": True}}
+        ),
+        404: openapi.Response(description="Post not found")
     }
 )

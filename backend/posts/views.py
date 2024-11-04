@@ -21,61 +21,9 @@ date: October 21, 2024
 '''
 
 # for documentation 
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from .post_docs import *
 
-@swagger_auto_schema(
-    method='get',
-    operation_summary="Retrieve a specific post by ID",
-    operation_description="""
-    **When to use**: Use this endpoint to retrieve the details of a specific post by its ID and author.
-
-    **How to use**: Send a GET request with the author's ID and post ID in the URL.
-
-    **Why/Why not**: Need this if you want to fetch the full details of a post 
-    """,
-    responses={
-        200: openapi.Response(
-            description="Post details",
-            examples={
-                "application/json": {
-                    "id": "123e4567-e89b-12d3-a456-426614174000",
-                    "title": "Sample Post Title",
-                    "description": "A detailed description of the post",
-                    "contentType": "text/plain",
-                    "content": "Content of the post",
-                    "author": 3,
-                    "visibility": "PUBLIC",
-                }
-            }
-        ),
-        401: openapi.Response(
-            description="Authentication required to view this post",
-            examples={
-                "application/json": {
-                    "detail": "Authentication required to view this post."
-                }
-            }
-        ),
-        400: openapi.Response(
-            description="Invalid post visibility setting",
-            examples={
-                "application/json": {
-                    "detail": "Invalid post visibility setting."
-                }
-            }
-        ),
-        404: openapi.Response(
-            description="Post not found",
-            examples={
-                "application/json": {
-                    "detail": "Post not found."
-                }
-            }
-        )
-    }
-)
-
+@get_post_docs
 @api_view(['GET'])
 # Get a single post
 def get_post(request, fqid):
@@ -96,36 +44,8 @@ def get_post(request, fqid):
     return Response({"detail": "Invalid post visibility setting."}, status=400)
 
 
-@swagger_auto_schema(
-    method='get',
-    operation_summary="Create posts based on GitHub activity",
-    operation_description="""
-    **When to use**: Use this endpoint to automatically create posts based on a user's GitHub activity.
 
-    **How to use**: Send a GET request with the author's ID. The system will fetch the author's GitHub activity (issues, pull requests, comments) and create posts accordingly.
-
-    **Why/Why not**: This is useful for users who want to automatically generate posts from their GitHub activity.
-    """,
-    responses={
-        201: openapi.Response(
-            description="Posts created successfully based on GitHub activity",
-            examples={
-                "application/json": {
-                    "message": "Posts created successfully from GitHub activity."
-                }
-            }
-        ),
-        404: openapi.Response(
-            description="Author not found",
-            examples={
-                "application/json": {
-                    "detail": "Author not found."
-                }
-            }
-        )
-    }
-)
-
+@post_github_activity_docs
 @api_view(['GET'])
 def post_github_activity(request, author_id):
     author = get_object_or_404(Author, id=author_id)
@@ -188,6 +108,8 @@ def post_github_activity(request, author_id):
 
     return Response(status=201)
 
+
+@get_image_post_by_fqid_docs
 @api_view(['GET'])
 def get_image_post_by_fqid(request, post_fqid):
     # Fetch the post by FQID
