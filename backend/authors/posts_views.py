@@ -188,6 +188,12 @@ def update_existing_post(request, author_id, post_id):
 def delete_post(request, author_id, post_id):
     post = get_object_or_404(Post, id=post_id, author=request.user)
     if post.author == request.user:  # Ensure the user is the author of the post
+
+        shared_exists = Share.objects.filter(post=post).exists()
+        if shared_exists:
+            shared_posts = Post.objects.filter(original_post=post)
+            shared_posts.update(is_deleted=True)
+
         post.is_deleted = True  # Mark as deleted
         post.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -210,21 +216,36 @@ def share_post(request, post_id):
     
     if not post.is_shareable:
         return Response({"detail": "This post cannot be shared."}, status=status.HTTP_403_FORBIDDEN)
-    
+    author = post.author
     share, created = Share.objects.get_or_create(sharer=request.user, post=post)
+    original_post_url = f"{author.page}/posts/{post_id}"
+
+    shared_post_deleted = False
+    shared_post_objects = Post.objects.filter(author=request.user, original_post=post)
+
+    if not created:
+        shared_post_object = shared_post_objects.first()
+        shared_post_deleted = shared_post_object.is_deleted
     
-    if created:
+    if created or shared_post_deleted:
         # Create a new post as a share
         shared_post = Post.objects.create(
             author=request.user,
-            title=f"Shared: {post.title}",
+            title=post.title,
             content=post.content,
-            description=post.description,
+            description=f"<b>{request.user.display_name} shared <a href='{original_post_url}'>{post.author.display_name}'s post</a></b>: {post.description}",
             contentType=post.contentType,
             visibility='PUBLIC',  # Ensure shared posts are always public
             is_shared=True,
             original_post=post
         )
+
+        # if was shared before, but original post got deleted, reset the share status
+        if shared_post_deleted:
+            shared_post = shared_post_objects.first()
+            shared_post.is_deleted = False
+            shared_post.save()
+
         # Increment the shares count of the original post
         post.shares_count += 1
         post.save()
