@@ -89,23 +89,25 @@ def list_recent_posts(request, author_id):
             # Author sees all their own posts
             pass
         elif Follow.are_friends(author, request.user):
-            # Friends see public, friends-only, and unlisted posts
+            # Friends see public, friends-only, unlisted posts, and shared posts
             posts = posts.filter(
                 Q(visibility='PUBLIC') |
                 Q(visibility='FRIENDS') |
-                Q(visibility='UNLISTED')
+                Q(visibility='UNLISTED') |
+                Q(is_shared=True)
             )
-        elif Follow.are_friends(author, request.user):
-            # followers can see public and unlisted posts
+        elif Follow.objects.filter(user=author, follower=request.user).exists():
+            # followers can see public, unlisted posts, and shared posts
             posts = posts.filter(
                 Q(visibility='PUBLIC') |
-                Q(visibility='UNLISTED')
+                Q(visibility='UNLISTED') |
+                Q(is_shared=True)
             )
         else:
-            posts = posts.filter(visibility='PUBLIC')
+            posts = posts.filter(visibility='PUBLIC', is_shared=False)
     else:
         # Unauthenticated users see only public posts
-        posts = posts.filter(visibility='PUBLIC')
+        posts = posts.filter(visibility='PUBLIC', is_shared=False)
 
     # Apply pagination
     paginator = PageNumberPagination()
