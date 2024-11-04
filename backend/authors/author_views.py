@@ -314,7 +314,8 @@ def friends(request, author_id):
 #view all remote node connections(GET)
 # add a remote node connection(POST)
 # will have to refactor acc how other groups do login 
-
+@manage_remote_nodes_docs
+@manage_remote_nodes_docs_post
 @api_view(['GET','POST'])
 @permission_classes([IsAdminUser])
 def manage_remote_nodes(request):
