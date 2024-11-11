@@ -27,10 +27,24 @@ function App() {
       <div className='grid grid-cols-[auto,1fr] w-full gap-0 mx-0'>
         <NavBar />
         <Routes>
-          <Route path="/stream" element={<StreamPage/>} />
+          <Route path="/stream" element={
+            <ProtectedRoute>
+              <StreamPage/>
+            </ProtectedRoute>
+          } />
+          <Route path="/search" element={
+            <ProtectedRoute>
+              <Search/>
+            </ProtectedRoute>
+          } />
           <Route path="/make-post" element={
             <ProtectedRoute>
               <MakePost />
+            </ProtectedRoute>
+          } />
+          <Route path="/notifications" element={
+            <ProtectedRoute>
+              <Notifications/>
             </ProtectedRoute>
           } />
           <Route path="/authors/:profileAuthorId" element={
@@ -51,8 +65,6 @@ function App() {
 
           <Route path="/login" element={<Login/>} />
           <Route path="/signup" element={<SignUp/>} />
-          <Route path="/search" element={<Search/>} />
-          <Route path="/notifications" element={<Notifications/>} />
         </Routes>
       </div>
     </Router>
