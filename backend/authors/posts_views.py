@@ -445,7 +445,7 @@ def comments_on_post(request, author_serial, post_serial):
             if not request.user.is_authenticated:
                 return Response({"detail": "Authentication required to view comments."}, status=401)
             # Check if the user is a friend of the author
-            if not request.user.is_friend(post.author):
+            if not Follow.are_friends(post.author, request.user):
                 return Response({"detail": "You do not have permission to view these comments."}, status=403)
         else:
             return Response({"detail": "Invalid post visibility setting."}, status=400)
@@ -472,7 +472,7 @@ def comments_on_post(request, author_serial, post_serial):
         elif post.visibility == 'FRIENDS':
             if not request.user.is_authenticated:
                 return Response({"detail": "Authentication required to comment."}, status=401)
-            if not request.user.is_friend(post.author):
+            if not Follow.are_friends(post.author, request.user):
                 return Response({"detail": "You do not have permission to comment on this post."}, status=403)
         else:
             return Response({"detail": "Invalid post visibility setting."}, status=400)
@@ -501,7 +501,7 @@ def get_comment(request, author_serial, post_serial, comment_id):
     elif post.visibility == 'FRIENDS':
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication required to view this comment."}, status=401)
-        if request.user != comment.author and not request.user.is_friend(post.author):
+        if request.user != comment.author and not Follow.are_friends(post.author, request.user):
             return Response({"detail": "You do not have permission to view this comment."}, status=403)
     else:
         return Response({"detail": "Invalid post visibility setting."}, status=400)
@@ -554,7 +554,7 @@ def get_author_comment(request, author_serial, comment_serial):
     elif post.visibility == 'FRIENDS':
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication required to view this comment."}, status=401)
-        if request.user != comment.author and not request.user.is_friend(post.author):
+        if request.user != comment.author and not Follow.are_friends(post.author, request.user):
             return Response({"detail": "You do not have permission to view this comment."}, status=403)
     else:
         return Response({"detail": "Invalid post visibility setting."}, status=400)
