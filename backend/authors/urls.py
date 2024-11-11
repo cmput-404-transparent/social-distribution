@@ -26,6 +26,9 @@ urlpatterns = [
     # signup
     path("signup/", author_views.signup, name="signup"),
 
+    # logout
+    path("logout/", author_views.logout, name="logout"),
+
     # get author info from session cookie
     path("get/from_session/", author_views.get_author_from_session, name="get_author_from_session"),
 

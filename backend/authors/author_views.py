@@ -7,7 +7,7 @@ from .serializers import *
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination 
 from django.contrib.auth import authenticate
-from django.contrib.auth import login as django_side_login
+from django.contrib.auth import login as django_side_login, logout as django_side_logout
 from rest_framework.authtoken.models import Token
 from django.db.models import Q
 from rest_framework import status
@@ -64,6 +64,11 @@ def signup(request):
     else:
         return Response({"detail": "Your account is pending approval."}, status=201)
 
+@logout_docs
+@api_view(['GET'])
+def logout(request):
+    django_side_logout(request)
+    return Response(status=200)
 
 @get_author_by_id_docs
 @api_view(['GET', 'PUT'])

@@ -444,6 +444,36 @@ signup_docs = swagger_auto_schema(
     }
 )
 
+logout_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="User logout",
+    operation_description="""
+    **When to use**: Use this endpoint to log out an authenticated user.
+
+    **How to use**: Send a GET request with the user’s session information to end the session.
+
+    **Why/Why not**: This endpoint terminates the current user session and logs the user out.
+    """,
+    responses={
+        200: openapi.Response(
+            description="Successfully logged out",
+            examples={
+                "application/json": {
+                    "message": "User logged out successfully"
+                }
+            }
+        ),
+        401: openapi.Response(
+            description="Unauthorized",
+            examples={
+                "application/json": {
+                    "detail": "Authentication credentials were not provided or are invalid."
+                }
+            }
+        )
+    }
+)
+
 # Get Author Details Documentation
 get_author_docs = swagger_auto_schema(
     method='get',

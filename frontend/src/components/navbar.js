@@ -23,7 +23,8 @@ export default function NavBar() {
     navigate(link);
   }
 
-  function logout() {
+  async function logout() {
+    await fetch("/api/logout/");
     localStorage.removeItem('authToken');
     localStorage.removeItem('authorId');
     navigate('/login');
