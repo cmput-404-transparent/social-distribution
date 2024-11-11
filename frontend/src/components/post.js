@@ -417,12 +417,8 @@ export default function Post({ post }) {
 
   const sharePostURL = async (e) => {
     e.preventDefault();
-    const authorId = author.id.split('/').pop(); 
-    const postId = post.id.split('/').pop(); 
-    const postUrl = `${window.location.origin}/authors/${authorId}/posts/${postId}`;    
-    const title = "Link";
-    const userResponse = window.prompt(title, postUrl);
-    
+    navigator.clipboard.writeText(post.page);
+    alert("Link Copied!");
     e.target.value = "none";
   };
 
@@ -566,7 +562,7 @@ export default function Post({ post }) {
                   <option value="none">Options</option>
                   {!isStream && isOwn && <option value="edit">Edit</option>}
                   {!isStream && isOwn && <option value="delete">Delete</option>}
-                  {(post.visibility === "UNLISTED") && !isStream && isOwn && (
+                  {(post.visibility === "PUBLIC" || post.visibility === "UNLISTED") && (
                       <option value="link">Copy Link</option>
                   )}
                   {post.visibility === "PUBLIC" && <option value="share">Share</option>}
