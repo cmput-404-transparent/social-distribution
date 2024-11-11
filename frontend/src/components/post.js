@@ -11,6 +11,7 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
+import { PostProfilePicture } from "./profilePicture";
 
 
 const PostState = {
@@ -311,15 +312,7 @@ const Comment = ({data}) => {
     <div className="border rounded p-4">
       <div className="grid grid-cols-[min-content,auto] space-x-4">
         <a href={data.author.page}>
-          <div>
-            {
-              data.author.profileImage? (
-                <img src={data.profileImage}></img>
-              ) : (
-                <p>profile image</p>
-              )
-            }
-          </div>
+          <PostProfilePicture displayName={data.author.displayName} imageURL={data.author.profileImage} />
         </a>
         <div className="grid grid-rows-[min-content,auto,auto]">
           <a href={data.author.page}><h1 className="font-bold text-l">{data.author.displayName}</h1></a>
@@ -546,8 +539,8 @@ export default function Post({ post }) {
   return (
     <div className="grid auto-rows-auto grid-flow-row border rounded-md w-4/5 mx-auto relative">
       <div className="grid grid-cols-[min-content,auto] auto-cols-auto border-b p-5">
-        <div className="pr-8 min-w-[80px] min-h-[45px]">
-          <img src="/pfp.png" alt="Profile" className="w-12 h-12 rounded-full object-cover" />
+        <div className="mr-3 min-w-[80px] min-h-[45px]">
+          <PostProfilePicture displayName={post.author.displayName} imageURL={post.author.profileImage} />
         </div>
         <div className="grid grid-flow-row auto-rows-auto space-y-4">
           <div className="grid grid-cols-[auto,min-content]">

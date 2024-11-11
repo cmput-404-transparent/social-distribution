@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { TextField } from '@mui/material';
 import getCookie from "../getCSRFToken";
 import { useNavigate } from 'react-router-dom';
-import UploadIcon from '@mui/icons-material/Upload';
+import { ProfilePicture } from "../components/profilePicture";
 
 
 export default function EditProfile() {
-
+  const [author, setAuthor] = useState({});
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [profileImage, setProfileImage] = useState('');
   const [github, setGithub] = useState('');
 
   const authorId = localStorage.getItem('authorId');
@@ -21,8 +22,10 @@ export default function EditProfile() {
     fetch(`/api/authors/${authorId}/full/`)
     .then((r) => r.json())
     .then((data) => {
+      setAuthor(data);
       setUsername(data.username);
       setDisplayName(data.display_name);
+      setProfileImage(data.profile_image);
       setGithub(data.github);
     })
     // eslint-disable-next-line
@@ -66,14 +69,9 @@ export default function EditProfile() {
     <div className='page'>
       <div className='border h-fit p-9 rounded-[10px] w-4/5'>
         <h2 className='text-2xl font-bold pb-3'>Edit Profile</h2>
-        <div className="flex justify-center justify-items-center align-middle middle">
-          <p className="justify-self-center align-middle leading-[inherit]">
-            profile picture
-          </p>
-          <button className="bg-neutral-400 rounded p-2">
-            <UploadIcon />
-          </button>
-        </div>
+        <p className="justify-self-center align-middle leading-[inherit]">
+          <ProfilePicture displayName={author.display_name} imageURL={author.profile_image} />
+        </p>
         <form onSubmit={updateProfile} className="pt-8">
           <div className='grid auto-rows-auto space-y-3'>
             <TextField
@@ -86,12 +84,18 @@ export default function EditProfile() {
               onChange={(e) => setPassword(e.target.value)}
               value={password}
               type="password"
+              helperText="Specify password to change password"
             />
             <TextField
               label="Display Name"
               onChange={(e) => setDisplayName(e.target.value)}
               value={displayName}
               defaultValue={username}
+            />
+            <TextField
+              label="Profile Image URL"
+              onChange={(e) => setProfileImage(e.target.value)}
+              value={profileImage}
             />
             <TextField
               label="GitHub"

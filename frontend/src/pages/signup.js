@@ -74,7 +74,6 @@ export default function SignUp() {
               onChange={(e) => setDisplayName(e.target.value)}
               value={displayName}
               defaultValue={username}
-              helperText="Can be set later"
             />
             <TextField
               label="GitHub Username"

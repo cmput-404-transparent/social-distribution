@@ -7,6 +7,7 @@ module.exports = {
         customYellow: '#FFF5CD',
         customOrange: '#E78F81',
         customLightOrange: '#FFCFB3',
+        customLightBlue: '#9cd3fd',
       },
     },
   },

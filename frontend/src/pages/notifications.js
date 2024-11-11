@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import getCookie from "../getCSRFToken";
+import { PostProfilePicture } from "../components/profilePicture";
 
 function FollowRequest({request, authorId}) {
 
@@ -63,9 +64,9 @@ function FollowRequest({request, authorId}) {
         <a href={`/authors/${request.id}`}>
           <div className="grid grid-cols-[min-content,auto]">
             <div className="pr-8">
-              profile picture
+              <PostProfilePicture displayName={request.display_name} imageURL={request.profile_image}/>
             </div>
-            <div>
+            <div className="flex flex-col justify-center">
               <h1 className="font-bold text-l">{request.display_name}</h1>
               <h2 className="text-l">@{request.username}</h2>
             </div>

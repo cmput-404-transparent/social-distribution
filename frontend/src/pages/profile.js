@@ -12,6 +12,7 @@ import { Button } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import {Menu} from "@mui/material";
 import {MenuItem} from "@mui/material";
+import {PostProfilePicture, ProfilePicture} from "../components/profilePicture";
 
 /**
   * source: Material UI Documentation
@@ -35,7 +36,7 @@ export function User({author}) {
       <div className="border rounded my-4 p-4">
         <div className="grid grid-cols-[min-content,auto]">
           <div className="pr-5 flex items-center">
-            <p>profile picture</p>
+            <PostProfilePicture displayName={author.displayName} imageURL={author.profileImage} />
           </div>
           <div className="flex justify-start items-center">
             <h1 className="font-bold text-2xl">{author.displayName}</h1>
@@ -189,7 +190,7 @@ export default function Profile() {
           <div className="grid grid-flow-col grid-cols-2">
             <div className="flex justify-center justify-items-center align-middle">
               <p className="items-center justify-center flex">
-                profile picture
+                <ProfilePicture displayName={profileInfo.displayName} imageURL={profileInfo.profileImage} />
               </p>
             </div>
             <div className="grid grid-flow-row auto-rows-auto space-y-4">

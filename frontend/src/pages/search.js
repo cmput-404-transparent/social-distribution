@@ -3,6 +3,7 @@ import {Button} from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { PostProfilePicture } from "../components/profilePicture";
 
 export function AuthorResult({author}) {
   return(
@@ -10,7 +11,7 @@ export function AuthorResult({author}) {
       <div className="border rounded my-4 p-4">
         <div className="grid grid-cols-[min-content,auto]">
           <div className="pr-5 flex items-center">
-            <p>profile picture</p>
+            <PostProfilePicture displayName={author.display_name} imageURL={author.profile_image}/>
           </div>
           <div>
             <h1 className="font-bold text-2xl">{author.display_name}</h1>
