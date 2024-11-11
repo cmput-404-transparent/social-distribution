@@ -13,7 +13,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['type', 'id', 'title', 'description', 'contentType', 'content', 'author', 'published', 'visibility', 'is_shared', 'original_post', 'shares_count']
+        fields = ['type', 'id', 'page', 'title', 'description', 'contentType', 'content', 'author', 'published', 'visibility', 'is_shared', 'original_post', 'shares_count']
         read_only_fields = ['type', 'id', 'author', 'published', 'is_shared', 'original_post', 'shares_count']
 
     def to_representation(self, instance):
@@ -128,7 +128,7 @@ class PostSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = [
-            'type', 'title', 'id', 'description', 'contentType', 'content',
+            'type', 'title', 'id', 'page', 'description', 'contentType', 'content',
             'author', 'comments', 'likes', 'published', 'visibility'
         ]
 

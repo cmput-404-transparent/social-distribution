@@ -21,6 +21,7 @@ class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  # Unique identifier for the post
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Author of the post
     title = models.CharField(max_length=100)  # Title of the post
+    page = models.CharField(max_length=300)     # Page of the post
     content = models.TextField()  # Content of the post
     description = models.TextField(blank=True)  # Optional description of the post
     contentType = models.CharField(choices=CONTENT_TYPE_CHOICES, max_length=20, default='text/plain')  # Type of content
@@ -34,9 +35,11 @@ class Post(models.Model):
     fqid = models.CharField(unique=True, max_length=200, blank=True, null=True)  # Fully qualified ID
 
     def save(self, *args, **kwargs):
-        # Override save method to set fqid if not already set
+        # Override save method to set fqid and page if not already set
         if not self.fqid:
             self.fqid = f"{self.author.host}authors/{self.author.id}/posts/{self.id}"
+        if not self.page:
+            self.page = f"{self.author.page}/posts/{self.id}"
         super().save(*args, **kwargs)
 
     @property
