@@ -216,7 +216,6 @@ export default function Profile() {
                         Edit Profile
                       </button>
                     </a>
-                    <button type="submit" className='bg-customOrange rounded p-2 px-5'>View Deleted</button>
                   </div>
                 ) : (
                   relationship === "NONE"? (
