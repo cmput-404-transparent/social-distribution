@@ -71,14 +71,6 @@ urlpatterns = [
     # get all stream posts for a user
     path('<int:author_id>/stream/', posts_views.stream, name='stream'),
 
-    # SHARING URLS ------------------------------------------------------------------------------
-
-    # share post
-    path('<uuid:post_id>/share/', posts_views.share_post, name='share_post'),
-
-    # get shared posts
-    path('<str:author_id>/shared_posts/', posts_views.list_shared_posts, name='list_shared_posts'),
-
     # IMAGE URLS ------------------------------------------------------------------------------
 
     path('<int:author_id>/posts/<uuid:post_id>/image/', posts_views.get_image_post, name='get_image_post'),

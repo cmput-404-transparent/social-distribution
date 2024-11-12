@@ -415,34 +415,6 @@ export default function Post({ post }) {
     e.target.value = "none";
   };
 
-  const sharePost = async () => {
-    const csrftoken = getCookie('csrftoken');
-    const uuidofPost = post.id.split('/').pop();
-    try {
-        const response = await fetch(`/api/authors/${uuidofPost}/share/` ,{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken,
-                'Authorization': `Token ${localStorage.getItem('authToken')}`,
-            },
-        });
-
-        if (response.ok) {
-            const sharedPostData = await response.json();
-
-            alert("Post shared successfully!");
-            window.location.reload()
-        } else {
-            alert('You have already shared this post');
-        }
-    } catch (error) {
-        console.error('Error sharing post:', error);
-        alert("An error occurred. Please try again.");
-    }
-};
-
-
   const dropdown = (e) => {
     const option = e.target.value
     if (option === "edit") {
@@ -454,11 +426,6 @@ export default function Post({ post }) {
     else if (option === "link") {
       sharePostURL(e)
     }
-    else if(option == "share"){
-      sharePost()
-      e.target.value = "none";
-    }
-
   }
 
   const Edit = () => {
@@ -559,7 +526,6 @@ export default function Post({ post }) {
                     {(post.visibility === "PUBLIC" || post.visibility === "UNLISTED") && (
                         <option value="link">Copy Link</option>
                     )}
-                    {post.visibility === "PUBLIC" && <option value="share">Share</option>}
                   </select>
                 )}
               </div>
