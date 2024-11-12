@@ -74,39 +74,41 @@ export default function Profile() {
   }, [profileAuthorId]);
 
   useEffect(() => {
-    // get posts
-    fetch(`${profileInfo.id}/posts/`)
-    .then((r) => r.json())
-    .then((data) => {
-      setPosts(data.posts);
-    })
+    if (Object.keys(profileInfo).length !== 0) {
+      // get posts
+      fetch(`${profileInfo.id}/posts/`)
+      .then((r) => r.json())
+      .then((data) => {
+        setPosts(data.posts);
+      })
 
-    fetch(`/api/authors/${authorId}/relationship/${profileAuthorId}`)
-    .then((r) => r.json())
-    .then((data) => {
-      setRelationship(data.relationship);
-    });
+      fetch(`/api/authors/${authorId}/relationship/${profileAuthorId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setRelationship(data.relationship);
+      });
 
-    // get followers
-    fetch(`${profileInfo.id}/followers/`)
-    .then((r) => r.json())
-    .then((data) => {
-      setFollowers(data.followers)
-    });
+      // get followers
+      fetch(`${profileInfo.id}/followers/`)
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowers(data.followers)
+      });
 
-    // get people author follows
-    fetch(`${profileInfo.id}/following/`)
-    .then((r) => r.json())
-    .then((data) => {
-      setFollowing(data)
-    });
+      // get people author follows
+      fetch(`${profileInfo.id}/following/`)
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowing(data)
+      });
 
-    // get friends of the author
-    fetch(`${profileInfo.id}/friends/`)
-    .then((r) => r.json())
-    .then((data) => {
-      setFriends(data.friends)
-    });
+      // get friends of the author
+      fetch(`${profileInfo.id}/friends/`)
+      .then((r) => r.json())
+      .then((data) => {
+        setFriends(data.friends)
+      });
+    }
   }, [profileInfo]);
 
   function follow() {
