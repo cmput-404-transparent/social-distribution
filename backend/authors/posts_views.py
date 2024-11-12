@@ -418,7 +418,7 @@ def like_object(request, author_id, object_id):
 
     try:
         post_object = Post.objects.get(id=object_id)
-        object_full_id = f"{post_object.author.page}/posts/{post_object.id}"
+        object_full_id = f"{post_object.author.host}authors/{post_object.author.id}/posts/{post_object.id}"
     except Post.DoesNotExist:
         try:
             comment_object = Comment.objects.get(id=object_id)
