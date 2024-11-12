@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './makePost.css';
 import getCookie from '../getCSRFToken';
-import { Parser, HtmlRenderer } from 'commonmark';
 
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
@@ -34,7 +33,7 @@ const MakePost = () => {
   const [contentType, setContentType] = useState('text/plain');
   const [uploadedImage, setImage] = useState('')
   const [activeButton, setActiveButton] = useState('plain');
-  const [visibility, setVisbility] = useState('PUBLIC'); 
+  const [visibility, setVisbility] = useState('PUBLIC');
 
   const [commonmarkImages, setCommonmarkImages] = useState([]);
   const [commonmarkImage, setCommonmarkImage] = useState('');
@@ -43,7 +42,7 @@ const MakePost = () => {
 
   const handleChange = (event) => {
     setVisbility(event.target.value);
-    };
+  };
 
   const csrftoken = getCookie('csrftoken');
   const authorId = localStorage.getItem('authorId');
@@ -53,12 +52,12 @@ const MakePost = () => {
   useEffect(() => {
     // get all hosted images
     fetch('/api/authors/images/all/')
-    .then(r => r.json())
-    .then(data => {
-      setCommonmarkImages(data.images)
-    })
+      .then(r => r.json())
+      .then(data => {
+        setCommonmarkImages(data.images)
+      })
   }, [])
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -68,30 +67,25 @@ const MakePost = () => {
       data.append('description', description);
       data.append('visibility', visibility);
 
-      if (contentType === 'text/plain'){
-      data.append('contentType', 'text/plain');
-      data.append('content', content);
+      if (contentType === 'text/plain') {
+        data.append('contentType', 'text/plain');
+        data.append('content', content);
       }
 
-      //commonmark reference - https://github.com/commonmark/commonmark.js/
-      else if(contentType === 'text/markdown'){
-      const reader = new Parser();
-      const writer = new HtmlRenderer();
-      const parsed = reader.parse(content);
-      var result = writer.render(parsed);
-      data.append('contentType', 'text/markdown');
-      data.append('content', result);
+      else if (contentType === 'text/markdown') {
+        data.append('contentType', 'text/markdown');
+        data.append('content', content);
       }
 
-      else if(contentType === 'image' && uploadedImage){
+      else if (contentType === 'image' && uploadedImage) {
         const ImageData = await ImageReader(uploadedImage)
-        
-        data.append('contentType',uploadedImage.type );
+
+        data.append('contentType', uploadedImage.type);
         data.append('content', ImageData);
         console.log(uploadedImage.type)
-           
+
       }
-      
+
       const response = await fetch(`/api/authors/${authorId}/posts/`, {
         method: 'POST',
         headers: {
@@ -103,7 +97,7 @@ const MakePost = () => {
 
       console.log('Post created:', response.data);
       navigate('/stream');
-    } 
+    }
     catch (error) {
       console.error('Error:', error.response ? error.response.data : error.message);
     }
@@ -120,14 +114,14 @@ const MakePost = () => {
     })
   }
 
-  const ImageSelector = ({images}) => {
+  const ImageSelector = ({ images }) => {
 
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-  
+
     const [imageUrls, setImageUrls] = useState([]);
-  
+
     useEffect(() => {
       const fetchImages = async () => {
         const fetchedUrls = await Promise.all(
@@ -137,10 +131,10 @@ const MakePost = () => {
             return URL.createObjectURL(blob);
           })
         );
-  
+
         setImageUrls(fetchedUrls);
       };
-  
+
       fetchImages();
     }, []);
 
@@ -148,8 +142,8 @@ const MakePost = () => {
       setCommonmarkImage(event.target.id);
       handleClose();
     }
-  
-    return(
+
+    return (
       <div>
         <button type="button" onClick={handleOpen} className='bg-customOrange rounded p-2 px-5'>Select Image</button>
         <Modal
@@ -159,16 +153,16 @@ const MakePost = () => {
           <Box sx={style}>
             <div className="grid grid-cols-2 pb-3 mb-3 border-b">
               <h2 className="font-bold text-3xl">
-              Select Image
+                Select Image
               </h2>
               <div className="flex justify-end">
                 <CloseIcon sx={{ color: '#bbb' }} onClick={handleClose} className="cursor-pointer" />
               </div>
             </div>
-  
+
             <div className="grid grid-cols-3 gap-4">
               {
-                imageUrls.length > 0? (
+                imageUrls.length > 0 ? (
                   imageUrls.map((image, index) => {
                     return <img src={image} id={images[index].split("/").pop()} alt="Image not found" className='border rounded' onClick={setImage}></img>
                   })
@@ -191,103 +185,103 @@ const MakePost = () => {
 
   return (
     <div className="page max-h-screen overflow-scroll pb-[25px]">
-      
+
       <form onSubmit={handleSubmit} className='form-make-post'>
-      <h1 className='post-title'>Make a Post</h1>
+        <h1 className='post-title'>Make a Post</h1>
         <div className='alldiv'>
-        <div className='div-make-post'>
-          <label className='label-make-post'>Title:</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            className='input-make-post'
-          />
+          <div className='div-make-post'>
+            <label className='label-make-post'>Title:</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className='input-make-post'
+            />
+          </div>
+          <div className='div-make-post'>
+            <label className='label-make-post' >Description:</label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+              className='input-make-post'
+            />
+
+          </div>
+          <div className='div-make-post'>
+            <label> Content Type:</label>
+          </div>
+
+          <button
+            className={`div-plain ${activeButton === 'plain' ? 'active' : ''}`} type="button"
+            onClick={() => {
+              setContentType('text/plain');
+              setActiveButton('plain');
+            }}>Plain Text </button>
+
+          <button className={`div-markdown ${activeButton === 'markdown' ? 'active' : ''}`} type="button"
+            onClick={() => {
+              setContentType('text/markdown');
+              setActiveButton('markdown');
+            }}>MarkDown</button>
+
+          <button className={`div-image ${activeButton === 'image' ? 'active' : ''}`} type="button"
+            onClick={() => {
+              setContentType('image');
+              setActiveButton('image');
+            }} x>Image</button>
+          <br></br><br></br>
+
+          <label>Content:</label>
+
+          <div className='div-make-post'>
+
+            {contentType === 'image' ? (
+              <><input
+                type="file"
+                id="imageInput"
+                onChange={(e) => setImage(e.target.files[0])}
+                className="hidden"
+              />
+
+                <img
+                  src="/upload.png"
+                  alt="Upload"
+                  className="w-10 h-10 cursor-pointer mx-auto hover:opacity-80"
+                  onClick={() => document.getElementById('imageInput').click()}
+                />  <p className="text-m text-gray-800 mt-2">
+                  {uploadedImage ? uploadedImage.name : 'No file chosen'}
+                </p></>) :
+              (
+
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  required
+                  className='make-post-textarea'
+
+                />
+
+              )}
+
+          </div>
+
+          <div className={`flex ${activeButton === "markdown" ? "justify-between" : "justify-end"} px-20 pb-8`}>
+            {activeButton === "markdown" && <ImageSelector images={commonmarkImages} />}
+            <select className='border rounded' value={visibility} onChange={handleChange}>
+              <option value="PUBLIC">Public</option>
+              <option value="FRIENDS">Friends-Only</option>
+              <option value="UNLISTED">Unlisted</option>
+            </select>
+          </div>
+
+
+          <div className="flex justify-end pr-20">
+            <button type="submit" className="make-post-button">Create Post</button>
+          </div>
         </div>
-        <div className='div-make-post'>
-          <label className='label-make-post' >Description:</label>
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-            className='input-make-post'
-          />
-
-        </div>
-        <div className='div-make-post'>
-        <label> Content Type:</label>
-        </div>
-
-        <button
-        className={`div-plain ${activeButton === 'plain' ? 'active' : ''}`} type="button"
-        onClick={() => {
-          setContentType('text/plain');
-          setActiveButton('plain');
-        }}>Plain Text </button>
-
-        <button className={`div-markdown ${activeButton === 'markdown' ? 'active' : ''}`} type = "button" 
-        onClick={() => {
-          setContentType('text/markdown');
-          setActiveButton('markdown');
-        }}>MarkDown</button>
-
-        <button className={`div-image ${activeButton === 'image' ? 'active' : ''}`} type="button"
-                  onClick={() => {
-                  setContentType('image');
-                  setActiveButton('image');
-                }}x>Image</button>        
-        <br></br><br></br>
-
-        <label>Content:</label>
-        
-        <div className='div-make-post'>
-
-          {contentType === 'image' ? (
-          <><input
-          type="file"
-          id="imageInput"
-          onChange={(e) => setImage(e.target.files[0])}
-          className="hidden"
-        />
-      
-        <img
-          src="/upload.png" 
-          alt="Upload"
-          className="w-10 h-10 cursor-pointer mx-auto hover:opacity-80"
-          onClick={() => document.getElementById('imageInput').click()}
-        />  <p className="text-m text-gray-800 mt-2">
-        {uploadedImage ? uploadedImage.name : 'No file chosen'}
-      </p></>):
-          (
-            
-          <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          required
-          className='make-post-textarea'
-          
-          />
-
-          )}
-          
-        </div>
-
-        <div className={`flex ${activeButton === "markdown"? "justify-between" : "justify-end"} px-20 pb-8`}>
-          { activeButton === "markdown" && <ImageSelector images={commonmarkImages} />}
-          <select className='border rounded' value={visibility} onChange={handleChange}>
-                <option value="PUBLIC">Public</option>
-                <option value="FRIENDS">Friends-Only</option>
-                <option value="UNLISTED">Unlisted</option>
-          </select>
-        </div>
-
-        
-        <div className="flex justify-end pr-20">
-          <button type="submit" className="make-post-button">Create Post</button>
-        </div>
-      </div>
       </form>
     </div>
   );
