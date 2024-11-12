@@ -12,7 +12,7 @@ function FollowRequest({request, authorId}) {
     data.append('follower', followerId);
 
     try {
-      fetch(`/api/authors/${authorId}/follow_request/`, {
+      fetch(`${request.object.id}/follow_request/`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -38,7 +38,7 @@ function FollowRequest({request, authorId}) {
     data.append('follower', followerId);
 
     try {
-      fetch(`/api/authors/${authorId}/follow_request/`, {
+      fetch(`${request.object.id}/follow_request/`, {
         method: "DELETE",
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',

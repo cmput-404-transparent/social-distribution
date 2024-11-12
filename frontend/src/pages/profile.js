@@ -52,7 +52,6 @@ export default function Profile() {
   const [profileInfo, setProfileInfo] = useState({});
   const [posts, setPosts] = useState([]);
   const [relationship, setRelationship] = useState([]);
-  const [self, setSelf] = useState(false);
 
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
@@ -67,49 +66,48 @@ export default function Profile() {
     .then((r) => r.json())
     .then((data) => setProfileInfo(data));
 
+    setFollowersOpen(false);
+    setFollowingOpen(false);
+    setFriendsOpen(false);
+
+    // eslint-disable-next-line
+  }, [profileAuthorId]);
+
+  useEffect(() => {
     // get posts
-    fetch(`/api/authors/${profileAuthorId}/posts/`)
+    fetch(`${profileInfo.id}/posts/`)
     .then((r) => r.json())
     .then((data) => {
       setPosts(data.posts);
     })
 
-    setSelf(profileAuthorId === authorId);
-
     fetch(`/api/authors/${authorId}/relationship/${profileAuthorId}`)
     .then((r) => r.json())
     .then((data) => {
-      setRelationship(data.relationship)
+      setRelationship(data.relationship);
     });
 
     // get followers
-    fetch(`/api/authors/${profileAuthorId}/followers/`)
+    fetch(`${profileInfo.id}/followers/`)
     .then((r) => r.json())
     .then((data) => {
       setFollowers(data.followers)
     });
 
     // get people author follows
-    fetch(`/api/authors/${profileAuthorId}/following/`)
+    fetch(`${profileInfo.id}/following/`)
     .then((r) => r.json())
     .then((data) => {
       setFollowing(data)
     });
 
     // get friends of the author
-    fetch(`/api/authors/${profileAuthorId}/friends/`)
+    fetch(`${profileInfo.id}/friends/`)
     .then((r) => r.json())
     .then((data) => {
       setFriends(data.friends)
     });
-
-    setFollowersOpen(false);
-    setFollowingOpen(false);
-    setFriendsOpen(false);
-    
-
-    // eslint-disable-next-line
-  }, [profileAuthorId]);
+  }, [profileInfo]);
 
   function follow() {
 
@@ -209,7 +207,7 @@ export default function Profile() {
                 </div>
               </div>
               {
-                self? (
+                relationship === "SELF" ? (
                   <div className="space-x-3 flex">
                     <a href={ `/authors/${authorId}/edit` }>
                       <button type="submit" className='bg-customOrange rounded p-2 px-5'>
