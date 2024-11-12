@@ -1,6 +1,12 @@
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+'''
+source: ChatGPT (OpenAI)
+prompt: "Write me python swagger_auto_schema for this view. should be used as a decorator"
+date: November 12, 2024
+'''
+
 get_like_by_fqid_docs = swagger_auto_schema(
     method='get',
     operation_summary="Get a like by fully qualified ID (fqid)",
