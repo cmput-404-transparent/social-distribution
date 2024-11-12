@@ -3,7 +3,9 @@ from posts.serializers import *
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from .docs import *
 
+@get_comment_by_fqid_docs
 @api_view(['GET'])
 def get_comment_by_fqid(request, comment_fqid):
     comment = get_object_or_404(Comment, fqid=comment_fqid)
