@@ -77,10 +77,23 @@ class Like(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # User who liked the post or comment
     object = models.CharField(max_length=200)  # URL of the liked object
     published = models.DateTimeField(auto_now_add=True)  # Timestamp when the like was made
+    fqid = models.URLField(blank=True, null=True)
 
     def __str__(self):
         # String representation of the like
         return f"{self.author} liked {self.object}"
+    
+    def save(self, *args, **kwargs):
+        # Override save method to set fqid
+        try:
+            comment = Comment.objects.get(fqid=self.object)
+            if not self.fqid:
+                self.fqid = f"{comment.post.author.host}authors/{self.author.id}/liked/{self.id}"
+        except:
+            post = Post.objects.get(fqid=self.object)
+            if not self.fqid:
+                self.fqid = f"{post.author.host}authors/{self.author.id}/liked/{self.id}"
+        super().save(*args, **kwargs)
 
 # Model representing a comment on a post
 class Comment(models.Model):

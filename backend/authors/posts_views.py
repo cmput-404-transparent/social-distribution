@@ -635,7 +635,7 @@ def check_liked(request, author_id, post_id):
     check if an author liked a post
     """
     post = get_object_or_404(Post, id=post_id)
-    post_object = f"{post.author.page}/posts/{post.id}"
+    post_object = f"{post.author.host}authors/{post.author.id}/posts/{post.id}"
     liked = Like.objects.filter(author__id=author_id, object=post_object)
 
     return Response({"liked": liked.exists()})
