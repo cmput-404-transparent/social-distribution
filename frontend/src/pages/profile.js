@@ -233,7 +233,13 @@ export default function Profile() {
                         </Button>
                       </ButtonGroup>
                       <Menu anchorEl={anchorEl} open={open} onClose={closeManageFollowMenu} MenuListProps={{ 'aria-labelledby': 'manage-follow-btn' }}>
-                        <MenuItem onClick={unfollow}>Unfollow</MenuItem>
+                        <MenuItem onClick={unfollow}>
+                          {relationship === "REQUESTED"? (
+                            <p>Cancel</p>
+                          ) : (
+                          <p>Unfollow</p>
+                          )}
+                        </MenuItem>
                       </Menu>
                     </div>
                   )
