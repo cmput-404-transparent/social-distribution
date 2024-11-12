@@ -38,6 +38,7 @@ export default function EditProfile() {
     data.append('username', username);
     data.append('password', password);
     data.append('displayName', displayName);
+    data.append('profileImage', profileImage);
     data.append('github', github);
 
     const csrftoken = getCookie('csrftoken');

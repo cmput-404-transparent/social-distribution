@@ -88,6 +88,7 @@ def get_update_author(request, author_id):
         username = request.data.get('username', None)
         password = request.data.get('password', None)
         display_name = request.data.get('displayName', None)
+        profile_image = request.data.get('profileImage', None)
         github = request.data.get('github', None)
 
         errors = []
@@ -104,6 +105,8 @@ def get_update_author(request, author_id):
             author.set_password(password)           # if not then change it
         if display_name is not None and display_name != author.display_name:
             author.display_name = display_name
+        if profile_image is not None and profile_image != author.profile_image:
+            author.profile_image = profile_image
         if github is not None and github != author.github:
             author.github = github
         
