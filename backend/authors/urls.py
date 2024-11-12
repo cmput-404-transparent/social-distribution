@@ -98,6 +98,9 @@ urlpatterns = [
     
     # Get a specific comment on a post
     path('<int:author_serial>/posts/<uuid:post_serial>/comments/<uuid:comment_id>', posts_views.get_comment),
+
+    # Get likes for a specific comment on a post
+    path('<int:author_serial>/posts/<uuid:post_serial>/comments/<path:comment_fqid>/likes', posts_views.get_comment_likes),
     
     # Commented API
     # Get comments made by a specific author

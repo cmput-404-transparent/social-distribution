@@ -366,9 +366,9 @@ def get_likes(request, author_id, object_id):
         object_page = f"{post_object.author.page}/posts/{post_object.id}"
     except Post.DoesNotExist:
         try:
-            comment_object = Comment.objects.get(id=object_id)
+            comment_object = Comment.objects.get(fqid=object_id)
             object_full_id = comment_object.fqid
-            object_page = f"{post_object.author.page}/comments/{comment_object.id}/likes"
+            object_page = f"{post_object.author.page}/comments/{comment_object.fqid}/likes"
         except:
             return Response("only posts and comments have likes", status=status.HTTP_400_BAD_REQUEST)
 
@@ -386,6 +386,29 @@ def get_likes(request, author_id, object_id):
     })
     return Response(serializer.data)
 
+@api_view(['GET'])
+def get_comment_likes(request, author_serial, post_serial, comment_fqid):
+    comment = Comment.objects.get(fqid=comment_fqid)
+    object_page = f"{comment.post.author.page}/comments/{comment.id}/likes"
+
+    likes = Like.objects.filter(object=comment.fqid).order_by('-published')
+    paginator = Paginator(likes, 50)  # 50 likes per page
+    if hasattr(request, 'query_params'):
+        page_number = request.query_params.get('page', 1)
+    elif hasattr(request, 'GET'):
+        page_number = request.GET.get('page', 1)
+    else:
+        page_number = 1
+    page_obj = paginator.get_page(page_number)
+    serializer = LikesSerializer({
+        'page': object_page,
+        'id': f"{comment.fqid}/likes",
+        'page_number': page_obj.number,
+        'size': paginator.per_page,
+        'count': paginator.count,
+        'src': page_obj.object_list,
+    })
+    return Response(serializer.data)
 
 @like_object_docs
 @api_view(['POST'])
