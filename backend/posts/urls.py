@@ -5,7 +5,7 @@ app_name = "posts"
 
 urlpatterns = [
     # Get a specific post by its fqid
-    path("<int:fqid>/", views.get_post, name="get_post"),
+    path("<path:post_fqid>/", views.get_post, name="get_post"),
     
     # Post GitHub activity for a specific author
     path('<int:author_id>/github/', views.post_github_activity, name="post_github"),

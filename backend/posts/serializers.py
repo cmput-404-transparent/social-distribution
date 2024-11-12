@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from authors.models import *
-from .views import Paginator
+from django.core.paginator import Paginator
 import commonmark
 from django.core.files.base import ContentFile
 import base64

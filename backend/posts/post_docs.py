@@ -9,31 +9,60 @@ date: October 21, 2024s
 
 get_post_docs = swagger_auto_schema(
     method='get',
-    operation_summary="Retrieve a specific post by ID",
+    operation_summary="Get a post by fully qualified ID (fqid)",
     operation_description="""
-    **When to use**: Use this endpoint to retrieve the details of a specific post by its ID and author.
+    **When to use**: Use this endpoint to retrieve a post based on its fully qualified ID (fqid).
 
-    **How to use**: Send a GET request with the author's ID and post ID in the URL.
+    **How to use**: Send a GET request to this endpoint with the post's fqid as a parameter. Depending on the post's visibility setting, authentication may be required.
 
-    **Why/Why not**: Need this if you want to fetch the full details of a post 
+    **Why**: This allows users to view specific posts, respecting the post's visibility settings (PUBLIC, UNLISTED, or FRIENDS).
     """,
     responses={
         200: openapi.Response(
-            description="Post details",
+            description="Post details retrieved successfully",
             examples={
                 "application/json": {
-                    "id": "123e4567-e89b-12d3-a456-426614174000",
-                    "title": "Sample Post Title",
-                    "description": "A detailed description of the post",
-                    "contentType": "text/plain",
-                    "content": "Content of the post",
-                    "author": 3,
-                    "visibility": "PUBLIC",
+                    "type": "post",
+                    "title": "Hello World",
+                    "id": "http://localhost:3000/api/authors/7/posts/d3f29b18-3694-4348-a911-248304d83a62",
+                    "page": "http://localhost:3000/authors/7/posts/d3f29b18-3694-4348-a911-248304d83a62",
+                    "description": "hello everyone",
+                    "contentType": "text/markdown",
+                    "content": "<p>Yes</p>\n",
+                    "author": {
+                        "type": "author",
+                        "id": "http://localhost:3000/api/authors/7",
+                        "host": "http://localhost:3000/api/",
+                        "displayName": "Pumpkin",
+                        "github": "http://github.com/pumpkin",
+                        "profileImage": "",
+                        "page": "http://localhost:3000/authors/7"
+                    },
+                    "comments": {
+                        "type": "comments",
+                        "page": "http://localhost:3000/authors/7/posts/d3f29b18-3694-4348-a911-248304d83a62",
+                        "id": "http://localhost:3000/api/authors/7/posts/d3f29b18-3694-4348-a911-248304d83a62/comments",
+                        "page_number": 1,
+                        "size": 5,
+                        "count": 0,
+                        "src": []
+                    },
+                    "likes": {
+                        "type": "likes",
+                        "page": "http://localhost:3000/authors/7/posts/d3f29b18-3694-4348-a911-248304d83a62",
+                        "id": "http://localhost:3000/api/authors/7/posts/d3f29b18-3694-4348-a911-248304d83a62/likes",
+                        "page_number": 1,
+                        "size": 5,
+                        "count": 0,
+                        "src": []
+                    },
+                    "published": "2024-11-11T07:44:09.801256Z",
+                    "visibility": "PUBLIC"
                 }
             }
         ),
         401: openapi.Response(
-            description="Authentication required to view this post",
+            description="Authentication required for friends-only post",
             examples={
                 "application/json": {
                     "detail": "Authentication required to view this post."
@@ -52,7 +81,7 @@ get_post_docs = swagger_auto_schema(
             description="Post not found",
             examples={
                 "application/json": {
-                    "detail": "Post not found."
+                    "detail": "Not found."
                 }
             }
         )

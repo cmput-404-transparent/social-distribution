@@ -3,14 +3,13 @@ from authors.models import *
 from .models import *
 from rest_framework.response import Response
 from authors.serializers import *
-from posts.serializers import *
+from posts.serializers import PostSummarySerializer
 from django.shortcuts import get_object_or_404
 import requests
 import json
 from datetime import datetime
 import base64
 from django.http import HttpResponse, JsonResponse
-from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 from urllib.parse import unquote
 
@@ -27,8 +26,8 @@ from .post_docs import *
 @get_post_docs
 @api_view(['GET'])
 # Get a single post
-def get_post(request, fqid):
-    post = get_object_or_404(Post, fqid=fqid)
+def get_post(request, post_fqid):
+    post = get_object_or_404(Post, fqid=post_fqid)
 
     # Public and unlisted posts are visible to everyone
     if post.visibility in ['PUBLIC', 'UNLISTED']:
