@@ -3,7 +3,7 @@ from authors.models import *
 from .models import *
 from rest_framework.response import Response
 from authors.serializers import *
-from posts.serializers import PostSummarySerializer
+from posts.serializers import *
 from django.shortcuts import get_object_or_404
 import requests
 import json
@@ -53,6 +53,35 @@ def get_post_image(request, post_fqid):
         return Response({"error": "post is not an image post"}, status=404)
     
     return Response({'src': post.content})
+
+@api_view(['GET'])
+def get_post_comments(request, post_fqid):
+    post = get_object_or_404(Post, fqid=post_fqid)
+    # Check visibility
+    if post.visibility in ['PUBLIC', 'UNLISTED']:
+        pass  # Anyone can see the comments
+    elif post.visibility == 'FRIENDS':
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication required to view comments."}, status=401)
+        # Check if the user is a friend of the author
+        if not Follow.are_friends(post.author, request.user):
+            return Response({"detail": "You do not have permission to view these comments."}, status=403)
+    else:
+        return Response({"detail": "Invalid post visibility setting."}, status=400)
+
+    comments = Comment.objects.filter(post=post).order_by('-published')
+    paginator = Paginator(comments, 5)  # 5 comments per page
+    page_number = request.query_params.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    serializer = CommentsSerializer({
+        'page': post.page,
+        'id': f"{post.author.host}authors/{post.author.id}/posts/{post.id}",
+        'page_number': page_obj.number,
+        'size': paginator.per_page,
+        'count': paginator.count,
+        'src': page_obj.object_list,
+    })
+    return Response(serializer.data)
 
 
 @post_github_activity_docs

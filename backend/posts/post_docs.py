@@ -183,3 +183,91 @@ get_post_image_docs = swagger_auto_schema(
         )
     }
 )
+
+get_post_comments_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Get comments for a post by fully qualified ID (fqid)",
+    operation_description="""
+    **When to use**: Use this endpoint to retrieve paginated comments for a specific post based on its fully qualified ID (fqid).
+
+    **How to use**: Send a GET request to this endpoint with the post's fqid as a parameter and an optional page number query parameter (`page`). If the post visibility is 'FRIENDS', authentication is required, and users must be friends with the post author to access the comments.
+
+    **Why**: This endpoint allows users to view comments on posts while respecting visibility settings and friendships.
+    """,
+    responses={
+        200: openapi.Response(
+            description="Paginated list of comments for the post",
+            examples={
+                "application/json": {
+                    "type": "comments",
+                    "page": "http://localhost:3000/authors/1/posts/7122560a-9d41-4843-82ed-7273322e8c9b",
+                    "id": "http://localhost:3000/api/authors/1/posts/7122560a-9d41-4843-82ed-7273322e8c9b",
+                    "page_number": 1,
+                    "size": 5,
+                    "count": 2,
+                    "src": [
+                        {
+                            "type": "comment",
+                            "author": {
+                                "type": "author",
+                                "id": "http://localhost:3000/api/authors/1",
+                                "host": "http://localhost:3000/api/",
+                                "displayName": "John Doe",
+                                "github": "http://github.com/john-doe",
+                                "profileImage": "http://localhost:8000/media/images/770b378e-5b36-4f9d-b81f-689275c5893e.jpeg",
+                                "page": "http://localhost:3000/authors/1"
+                            },
+                            "comment": "hello",
+                            "contentType": "text/plain",
+                            "published": "2024-11-12T20:36:51.344748Z",
+                            "id": "http://localhost:3000/api/authors/1/commented/c9c13eb9-8bb8-4248-b624-a20268884923",
+                            "post": "http://localhost:3000/api/authors/1/posts/7122560a-9d41-4843-82ed-7273322e8c9b",
+                            "page": "http://localhost:3000/api/authors/1/posts/7122560a-9d41-4843-82ed-7273322e8c9b",
+                            "likes": {
+                                "type": "likes",
+                                "page": "http://localhost:3000/authors/1/commented/c9c13eb9-8bb8-4248-b624-a20268884923/likes",
+                                "id": "http://localhost:3000/api/authors/1/commented/c9c13eb9-8bb8-4248-b624-a20268884923/likes",
+                                "page_number": 1,
+                                "size": 50,
+                                "count": 0,
+                                "src": []
+                            }
+                        }
+                    ]
+                }
+            }
+        ),
+        401: openapi.Response(
+            description="Authentication required for friends-only comments",
+            examples={
+                "application/json": {
+                    "detail": "Authentication required to view comments."
+                }
+            }
+        ),
+        403: openapi.Response(
+            description="Permission denied to view comments",
+            examples={
+                "application/json": {
+                    "detail": "You do not have permission to view these comments."
+                }
+            }
+        ),
+        400: openapi.Response(
+            description="Invalid post visibility setting",
+            examples={
+                "application/json": {
+                    "detail": "Invalid post visibility setting."
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="Post not found",
+            examples={
+                "application/json": {
+                    "detail": "Not found."
+                }
+            }
+        )
+    }
+)
