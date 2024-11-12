@@ -230,10 +230,13 @@ def follow(request):
 @api_view(['GET'])
 def get_follow_requests(request, author_id):
     author = Author.objects.get(id=author_id)
-    follow_requests = Follow.objects.filter(user=author, status="REQUESTED").values_list('follower')
-    follow_requests_authors = Author.objects.filter(id__in=follow_requests)
-    serialized_follow_requests = [AuthorSerializer(request).data for request in follow_requests_authors]
-    return Response(serialized_follow_requests, status=200)
+    follow_requests = Follow.objects.filter(user=author, status="REQUESTED")
+    serialized_follow_requests = [FollowRequestSerializer(follow_request).data for follow_request in follow_requests]
+    response_data = {
+        'type': 'followRequests',
+        'src': serialized_follow_requests
+    }
+    return Response(response_data, status=200)
 
 
 @accept_follow_docs

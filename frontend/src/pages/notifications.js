@@ -5,10 +5,11 @@ import { PostProfilePicture } from "../components/profilePicture";
 function FollowRequest({request, authorId}) {
 
   const csrftoken = getCookie('csrftoken');
+  const followerId = request.actor.id.split("/").pop();
   
   function accept() {
     const data = new URLSearchParams();
-    data.append('follower', request.id);
+    data.append('follower', followerId);
 
     try {
       fetch(`/api/authors/${authorId}/follow_request/`, {
@@ -34,7 +35,7 @@ function FollowRequest({request, authorId}) {
 
   function remove() {
     const data = new URLSearchParams();
-    data.append('follower', request.id);
+    data.append('follower', followerId);
 
     try {
       fetch(`/api/authors/${authorId}/follow_request/`, {
@@ -61,14 +62,13 @@ function FollowRequest({request, authorId}) {
   return(
     <div className="border rounded">
       <div className="grid grid-cols-[auto,auto] auto-cols-auto border-b p-5">
-        <a href={`/authors/${request.id}`}>
+        <a href={request.actor.page}>
           <div className="grid grid-cols-[min-content,auto]">
             <div className="pr-8">
-              <PostProfilePicture displayName={request.display_name} imageURL={request.profile_image}/>
+              <PostProfilePicture displayName={request.actor.displayName} imageURL={request.actor.profileImage}/>
             </div>
             <div className="flex flex-col justify-center">
-              <h1 className="font-bold text-l">{request.display_name}</h1>
-              <h2 className="text-l">@{request.username}</h2>
+              <h1 className="font-bold text-l">{request.actor.displayName}</h1>
             </div>
           </div>
         </a>
@@ -91,7 +91,7 @@ export default function Notifications() {
   useEffect(() => {
     fetch(`/api/authors/${authorId}/follow_requests/`)
     .then((response) => response.json())
-    .then((data) => setFollowRequests(data));
+    .then((data) => setFollowRequests(data.src));
     // eslint-disable-next-line
   }, [])
 

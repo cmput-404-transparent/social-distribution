@@ -92,7 +92,24 @@ class AuthorSummarySerializer(serializers.ModelSerializer):
     def get_url(self, obj):
         return self.get_id(obj)
 
+class FollowRequestSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(default='follow', read_only=True)
+    summary = serializers.SerializerMethodField()
+    actor = serializers.SerializerMethodField()
+    object = serializers.SerializerMethodField()
 
+    class Meta:
+        model = Follow
+        fields = ['type', 'summary', 'actor', 'object']
+    
+    def get_summary(self, obj):
+        return f"{obj.follower.display_name} wants to follow {obj.user.display_name}"
+    
+    def get_actor(self, obj):
+        return AuthorSummarySerializer(obj.follower).data
+    
+    def get_object(self, obj):
+        return AuthorSummarySerializer(obj.user).data
 
 
 class RemoteNodeSerializer(serializers.ModelSerializer):
