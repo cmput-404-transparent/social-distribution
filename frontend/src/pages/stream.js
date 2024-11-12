@@ -18,9 +18,15 @@ export default function StreamPage() {
   return(
     <div className="page max-h-screen overflow-scroll">
       <div className="flex flex-col space-y-5 items-center w-full">
-        {posts.map((post) => (
-          <Post post={post} />
-        ))}
+        {posts.length !== 0? (
+          posts.map((post) => (
+            <Post post={post} />
+          ))
+        ) : (
+          <div className="flex justify-center items-center h-full">
+            <p>No posts yet</p>
+          </div>
+        )}
       </div>
     </div>
   )

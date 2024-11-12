@@ -26,9 +26,11 @@ export function AuthorResult({author}) {
 export default function Search() {
   const [keyword, setKeyword] = useState("");
   const [results, setResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const searchAuthors = (e) => {
     e.preventDefault();
+    setIsSearching(true);
 
     const data = new URLSearchParams();
     data.append('keyword', keyword);
@@ -59,9 +61,17 @@ export default function Search() {
             </Button>
           </form>
           <div className="search-results">
-            {results.map((author) => (
-              <AuthorResult author={author} />
-            ))}
+            {results.length !== 0? (
+              results.map((author) => (
+                <AuthorResult author={author} />
+              ))
+            ) : (
+              (isSearching && (
+              <div className="flex justify-center h-full items-center">
+                <p>No results</p>
+              </div>
+            ))
+            )}
           </div>
         </div>
       </div>

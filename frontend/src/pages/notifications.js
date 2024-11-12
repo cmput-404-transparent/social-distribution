@@ -102,9 +102,15 @@ export default function Notifications() {
           <div className="grid grid-rows-[min-content,auto] space-y-5">
             <h1 className="text-3xl font-bold">Follow Requests</h1>
             <div>
-              {followRequests.map((request) => (
-                <FollowRequest request={request} authorId={authorId} />
-              ))}
+              {followRequests.length !== 0? (
+                followRequests.map((request) => (
+                  <FollowRequest request={request} authorId={authorId} />
+                ))
+              ) : (
+                <div className="flex justify-center ">
+                  <p>No notifications yet</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

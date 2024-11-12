@@ -241,10 +241,16 @@ export default function Profile() {
               }
             </div>
           </div>
-          <div className="flex flex-col space-y-5 items-center">
-            {posts.map((post) => (
-              <Post post={post} />
-            ))}
+          <div className="flex flex-col space-y-5 items-center min-h-full">
+            {posts.length !== 0? (
+              posts.map((post) => (
+                <Post post={post} />
+              ))
+            ) : (
+              <div className="flex justify-center items-center min-h-full">
+                <p>No posts yet</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -272,9 +278,13 @@ export default function Profile() {
             
           </div>
           <div>
-            {followers.map((follower) => (
-              <User author={follower} />
-            ))}
+            {followers.length !== 0? (
+              followers.map((follower) => (
+                <User author={follower} />
+              ))
+            ) : (
+              <p>No followers yet</p>
+            )}
           </div>
         </Box>
       </Modal>
@@ -302,9 +312,13 @@ export default function Profile() {
             
           </div>
           <div>
-            {following.map((followingUser) => (
-              <User author={followingUser} onClick={handleFollowingClose} />
-            ))}
+            {following.length !== 0? (
+              following.map((followingUser) => (
+                <User author={followingUser} onClick={handleFollowingClose} />
+              ))
+            ) : (
+              <p>Not following anyone yet</p>
+            )}
           </div>
         </Box>
       </Modal>
@@ -332,9 +346,13 @@ export default function Profile() {
             
           </div>
           <div>
-            {friends.map((friend) => (
-              <User author={friend} onClick={handleFriendsClose} />
-            ))}
+            {friends.length !== 0? (
+              friends.map((friend) => (
+                <User author={friend} onClick={handleFriendsClose} />
+              ))
+            ) : (
+              <p>No friends yet</p>
+            )}
           </div>
         </Box>
       </Modal>
