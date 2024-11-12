@@ -153,3 +153,33 @@ get_image_post_by_fqid_docs = swagger_auto_schema(
         )
     }
 )
+
+get_post_image_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Get image from a post by fully qualified ID (fqid)",
+    operation_description="""
+    **When to use**: Use this endpoint to retrieve the image associated with a post by its fully qualified ID (fqid).
+
+    **How to use**: Send a GET request to this endpoint with the post's fqid as a parameter. This endpoint will return the image source URL if the post contains an image.
+
+    **Why**: This endpoint is designed to fetch image content from posts specifically containing images, enabling clients to display or access image posts.
+    """,
+    responses={
+        200: openapi.Response(
+            description="Image source URL retrieved successfully",
+            examples={
+                "application/json": {
+                    "src": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBYRXhpZgAATU0AKgAAAAgAAgESAAMAAAABAAEAAId..."
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="Post not found or post is not an image",
+            examples={
+                "application/json": {
+                    "error": "post is not an image post"
+                }
+            }
+        )
+    }
+)

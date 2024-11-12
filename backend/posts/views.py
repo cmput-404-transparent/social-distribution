@@ -43,6 +43,16 @@ def get_post(request, post_fqid):
     # If we reach here, the post has an invalid visibility setting
     return Response({"detail": "Invalid post visibility setting."}, status=400)
 
+@get_post_image_docs
+@api_view(['GET'])
+# Get the image from a post
+def get_post_image(request, post_fqid):
+    post = get_object_or_404(Post, fqid=post_fqid)
+
+    if not post.contentType.startswith('image/'):
+        return Response({"error": "post is not an image post"}, status=404)
+    
+    return Response({'src': post.content})
 
 
 @post_github_activity_docs
