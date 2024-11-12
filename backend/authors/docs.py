@@ -1535,3 +1535,39 @@ get_all_hosted_images_docs = swagger_auto_schema(
         )
     }
 )
+
+get_author_by_fqid_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Get author by fully qualified ID (fqid)",
+    operation_description="""
+    **When to use**: Use this endpoint to retrieve details of an author based on their fully qualified ID (fqid).
+
+    **How to use**: Send a GET request to this endpoint with the author's fqid as a parameter.
+
+    **Why**: This allows users to fetch an author's information by referencing their unique fqid.
+    """,
+    responses={
+        200: openapi.Response(
+            description="Author details retrieved successfully",
+            examples={
+                "application/json": {
+                    "type": "author",
+                    "id": "http://localhost:3000/api/authors/1",
+                    "host": "http://localhost:3000/api/",
+                    "displayName": "John Doe",
+                    "github": "http://github.com/john-doe",
+                    "profileImage": "http://localhost:8000/media/images/770b378e-5b36-4f9d-b81f-689275c5893e.jpeg",
+                    "page": "http://localhost:3000/authors/1"
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="Author not found",
+            examples={
+                "application/json": {
+                    "error": "author with fqid=author-fqid-example does not exist"
+                }
+            }
+        )
+    }
+)
