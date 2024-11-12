@@ -83,6 +83,28 @@ def get_post_comments(request, post_fqid):
     })
     return Response(serializer.data)
 
+@get_post_likes_docs
+@api_view(['GET'])
+def get_post_likes(request, post_fqid):
+    post = Post.objects.filter(fqid=post_fqid)
+    if post.exists():
+        post = post.first()
+        object_full_id = post.fqid
+        likes = Like.objects.filter(object=object_full_id).order_by('-published')
+        paginator = Paginator(likes, 50)  # 50 likes per page
+        page_number = request.query_params.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+        serializer = LikesSerializer({
+            'page': post.page,
+            'id': f"{post.author.host}authors/{post.author.id}/posts/{post.id}/likes",
+            'page_number': page_obj.number,
+            'size': paginator.per_page,
+            'count': paginator.count,
+            'src': page_obj.object_list,
+        })
+        return Response(serializer.data)
+    return Response({'error': f'post with fqid={post_fqid} does not exist'}, status=404)
+
 
 @post_github_activity_docs
 @api_view(['GET'])

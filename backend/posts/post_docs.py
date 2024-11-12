@@ -271,3 +271,55 @@ get_post_comments_docs = swagger_auto_schema(
         )
     }
 )
+
+get_post_likes_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Get likes for a post by fully qualified ID (fqid)",
+    operation_description="""
+    **When to use**: Use this endpoint to retrieve paginated likes for a specific post based on its fully qualified ID (fqid).
+
+    **How to use**: Send a GET request to this endpoint with the post's fqid as a parameter, along with an optional page number query parameter (`page`) for pagination.
+
+    **Why**: This endpoint allows users to view the likes on a specific post, providing insights into the post's engagement level.
+    """,
+    responses={
+        200: openapi.Response(
+            description="Paginated list of likes for the post",
+            examples={
+                "application/json": {
+                    "type": "likes",
+                    "page": "http://localhost:3000/authors/1/posts/7122560a-9d41-4843-82ed-7273322e8c9b",
+                    "id": "http://localhost:3000/api/authors/1/posts/7122560a-9d41-4843-82ed-7273322e8c9b/likes",
+                    "page_number": 1,
+                    "size": 50,
+                    "count": 1,
+                    "src": [
+                        {
+                            "type": "like",
+                            "author": {
+                                "type": "author",
+                                "id": "http://localhost:3000/api/authors/1",
+                                "host": "http://localhost:3000/api/",
+                                "displayName": "John Doe",
+                                "github": "http://github.com/john-doe",
+                                "profileImage": "http://localhost:8000/media/images/770b378e-5b36-4f9d-b81f-689275c5893e.jpeg",
+                                "page": "http://localhost:3000/authors/1"
+                            },
+                            "published": "2024-11-12T20:43:43.441503Z",
+                            "id": "7d387f4f-5ae8-45cb-a800-81af291d83b5",
+                            "object": "http://localhost:3000/api/authors/1/posts/7122560a-9d41-4843-82ed-7273322e8c9b"
+                        }
+                    ]
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="Post not found",
+            examples={
+                "application/json": {
+                    "error": "post with fqid=post-fqid-example does not exist"
+                }
+            }
+        )
+    }
+)

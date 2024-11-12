@@ -17,7 +17,10 @@ urlpatterns = [
     path("<path:post_fqid>/image/", views.get_post_image, name="get_post_image"),
 
     # Get comments from a post by post fqid
-    path("<path:post_fqid>/comments/", views.get_post_comments, name="get_post_image"),
+    path("<path:post_fqid>/comments/", views.get_post_comments, name="get_post_comments"),
+
+    # Get likes from a post by post fqid
+    path("<path:post_fqid>/likes/", views.get_post_likes, name="get_post_likes"),
 
     # Get a specific post by its fqid
     path("<path:post_fqid>/", views.get_post, name="get_post"),
