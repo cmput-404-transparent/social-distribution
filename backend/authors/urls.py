@@ -114,6 +114,9 @@ urlpatterns = [
 
     # BY FQID URLS ------------------------------------------------------------------------------
 
+    # get author comments by author fqid
+    path("<path:author_fqid>/commented/", posts_views.get_author_comments_by_fqid, name="get_author_comments_by_fqid"),
+
     # get author by fqid
     path("<path:author_fqid>/", author_views.get_author_by_fqid, name="get_author_by_fqid"),
 

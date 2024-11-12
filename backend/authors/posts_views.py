@@ -561,6 +561,27 @@ def get_author_comments(request, author_serial):
     })
     return Response(serializer.data)
 
+@get_author_comments_by_fqid_docs
+@api_view(['GET'])
+def get_author_comments_by_fqid(request, author_fqid):
+    author = Author.objects.filter(fqid=author_fqid)
+    if author.exists():
+        author = author.first()
+        comments = Comment.objects.filter(author=author).order_by('-published')
+        paginator = Paginator(comments, 10)  # 10 comments per page
+        page_number = request.query_params.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+        serializer = CommentsSerializer({
+            'page': author.page,
+            'id': f"{author.host}authors/{author.id}",
+            'page_number': page_obj.number,
+            'size': paginator.per_page,
+            'count': paginator.count,
+            'src': page_obj.object_list,
+        })
+        return Response(serializer.data)
+    return Response({'error': f'author with fqid={author_fqid} does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
 
 @get_author_comment_docs
 @api_view(['GET'])
