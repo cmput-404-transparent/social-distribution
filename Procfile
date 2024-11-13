@@ -1,4 +1,2 @@
-web: gunicorn backend.wsgi --chdir backend
-
-release: python manage.py migrate
-web: gunicorn backend.wsgi --chdir backend --log-file -
+web: cd backend && gunicorn backend.wsgi --log-file -
+frontend: cd frontend && npm install && npm start
