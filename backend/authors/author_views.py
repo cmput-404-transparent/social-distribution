@@ -375,3 +375,18 @@ def manage_remote_nodes(request):
                 {'detail': f'Connection to remote node failed: {str(e)}'},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
+
+def inbox(request, author_id):
+    if request.method != 'POST':
+        return Response(status=status.HTTP_403_FORBIDDEN)
+    
+    new_item = request.POST
+
+    if new_item['type'] == "post":
+        pass
+    if new_item['type'] == "follow":
+        pass
+    if new_item['type'] == "like":
+        pass
+    if new_item['type'] == "comment":
+        pass
