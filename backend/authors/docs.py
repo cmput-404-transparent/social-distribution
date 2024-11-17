@@ -1535,3 +1535,154 @@ get_all_hosted_images_docs = swagger_auto_schema(
         )
     }
 )
+
+get_author_by_fqid_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Get author by fully qualified ID (fqid)",
+    operation_description="""
+    **When to use**: Use this endpoint to retrieve details of an author based on their fully qualified ID (fqid).
+
+    **How to use**: Send a GET request to this endpoint with the author's fqid as a parameter.
+
+    **Why**: This allows users to fetch an author's information by referencing their unique fqid.
+    """,
+    responses={
+        200: openapi.Response(
+            description="Author details retrieved successfully",
+            examples={
+                "application/json": {
+                    "type": "author",
+                    "id": "http://localhost:3000/api/authors/1",
+                    "host": "http://localhost:3000/api/",
+                    "displayName": "John Doe",
+                    "github": "http://github.com/john-doe",
+                    "profileImage": "http://localhost:8000/media/images/770b378e-5b36-4f9d-b81f-689275c5893e.jpeg",
+                    "page": "http://localhost:3000/authors/1"
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="Author not found",
+            examples={
+                "application/json": {
+                    "error": "author with fqid=author-fqid-example does not exist"
+                }
+            }
+        )
+    }
+)
+
+get_author_comments_by_fqid_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Get comments by author fully qualified ID (fqid)",
+    operation_description="""
+    **When to use**: Use this endpoint to retrieve paginated comments made by a specific author based on their fully qualified ID (fqid).
+
+    **How to use**: Send a GET request to this endpoint with the author's fqid as a parameter, along with an optional page number query parameter (`page`) for pagination.
+
+    **Why**: This endpoint provides a way to view all comments made by a specific author, enabling users to explore an author's activity in the form of comments.
+    """,
+    responses={
+        200: openapi.Response(
+            description="Paginated list of comments made by the author",
+            examples={
+                "application/json": {
+                    "page": "https://example.com/authors/{author_fqid}/comments?page=1",
+                    "id": "https://example.com/authors/{author_fqid}",
+                    "page_number": 1,
+                    "size": 10,
+                    "count": 50,
+                    "src": [
+                        {
+                            "type": "comment",
+                            "author": {
+                                "type": "author",
+                                "id": "http://localhost:3000/api/authors/1",
+                                "host": "http://localhost:3000/api/",
+                                "displayName": "John Doe",
+                                "github": "http://github.com/john-doe",
+                                "profileImage": "http://localhost:8000/media/images/770b378e-5b36-4f9d-b81f-689275c5893e.jpeg",
+                                "page": "http://localhost:3000/authors/1"
+                            },
+                            "comment": "hello",
+                            "contentType": "text/plain",
+                            "published": "2024-11-12T20:36:51.344748Z",
+                            "id": "http://localhost:3000/api/authors/1/commented/c9c13eb9-8bb8-4248-b624-a20268884923",
+                            "post": "http://localhost:3000/api/authors/1/posts/7122560a-9d41-4843-82ed-7273322e8c9b",
+                            "page": "http://localhost:3000/api/authors/1/posts/7122560a-9d41-4843-82ed-7273322e8c9b",
+                            "likes": {
+                                "type": "likes",
+                                "page": "http://localhost:3000/authors/1/commented/c9c13eb9-8bb8-4248-b624-a20268884923/likes",
+                                "id": "http://localhost:3000/api/authors/1/commented/c9c13eb9-8bb8-4248-b624-a20268884923/likes",
+                                "page_number": 1,
+                                "size": 50,
+                                "count": 0,
+                                "src": []
+                            }
+                        }
+                    ]
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="Author not found",
+            examples={
+                "application/json": {
+                    "error": "author with fqid=author-fqid-example does not exist"
+                }
+            }
+        )
+    }
+)
+
+get_author_likes_by_fqid_docs = swagger_auto_schema(
+    method='get',
+    operation_summary="Get likes by author fully qualified ID (fqid)",
+    operation_description="""
+    **When to use**: Use this endpoint to retrieve paginated likes given by a specific author based on their fully qualified ID (fqid).
+
+    **How to use**: Send a GET request to this endpoint with the author's fqid as a parameter, along with an optional page number query parameter (`page`) for pagination.
+
+    **Why**: This endpoint provides a way to view all likes made by a specific author, allowing users to explore an author's activity and interests.
+    """,
+    responses={
+        200: openapi.Response(
+            description="Paginated list of likes made by the author",
+            examples={
+                "application/json": {
+                    "type": "likes",
+                    "page": "http://localhost:3000/authors/1",
+                    "id": "http://localhost:3000/api/authors/1",
+                    "page_number": 2,
+                    "size": 10,
+                    "count": 11,
+                    "src": [
+                        {
+                            "type": "like",
+                            "author": {
+                                "type": "author",
+                                "id": "http://localhost:3000/api/authors/1",
+                                "host": "http://localhost:3000/api/",
+                                "displayName": "John Doe",
+                                "github": "http://github.com/john-doe",
+                                "profileImage": "http://localhost:8000/media/images/770b378e-5b36-4f9d-b81f-689275c5893e.jpeg",
+                                "page": "http://localhost:3000/authors/1"
+                            },
+                            "published": "2024-11-01T07:27:09.189107Z",
+                            "id": "0abf9697-6316-4566-a43e-9a4cca6e8d22",
+                            "object": "http://localhost:3000/api/authors/1/posts/ee76c47d-7ac3-4f87-aa4c-a1865f8d8b16"
+                        }
+                    ]
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="Author not found",
+            examples={
+                "application/json": {
+                    "error": "author with fqid=author-fqid-example does not exist"
+                }
+            }
+        )
+    }
+)

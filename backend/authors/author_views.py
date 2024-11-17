@@ -117,6 +117,13 @@ def get_update_author(request, author_id):
         else:
             return Response(status=200)
 
+@get_author_by_fqid_docs
+@api_view(['GET'])
+def get_author_by_fqid(request, author_fqid):
+    author = Author.objects.filter(fqid=author_fqid)
+    if author.exists():
+        return Response(AuthorSummarySerializer(author.first()).data)
+    return Response({"error": f"author with fqid={author_fqid} does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
 class CustomPageNumberPagination(PageNumberPagination):
     page_size_query_param = 'size'

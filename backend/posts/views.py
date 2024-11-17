@@ -10,7 +10,6 @@ import json
 from datetime import datetime
 import base64
 from django.http import HttpResponse, JsonResponse
-from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 from urllib.parse import unquote
 
@@ -27,8 +26,8 @@ from .post_docs import *
 @get_post_docs
 @api_view(['GET'])
 # Get a single post
-def get_post(request, fqid):
-    post = get_object_or_404(Post, fqid=fqid)
+def get_post(request, post_fqid):
+    post = get_object_or_404(Post, fqid=post_fqid)
 
     # Public and unlisted posts are visible to everyone
     if post.visibility in ['PUBLIC', 'UNLISTED']:
@@ -44,6 +43,67 @@ def get_post(request, fqid):
     # If we reach here, the post has an invalid visibility setting
     return Response({"detail": "Invalid post visibility setting."}, status=400)
 
+@get_post_image_docs
+@api_view(['GET'])
+# Get the image from a post
+def get_post_image(request, post_fqid):
+    post = get_object_or_404(Post, fqid=post_fqid)
+
+    if not post.contentType.startswith('image/'):
+        return Response({"error": "post is not an image post"}, status=404)
+    
+    return Response({'src': post.content})
+
+@api_view(['GET'])
+def get_post_comments(request, post_fqid):
+    post = get_object_or_404(Post, fqid=post_fqid)
+    # Check visibility
+    if post.visibility in ['PUBLIC', 'UNLISTED']:
+        pass  # Anyone can see the comments
+    elif post.visibility == 'FRIENDS':
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication required to view comments."}, status=401)
+        # Check if the user is a friend of the author
+        if not Follow.are_friends(post.author, request.user):
+            return Response({"detail": "You do not have permission to view these comments."}, status=403)
+    else:
+        return Response({"detail": "Invalid post visibility setting."}, status=400)
+
+    comments = Comment.objects.filter(post=post).order_by('-published')
+    paginator = Paginator(comments, 5)  # 5 comments per page
+    page_number = request.query_params.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    serializer = CommentsSerializer({
+        'page': post.page,
+        'id': f"{post.author.host}authors/{post.author.id}/posts/{post.id}",
+        'page_number': page_obj.number,
+        'size': paginator.per_page,
+        'count': paginator.count,
+        'src': page_obj.object_list,
+    })
+    return Response(serializer.data)
+
+@get_post_likes_docs
+@api_view(['GET'])
+def get_post_likes(request, post_fqid):
+    post = Post.objects.filter(fqid=post_fqid)
+    if post.exists():
+        post = post.first()
+        object_full_id = post.fqid
+        likes = Like.objects.filter(object=object_full_id).order_by('-published')
+        paginator = Paginator(likes, 50)  # 50 likes per page
+        page_number = request.query_params.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+        serializer = LikesSerializer({
+            'page': post.page,
+            'id': f"{post.author.host}authors/{post.author.id}/posts/{post.id}/likes",
+            'page_number': page_obj.number,
+            'size': paginator.per_page,
+            'count': paginator.count,
+            'src': page_obj.object_list,
+        })
+        return Response(serializer.data)
+    return Response({'error': f'post with fqid={post_fqid} does not exist'}, status=404)
 
 
 @post_github_activity_docs
