@@ -276,3 +276,4 @@ dist
 .DS_Store
 
 build/
+staticfiles/

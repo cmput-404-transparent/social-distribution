@@ -25,3 +25,9 @@ migrate:
 # run frontend and backend locally
 local:
 	$(FRONTEND_RUN_CMD) & $(BACKEND_RUN_CMD)
+
+static:
+	cd $(BACKEND_DIR) && python manage.py collectstatic
+
+build:
+	cd $(FRONTEND_DIR) && npm run build
