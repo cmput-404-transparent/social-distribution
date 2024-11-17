@@ -1,0 +1,9 @@
+{
+    "name": "socialdistribution",
+    "version": "0.1.0",
+    "scripts": {
+      "start": "cd frontend && npm run start",
+      "build": "cd frontend && npm run build"
+    }
+  }
+  
