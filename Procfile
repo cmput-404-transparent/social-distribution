@@ -1,1 +1,1 @@
-web: cd frontend && npm run build && cd backend && gunicorn backend.wsgi --log-file -
+web: cd frontend && npm run build && cd .. && cd backend && python manage.py collectstatic && gunicorn backend.wsgi --log-file -
