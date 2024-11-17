@@ -49,7 +49,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
     profile_image = models.URLField(blank=True, null=True)
     page = models.URLField(blank=True, null=True)
     username = models.CharField(max_length=100, unique=True)
-    password = models.CharField(max_length=50)
+    password = models.CharField(max_length=500)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
