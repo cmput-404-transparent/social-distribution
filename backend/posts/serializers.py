@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from authors.models import *
-from .views import Paginator
+from django.core.paginator import Paginator
 import commonmark
 from django.core.files.base import ContentFile
 import base64
@@ -108,8 +108,7 @@ class PostSummarySerializer(serializers.ModelSerializer):
         return serializer.data
     
     def get_likes(self, obj):
-        post_id = f"{obj.author.page}/posts/{obj.id}"
-        like_objects = Like.objects.filter(object=post_id).order_by('-published')
+        like_objects = Like.objects.filter(object=obj.fqid).order_by('-published')
 
         paginator = Paginator(like_objects, 5)
         page_obj = paginator.get_page(self.page)

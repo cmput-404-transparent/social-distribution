@@ -112,4 +112,15 @@ urlpatterns = [
     # remote nodes
     path('remote-nodes/', author_views.manage_remote_nodes, name='manage_remote_nodes'),
 
+    # BY FQID URLS ------------------------------------------------------------------------------
+
+    # get author comments by author fqid
+    path("<path:author_fqid>/commented/", posts_views.get_author_comments_by_fqid, name="get_author_comments_by_fqid"),
+
+    # get author comments by author fqid
+    path("<path:author_fqid>/likes/", posts_views.get_author_likes_by_fqid, name="get_author_likes_by_fqid"),
+
+    # get author by fqid
+    path("<path:author_fqid>/", author_views.get_author_by_fqid, name="get_author_by_fqid"),
+
 ]

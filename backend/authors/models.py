@@ -50,6 +50,8 @@ class Author(AbstractBaseUser, PermissionsMixin):
     page = models.URLField(blank=True, null=True)
     username = models.CharField(max_length=100, unique=True)
     password = models.CharField(max_length=500)
+    fqid = models.URLField(blank=True, null=True)
+
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -58,6 +60,12 @@ class Author(AbstractBaseUser, PermissionsMixin):
     objects = AuthorManager()
 
     USERNAME_FIELD = 'username'
+
+    def save(self, *args, **kwargs):
+        # save fqid on object save
+        if not self.fqid:
+            self.fqid = f"{self.host}authors/{self.id}"
+        super().save(*args, **kwargs)
 
 class Follow(models.Model):
     STATUS_CHOICES = [
