@@ -70,10 +70,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
+# PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
+PROJECT_PATH = BASE_DIR.parent
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(PROJECT_PATH, 'frontend/build'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -84,6 +87,10 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+TEMPLATE_DIRS = [
+    os.path.join(PROJECT_PATH, 'frontend/build'),
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
@@ -149,6 +156,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 STATIC_URL = "/static/"
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR.parent, 'frontend/build/static'),
+]
+
 # Media files settings
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -160,6 +171,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:8000",
     "https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com"
 ]
 
