@@ -31,9 +31,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000","http://localhost:8000"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000","http://localhost:8000", "https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com"]
 CSRF_ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:8000", "https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com"]
-CORS_ORIGIN_WHITELIST = ["http://localhost:3000", "http://localhost:8000"]
+CORS_ORIGIN_WHITELIST = ["http://localhost:3000", "http://localhost:8000", "https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com"]
 
 CORS_ALLOW_CREDENTIALS = True
 
