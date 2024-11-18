@@ -18,7 +18,7 @@ const SharePost = () => {
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken, 
-            'Authorization': `Token ${localStorage.getItem('authToken')}`, 
+            'Authorization': `Basic ${localStorage.getItem('authToken')}`, 
           },
         });
 

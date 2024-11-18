@@ -1,6 +1,6 @@
 /* hover effects from https://tailwindcss.com/docs/hover-focus-and-other-states */
 /* Setting active buttons from OpenAi's Chatgpt when prompted "How to keep track of if a button is active using tailwind?",2024-11-04 */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import ControlPointIcon from '@mui/icons-material/ControlPoint';
@@ -11,15 +11,23 @@ import LogoutIcon from '@mui/icons-material/Logout';
 
 export default function NavBar() {
 
-  const getAuthorId = () => {
-    return localStorage.getItem('authorId');
-  };
+  let authorId = localStorage.getItem('authorId');
+  let authorSerial = authorId? authorId.split("/").pop() : '';
+
+  const getAuthorSerial = () => {
+    return authorSerial;
+  }
+
+  useEffect(() => {
+    authorId = localStorage.getItem('authorId');
+    authorSerial = authorId? authorId.split("/").pop() : '';
+  }, [authorId]);
 
   const navigate = useNavigate();
   const location = useLocation();
 
   function toProfile() {
-    let link = "/authors/" + getAuthorId();
+    let link = "/authors/" + getAuthorSerial();
     navigate(link);
   }
 
@@ -68,7 +76,7 @@ export default function NavBar() {
         </NavLink>
 
         <div className="align-middle grid grid-flow-col auto-cols-max cursor-pointer" onClick={toProfile}>
-          <span className={`relative flex items-center justify-center p-4 rounded-full transition duration-300 ${location.pathname === '/authors/' + getAuthorId() ? 'bg-orange-500/20' : 'hover:bg-orange-500/20'}`}>
+          <span className={`relative flex items-center justify-center p-4 rounded-full transition duration-300 ${location.pathname === '/authors/' + getAuthorSerial() ? 'bg-orange-500/20' : 'hover:bg-orange-500/20'}`}>
             <AccountCircleIcon />
             <p className="hidden md:inline pl-3">Profile</p>
           </span>

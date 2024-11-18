@@ -86,7 +86,7 @@ const MakePost = () => {
 
       }
 
-      const response = await fetch(`/api/authors/${authorId}/posts/`, {
+      const response = await fetch(`${authorId}/posts/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',

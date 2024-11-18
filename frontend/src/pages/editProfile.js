@@ -19,7 +19,7 @@ export default function EditProfile() {
 
   useEffect(() => {
     // get profile information
-    fetch(`/api/authors/${authorId}/full/`)
+    fetch(`${authorId}/full/`)
     .then((r) => r.json())
     .then((data) => {
       setAuthor(data);
@@ -54,7 +54,7 @@ export default function EditProfile() {
       });
 
       if (response.ok) {
-        navigate(`/authors/${authorId}`);
+        navigate(`/authors/${authorId.split("/").pop()}`);
       } else {
         let r = await response.json();
         let errors = r.errors;

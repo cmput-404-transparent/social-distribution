@@ -72,6 +72,8 @@ const Content = ({ post, postState }) => {
       content: content,
     };
 
+    const token = localStorage.getItem('authToken');
+
     const csrftoken = getCookie('csrftoken');
     try {
       await fetch(post.id + "/", {
@@ -79,7 +81,7 @@ const Content = ({ post, postState }) => {
         headers: {
           'Content-Type': 'application/json',
           'X-CSRFToken': csrftoken,
-          'Authorization': `Token ${localStorage.getItem('authToken')}`,
+          'Authorization': `Basic ${token}`,
         },
         body: JSON.stringify(updatedData)
       });
@@ -381,8 +383,7 @@ export default function Post({ post }) {
 
     getPostInfo();
 
-    let baseAuthorAPIUrl = post.author.id.split("/").slice(0, -1).join("/");
-    fetch(`${baseAuthorAPIUrl}/${authorId}/`)
+    fetch(`${post.author.id}/`)
     .then(r => r.json())
     .then(data => {
       setSelf(data);
@@ -390,9 +391,7 @@ export default function Post({ post }) {
 
     setIsStream(window.location.href.includes('stream'));
 
-    let postAuthorId = post.author.id.split("/").pop();
-
-    setIsOwn(postAuthorId === authorId);
+    setIsOwn(post.author.id === authorId);
 
     // eslint-disable-next-line
   }, []);
@@ -435,13 +434,14 @@ export default function Post({ post }) {
 
   const Delete = async () => {
     const csrftoken = getCookie('csrftoken');
+    const token = localStorage.getItem('authToken');
     try {
       await fetch(post.id + "/", {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           'X-CSRFToken': csrftoken,
-          'Authorization': `Token ${localStorage.getItem('authToken')}`,
+          'Authorization': `Basic ${token}`,
         }
       });
 

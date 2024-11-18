@@ -82,7 +82,7 @@ export default function Profile() {
         setPosts(data.posts);
       })
 
-      fetch(`/api/authors/${authorId}/relationship/${profileAuthorId}/`)
+      fetch(`${authorId}/relationship/${profileAuthorId}/`)
       .then((r) => r.json())
       .then((data) => {
         setRelationship(data.relationship);
@@ -115,7 +115,7 @@ export default function Profile() {
 
     const data = new URLSearchParams();
     data.append('user', profileAuthorId);
-    data.append('follower', authorId);
+    data.append('follower', authorId.split("/").pop());
     const csrftoken = getCookie('csrftoken');
 
     try {
@@ -142,7 +142,7 @@ export default function Profile() {
     const csrftoken = getCookie('csrftoken');
 
     try {
-      fetch(`/api/authors/${authorId}/following/`, {
+      fetch(`${authorId}/following/`, {
         method: "DELETE",
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -211,7 +211,7 @@ export default function Profile() {
               {
                 relationship === "SELF" ? (
                   <div className="space-x-3 flex">
-                    <a href={ `/authors/${authorId}/edit` }>
+                    <a href={ `/authors/${authorId.split("/").pop()}/edit` }>
                       <button type="submit" className='bg-customOrange rounded p-2 px-5'>
                         Edit Profile
                       </button>

@@ -16,11 +16,17 @@ import SharePost from './components/SharePost';
 
 function App() {
 
-  const authorId = localStorage.getItem('authorId');
+  let authorId = localStorage.getItem('authorId');
+  let authorSerial = authorId? authorId.split("/").pop() : '';
 
   useEffect(() => {
-    fetch(`/api/posts/${authorId}/github/`)
+    fetch(`/api/posts/${authorSerial}/github/`)
   });
+
+  useEffect(() => {
+    authorId = localStorage.getItem('authorId');
+    authorSerial = authorId? authorId.split("/").pop() : '';
+  }, [authorId]);
 
   return (
     <Router>
@@ -52,7 +58,7 @@ function App() {
               <Profile/>
             </ProtectedRoute>
           } />
-          <Route path={`/authors/${authorId}/edit`} element={
+          <Route path={`/authors/${authorSerial}/edit`} element={
             <ProtectedRoute>
               <EditProfile/>
             </ProtectedRoute>
