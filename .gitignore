@@ -277,3 +277,5 @@ dist
 
 backend/media/images/*.*
 !backend/media/images/
+
+staticfiles/
