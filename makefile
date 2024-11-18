@@ -31,3 +31,6 @@ static:
 
 build:
 	cd $(FRONTEND_DIR) && npm run build
+
+test:
+	cd $(BACKEND_DIR) && python manage.py test
