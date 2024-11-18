@@ -34,7 +34,7 @@ class AuthorManager(BaseUserManager):
         author = self.create_user(username, password, **extra_fields)
 
         # Automatically set the host and page fields
-        author.host = f"http://localhost:3000/api/"
+        author.host = f"http://localhost:8000/api/"
         author.page = f"{author.host}/authors/{author.id}"
         author.github = "http://github.com/"
         author.save(using=self._db)
@@ -46,11 +46,12 @@ class Author(AbstractBaseUser, PermissionsMixin):
     host = models.URLField(blank=True, null=True)
     display_name = models.CharField(max_length=100)
     github = models.URLField(blank=True, null=True)
-    profile_image = models.URLField(blank=True, null=True)
+    profile_image = models.URLField(blank=True, default="")
     page = models.URLField(blank=True, null=True)
     username = models.CharField(max_length=100, unique=True)
-    password = models.CharField(max_length=50)
+    password = models.CharField(max_length=500)
     fqid = models.URLField(blank=True, null=True)
+
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

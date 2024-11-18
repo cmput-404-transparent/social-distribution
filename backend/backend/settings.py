@@ -31,9 +31,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000","http://localhost:8000"]
-CSRF_ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:8000"]
-CORS_ORIGIN_WHITELIST = ["http://localhost:3000", "http://localhost:8000"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000","http://localhost:8000", "https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com"]
+CSRF_ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:8000", "https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com"]
+CORS_ORIGIN_WHITELIST = ["http://localhost:3000", "http://localhost:8000", "https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com"]
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -72,10 +72,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
+# PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
+PROJECT_PATH = BASE_DIR.parent
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(PROJECT_PATH, 'frontend/build'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,6 +89,10 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+TEMPLATE_DIRS = [
+    os.path.join(PROJECT_PATH, 'frontend/build'),
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
@@ -147,8 +154,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_ROOT = BASE_DIR / "staticfiles" 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 STATIC_URL = "/static/"
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR.parent, 'frontend/build/static'),
+]
 
 # Media files settings
 MEDIA_URL = '/media/'
@@ -161,6 +173,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:8000",
+    "https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com"
 ]
 
 CORS_ALLOW_METHODS = [
