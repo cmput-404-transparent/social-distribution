@@ -354,7 +354,7 @@ def manage_remote_nodes(request):
             )
 
         try:
-            response = requests.post(f"{url}/login/", data={'username': username, 'password': password} )  #(remote_node + /login)
+            response = requests.post(f"{url}/api/authors/login/", data={'username': username, 'password': password} )  #(remote_node + /login)
 
             if response.status_code == 200:
                 token= response.json().get('token')  # get the tokem
