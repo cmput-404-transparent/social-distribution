@@ -377,13 +377,17 @@ def manage_remote_nodes(request):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
+@api_view(['POST'])
 def inbox(request, author_id):
     if request.method != 'POST':
         return Response(status=status.HTTP_403_FORBIDDEN)
     
-    new_item = request.POST
-
-    if new_item['type'] == "post":
+    new_item = request.data
+    
+    print(str(new_item))
+    item_type = new_item.get('type')
+    print(item_type)
+    if item_type == "post":
         author_id = new_item['author']['id'].split('/')
         author_serial = author_id[-1]
         host = new_item['author']['host']
@@ -403,8 +407,8 @@ def inbox(request, author_id):
 
         new_post.published = post_published
         new_post.save()
-
-    if new_item['type'] == "follow":
+        print("it works")
+    if item_type == "follow":
         actor_fqid = new_item['actor']['id']
         actor_host = new_item['actor']['host']
         actor_display_name = new_item['actor']['displayName']
@@ -414,7 +418,7 @@ def inbox(request, author_id):
 
         object_fqid = new_item['object']['id']
 
-        remote_author = Author.objects.get_or_create(
+        remote_author, _ = Author.objects.get_or_create(
             host=actor_host,
             display_name=actor_display_name,
             github=actor_github,
@@ -431,7 +435,7 @@ def inbox(request, author_id):
         )
         new_follow.save()
 
-    if new_item['type'] == "like":
+    if item_type == "like":
         actor_fqid = new_item['actor']['id']
         actor_host = new_item['actor']['host']
         actor_display_name = new_item['actor']['displayName']
@@ -444,7 +448,7 @@ def inbox(request, author_id):
         like_id = new_item['id']
         like_published = new_item['published']
 
-        remote_author = Author.objects.get_or_create(
+        remote_author, created = Author.objects.get_or_create(
             host=actor_host,
             display_name=actor_display_name,
             github=actor_github,
@@ -462,7 +466,7 @@ def inbox(request, author_id):
         new_like.published = like_published
         new_like.save()
 
-    if new_item['type'] == "comment":
+    if item_type == "comment":
         actor_fqid = new_item['actor']['id']
         actor_host = new_item['actor']['host']
         actor_display_name = new_item['actor']['displayName']
