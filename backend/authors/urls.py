@@ -17,6 +17,9 @@ urlpatterns = [
     # get author info and update/edit author info by author id
     path("<int:author_id>/full/", author_views.get_full_author, name="get_full_author"),
 
+    # get all public posts
+    path('posts/public/', posts_views.get_all_public_posts, name='get_all_public_posts'),
+
     # get author info by fqid
     # path("<int:author_fqid>/",),      #################### NOT DONE YET ####################
 
@@ -77,37 +80,37 @@ urlpatterns = [
 
     path('upload_image/', posts_views.upload_image, name='upload_image'),
 
-    path('images/all/', posts_views.get_all_hosted_images, name="get_all_images"),
+    path('images/all/', posts_views.get_all_hosted_images, name="get_all_hosted_images"),
 
     # LIKES URLS ------------------------------------------------------------------------------
 
     # Get likes for a specific object
-    path('<int:author_id>/posts/<uuid:object_id>/likes', posts_views.get_likes),
+    path('<int:author_id>/posts/<uuid:object_id>/likes', posts_views.get_likes, name='get_likes'),
     
     # Like a specific object
-    path('<int:author_id>/posts/<uuid:object_id>/like', posts_views.like_object),
+    path('<int:author_id>/posts/<uuid:object_id>/like', posts_views.like_object, name='like_object'),
 
     # check if an author liked a post
-    path('<int:author_id>/liked/<uuid:post_id>', posts_views.check_liked),
+    path('<int:author_id>/liked/<uuid:post_id>', posts_views.check_liked, name='check_liked'),
 
     # COMMENTS URLS ------------------------------------------------------------------------------
     
     # Comments API
     # Get comments on a specific post
-    path('<int:author_serial>/posts/<uuid:post_serial>/comments', posts_views.comments_on_post),
+    path('<int:author_serial>/posts/<uuid:post_serial>/comments', posts_views.comments_on_post, name='comments_on_post'),
     
     # Get a specific comment on a post
-    path('<int:author_serial>/posts/<uuid:post_serial>/comments/<uuid:comment_id>', posts_views.get_comment),
+    path('<int:author_serial>/posts/<uuid:post_serial>/comments/<uuid:comment_id>', posts_views.get_comment, name='get_comment'),
 
     # Get likes for a specific comment on a post
-    path('<int:author_serial>/posts/<uuid:post_serial>/comments/<path:comment_fqid>/likes', posts_views.get_comment_likes),
+    path('<int:author_serial>/posts/<uuid:post_serial>/comments/<path:comment_fqid>/likes', posts_views.get_comment_likes, name='get_comment_likes'),
     
     # Commented API
     # Get comments made by a specific author
-    path('<int:author_serial>/commented', posts_views.get_author_comments),
+    path('<int:author_serial>/commented', posts_views.get_author_comments, name='get_author_comments'),
     
     # Get a specific comment made by a specific author
-    path('<int:author_serial>/commented/<uuid:comment_serial>', posts_views.get_author_comment),
+    path('<int:author_serial>/commented/<uuid:comment_serial>', posts_views.get_author_comment, name='get_author_comment'),
 
     # remote nodes
     path('remote-nodes/', author_views.manage_remote_nodes, name='manage_remote_nodes'),

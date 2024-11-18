@@ -367,7 +367,7 @@ export default function Post({ post }) {
   const [newComment, setNewComment] = useState("");
 
   function getPostInfo() {
-    fetch(post.id)
+    fetch(post.id + "/")
     .then(r => r.json())
     .then(data => {
       setAuthor(data.author);
@@ -382,7 +382,7 @@ export default function Post({ post }) {
     getPostInfo();
 
     let baseAuthorAPIUrl = post.author.id.split("/").slice(0, -1).join("/");
-    fetch(`${baseAuthorAPIUrl}/${authorId}`)
+    fetch(`${baseAuthorAPIUrl}/${authorId}/`)
     .then(r => r.json())
     .then(data => {
       setSelf(data);

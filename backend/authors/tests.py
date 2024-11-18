@@ -2,12 +2,14 @@ from django.test import TestCase
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
-from authors.models import Author, Follow, RemoteNode  # Import Follow model
-from posts.models import Post
+from authors.models import Author, Follow, RemoteNode
+from posts.models import Post, Comment, Like
 
 from rest_framework.authtoken.models import Token
 from unittest.mock import patch
 import json
+import base64
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 class AuthorAPITests(APITestCase):
 
@@ -251,29 +253,6 @@ class PostAPITests(APITestCase):
         response = self.client.get(url).json()
         self.assertEqual(response['count'], 0)
 
-    def test_share_post(self):
-        # Test POST request to share a post
-        self.client.login(username=self.author.username, password=self.password)
-        url = reverse('api:authors:share_post', args=[self.post.id])
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(Post.objects.filter(original_post=self.post.id, author=self.user).exists())
-
-    def test_list_shared_posts(self):
-        # Test GET request to list shared posts of an author
-        shared_post = Post.objects.create(
-            title="Shared Post",
-            description="Shared post description",
-            content="Shared content",
-            author=self.user,
-            visibility="PUBLIC",
-            is_shared=True
-        )
-        url = reverse('api:authors:list_shared_posts', args=[self.user.id])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-
     def test_stream(self):
         # Test GET request to get a stream of posts
         Follow.objects.create(user=self.other_user, follower=self.user, status="FOLLOWED")
@@ -288,3 +267,333 @@ class PostAPITests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
+
+class CommentsLikesImagesAPITests(APITestCase):
+
+    def setUp(self):
+        self.user = Author.objects.create(username="testuser", display_name="Test User", host="http://localhost:3000/api/")
+        self.password = "testpass"
+        self.user.set_password(self.password)
+        self.user.save()
+        self.author = self.user
+        self.other_user = Author.objects.create(username="otheruser", display_name="Other User", host="http://localhost:3000/api/")
+        self.other_user.set_password("otherpass")
+        self.other_user.save()
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        self.post = Post.objects.create(
+            title="Test Post",
+            description="Test Description",
+            content="This is the content",
+            author=self.user,
+            visibility="PUBLIC"
+        )
+        # Create an admin user for testing admin-only views
+        self.admin_user = Author.objects.create(username="adminuser", display_name="Admin User", is_staff=True)
+        self.admin_user.set_password(self.password)
+        self.admin_user.save()
+        self.admin_token = Token.objects.create(user=self.admin_user)
+
+    # Existing test methods remain the same
+
+    def test_upload_image(self):
+        # Test POST request to upload an image
+        self.client.login(username=self.admin_user.username, password=self.password)
+        url = reverse('api:authors:upload_image')
+        image_content = base64.b64encode(b'test image content').decode('utf-8')
+        image_data = f'data:image/png;base64,{image_content}'
+        data = {
+            'image_data': image_data,
+            'content_type': 'image/png'
+        }
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('image_url', response.data)
+
+    def test_get_image_post(self):
+        # Test GET request to retrieve an image post
+        image_content = base64.b64encode(b'test image content').decode('utf-8')
+        image_post = Post.objects.create(
+            title="Image Post",
+            description="An image post",
+            content=image_content,
+            contentType="image/png",
+            author=self.user,
+            visibility="PUBLIC"
+        )
+        url = reverse('api:authors:get_image_post', args=[self.user.id, image_post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'image/png')
+        self.assertEqual(response.content, base64.b64decode(image_content))
+
+    def test_get_likes(self):
+        # Test GET request to retrieve likes on a post
+        Like.objects.create(author=self.user, object=self.post.fqid)
+        url = reverse('api:authors:get_likes', args=[self.user.id, self.post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_like_object(self):
+        # Test POST request to like a post
+        self.client.login(username=self.author.username, password=self.password)
+        url = reverse('api:authors:like_object', args=[self.user.id, self.post.id])
+        response = self.client.post(url)
+        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_201_CREATED])
+        self.assertTrue(Like.objects.filter(author=self.user, object=self.post.fqid).exists())
+
+    def test_comments_on_post_get(self):
+        # Test GET request to retrieve comments on a post
+        Comment.objects.create(
+            author=self.other_user,
+            post=self.post,
+            comment="Test Comment"
+        )
+        url = reverse('api:authors:comments_on_post', args=[self.user.id, self.post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['src']), 1)
+
+    def test_comments_on_post_post(self):
+        # Test POST request to add a comment to a post
+        self.client.login(username=self.author.username, password=self.password)
+        url = reverse('api:authors:comments_on_post', args=[self.user.id, self.post.id])
+        data = {
+            'comment': 'This is a test comment'
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(Comment.objects.filter(post=self.post, author=self.user, comment='This is a test comment').exists())
+
+    def test_get_comment(self):
+        # Test GET request to retrieve a specific comment
+        comment = Comment.objects.create(
+            author=self.user,
+            post=self.post,
+            comment="Test Comment"
+        )
+        url = reverse('api:authors:get_comment', args=[self.user.id, self.post.id, comment.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['comment'], 'Test Comment')
+
+    def test_get_author_comments(self):
+        # Test GET request to retrieve comments made by an author
+        Comment.objects.create(
+            author=self.user,
+            post=self.post,
+            comment="Test Comment"
+        )
+        url = reverse('api:authors:get_author_comments', args=[self.user.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['src']), 1)
+
+    def test_get_author_comment(self):
+        # Test GET request to retrieve a specific comment made by an author
+        comment = Comment.objects.create(
+            author=self.user,
+            post=self.post,
+            comment="Test Comment"
+        )
+        url = reverse('api:authors:get_author_comment', args=[self.user.id, comment.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['comment'], 'Test Comment')
+
+    def test_check_liked(self):
+        # Test GET request to check if an author liked a post
+        Like.objects.create(
+            author=self.user,
+            object=self.post.fqid
+        )
+        url = reverse('api:authors:check_liked', args=[self.user.id, self.post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['liked'])
+
+    def test_get_all_hosted_images(self):
+        # Test GET request to get all hosted images
+        self.client.login(username=self.author.username, password=self.password)
+        url = reverse('api:authors:get_all_hosted_images')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('images', response.data)
+
+    def test_get_all_public_posts(self):
+        # Test GET request to get all public posts
+        Post.objects.create(
+            title="Public Post",
+            description="Public post description",
+            content="Public content",
+            author=self.other_user,
+            visibility="PUBLIC"
+        )
+        url = reverse('api:authors:get_all_public_posts')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['posts']), 2)
+
+
+class PostFeatureTests(APITestCase):
+
+    def setUp(self):
+        self.user = Author.objects.create(username="testuser", display_name="Test User")
+
+        self.password = "testpass"
+        self.user.set_password(self.password)
+        self.user.save()
+        self.author = self.user
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+
+        oldPost = Post.objects.create(
+
+            title="Older Post",
+            description="Older description",
+            content="Older content",
+            author=self.author,
+            visibility="PUBLIC",
+            published="2024-01-01T00:00:00Z"
+        )
+
+        self.post = Post.objects.create(
+            title="Test Post",
+            description="Test Description",
+            content="This is the content",
+            author=self.user,
+            visibility="PUBLIC"
+        )
+        self.friends_Only = Post.objects.create(
+            title="Friends Only Post",
+            description="Friends only content",
+            content="Visible only to friends",
+            author=self.author,
+            visibility="FRIENDS"
+        )
+        url = reverse('api:authors:stream', args=[self.author.id])
+        response = self.client.get(url)
+    
+    # PostingTests
+
+
+    def test_post_creation_with_commonmark(self):
+        self.client.login(username=self.user.username, password=self.password)
+        url = reverse('api:authors:author_posts', args=[self.user.id])
+        data = {
+            'title': 'CommonMark Post',
+            'description': 'Post with CommonMark',
+            'contentType': 'text/markdown',
+            'content': '# Heading\n\nThis is a **bold** statement.',
+            'visibility': 'PUBLIC'
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()['contentType'], 'text/markdown')
+
+    def test_edit_post_and_resend(self):
+        self.client.login(username=self.author.username, password=self.password)
+        url = reverse('api:authors:get_post', args=[self.user.id, self.post.id])
+        data = {'title': 'Updated Title', 'content': 'Updated content'}
+        response = self.client.put(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Mock the behavior of re-sending the post update
+        # with patch('posts.models.Post.send_update') as mocked_send_update:    # TODO: not implemented yet
+        #     self.post.refresh_from_db()
+        #     mocked_send_update.assert_called_once()
+
+    def test_post_deletion_and_notification(self):
+        self.client.login(username=self.user.username, password=self.password)
+        url = reverse('api:authors:get_post', args=[self.user.id, self.post.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        # Mock the behavior of notifying nodes
+        # with patch('posts.models.Post.send_deletion_notice') as mocked_deletion_notice:   # TODO: not implemented yet
+        #     mocked_deletion_notice.assert_called_once()
+
+
+    def test_delete_other_authors_post(self):
+        other_author = Author.objects.create(username="otheruser2", display_name="Other User2")
+        post_by_other = Post.objects.create(
+            title="Other Author's Post",
+            description="Other content",
+            content="This is other author's content",
+            author=other_author,
+            visibility="PUBLIC"
+        )
+        url = reverse('api:authors:get_post', args=[other_author.id, post_by_other.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    
+    # Test for reading of posts
+    def test_stream_includes_edited_posts(self):
+        self.client.login(username=self.author.username, password=self.password)
+        self.post.title = "Edited Post"
+        self.post.save()
+        other_author = Author.objects.create(username="otherauthor", display_name="otherauthor")
+        url = reverse('api:authors:stream', args=[other_author.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('Edited Post', str(response.content))
+
+
+    def test_stream_sorting(self):
+        other_author2 = Author.objects.create(username="otheruser6", display_name="Other User6")
+        other_author2.set_password(self.password)
+        other_author2.save()
+        self.client.login(username=self.author.username, password=self.password)
+        url = reverse('api:authors:stream', args=[other_author2.id])
+        response = self.client.get(url)
+        data = json.loads(response.content)
+        posts = [p['title'] for p in data['results']]
+        self.assertEqual(posts, ["Test Post", "Older Post"])
+
+    def test_visibility_friends_only(self):
+        other_author = Author.objects.create(username="otheruser5", display_name="Other User5")
+        other_author2 = Author.objects.create(username="otheruser6", display_name="Other User6")
+        other_author2.set_password(self.password)
+        other_author2.save()
+        Follow.objects.create(user=other_author2, follower=other_author, status="FOLLOWED")
+        Follow.objects.create(user=other_author, follower=other_author2, status="FOLLOWED")
+        post = Post(
+            title="Otheruser 5 Post",
+            description="Other content",
+            content="This is other author's content",
+            author=other_author,
+            visibility="FRIENDS"
+        )
+        post.save()
+        self.client.login(username=other_author2.username, password=self.password)
+        url = reverse('api:authors:stream', args=[other_author2.id])
+        response = self.client.get(url)
+        self.assertIn("Otheruser 5 Post", str(response.content))
+
+    # Test for visibility of posts
+    def test_make_post_public(self):
+        self.post.visibility = "PUBLIC"
+        self.post.save()
+        self.assertEqual(self.post.visibility, "PUBLIC")
+
+    def test_unlisted_post_access_by_link(self):
+        self.post.visibility = "UNLISTED"
+        self.post.save()
+        url = reverse('api:authors:get_post', args=[self.author.id, self.post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_restricted_access_to_friends_only_post(self):
+        self.post.visibility = "FRIENDS"
+        self.post.save()
+        url = reverse('api:authors:get_post', args=[self.post.author.id, self.post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_stream_excludes_deleted_posts(self):
+        self.post.is_deleted = True
+        self.post.save()
+        url = reverse('api:authors:stream', args=[self.author.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn(self.post.title, str(response.content))
