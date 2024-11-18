@@ -148,6 +148,8 @@ def post_detail(request, author_id, post_id):
         return Response({"detail": "Must be authenticated to update posts."}, status=401) 
 
     elif request.method == 'DELETE':
+        if request.user != post.author:
+            return Response({"detail": "Users can only delete their own posts."}, status=403)
         if request.user.is_authenticated:
             return delete_post(request, author_id, post_id)
         return Response({"detail": "Must be authenticated to delete posts."}, status=401)
@@ -362,12 +364,12 @@ def get_likes(request, author_id, object_id):
 
     try:
         post_object = Post.objects.get(id=object_id)
-        object_full_id = f"{post_object.author.page}/posts/{post_object.id}"
+        object_full_id = post_object.fqid
         object_page = f"{post_object.author.page}/posts/{post_object.id}"
     except Post.DoesNotExist:
         try:
             comment_object = Comment.objects.get(fqid=object_id)
-            object_full_id = comment_object.fqid
+            object_full_id = comment_object.page.fqid
             object_page = f"{post_object.author.page}/comments/{comment_object.fqid}/likes"
         except:
             return Response("only posts and comments have likes", status=status.HTTP_400_BAD_REQUEST)

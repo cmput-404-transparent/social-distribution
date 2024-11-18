@@ -275,3 +275,4 @@ dist
 # apple
 .DS_Store
 
+backend/media/images/*
