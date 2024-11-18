@@ -14,7 +14,7 @@ Make a distributed social network!
 
 ## Copyright
 
-The authors claiming copyright. 
+The authors claiming copyright.
 
 | Author Name |
 |----------|
