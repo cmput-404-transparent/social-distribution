@@ -347,7 +347,7 @@ function formatNumber(num) {
 }
 
 export default function Post({ post }) {
-  const [author, setAuthor] = useState("");
+  const [author, setAuthor] = useState({});
   const [self, setSelf] = useState({});
   const [isStream, setIsStream] = useState(false);
   const [isOwn, setIsOwn] = useState(false);
@@ -511,7 +511,7 @@ export default function Post({ post }) {
         </div>
         <div>
           <div className="grid grid-cols-[auto,min-content] h-full">
-            <a href={author.page} onClick={!isStream ? (e) => e.preventDefault() : null} className={`${!isStream ? "cursor-default" : "cursor-pointer"} flex items-center justify-start`}>
+            <a href={post.author.page} onClick={!isStream ? (e) => e.preventDefault() : null} className={`${!isStream ? "cursor-default" : "cursor-pointer"} flex items-center justify-start`}>
               <div className="flex justify-start items-center">
                 <h1 className="font-bold text-lg font-sans">{post.author.displayName}</h1>
               </div>

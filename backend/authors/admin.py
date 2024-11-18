@@ -52,7 +52,7 @@ class AuthorAdmin(admin.ModelAdmin):
 
         # Automatically set the host and page fields if they are not provided
         if not obj.host:
-            obj.host = "http://localhost:3000/api"
+            obj.host = "http://localhost:8000/api"
         if not obj.page:
             obj.page = f"{obj.host}/authors/{obj.id}"
         

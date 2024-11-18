@@ -51,7 +51,7 @@ export function User({author}) {
 export default function Profile() {
   const [profileInfo, setProfileInfo] = useState({});
   const [posts, setPosts] = useState([]);
-  const [relationship, setRelationship] = useState([]);
+  const [relationship, setRelationship] = useState("NONE");
 
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
@@ -82,7 +82,7 @@ export default function Profile() {
         setPosts(data.posts);
       })
 
-      fetch(`/api/authors/${authorId}/relationship/${profileAuthorId}`)
+      fetch(`/api/authors/${authorId}/relationship/${profileAuthorId}/`)
       .then((r) => r.json())
       .then((data) => {
         setRelationship(data.relationship);
