@@ -4,7 +4,7 @@
 *.pyc
 __pycache__/
 db.sqlite3
-media
+
 
 # Backup files # 
 *.bak 
@@ -275,5 +275,8 @@ dist
 # apple
 .DS_Store
 
-build/
+backend/media/images/*.*
+!backend/media/images/
+
 staticfiles/
+build/

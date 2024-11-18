@@ -148,11 +148,13 @@ delete_post_docs = swagger_auto_schema(
 
     **How to use**: Send a DELETE request with the post ID.
 
-    **Why/Why not**: Use this to allow authors to delete posts they have created.
+    **Why/Why not**: Use this to allow authors to delete posts they have created. 
+    Users cannot delete posts created by others.
     """,
     responses={
-        204: openapi.Response(description="Post deleted successfully"),
-        403: openapi.Response(description="Forbidden: You can only delete your own posts")
+        204: openapi.Response(description="No Content: Post deleted successfully"),
+        403: openapi.Response(description="Forbidden: Users can only delete their own posts"),
+        404: openapi.Response(description="Not Found: The post does not exist or you do not have permission to view it")
     }
 )
 
