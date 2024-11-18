@@ -3,6 +3,7 @@ import requests
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import *
+from posts.models import *
 from .serializers import *
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination 
@@ -383,10 +384,122 @@ def inbox(request, author_id):
     new_item = request.POST
 
     if new_item['type'] == "post":
-        pass
+        author_id = new_item['author']['id'].split('/')
+        author_serial = author_id[-1]
+        host = new_item['author']['host']
+        author = Author.objects.get(host=host, id=author_serial)    # if receiving a post from someone, the remote author should already be in the db
+
+        post_published = new_item['published']
+
+        new_post = Post(
+            title=new_item['title'],
+            description=new_item['description'],
+            contentType=new_item['contentType'],
+            content=new_item['content'],
+            author=author,
+            visibility=new_item['visibility']
+        )
+        new_post.save()
+
+        new_post.published = post_published
+        new_post.save()
+
     if new_item['type'] == "follow":
-        pass
+        actor_fqid = new_item['actor']['id']
+        actor_host = new_item['actor']['host']
+        actor_display_name = new_item['actor']['displayName']
+        actor_github = new_item['actor']['github']
+        actor_profile_image = new_item['actor']['profileImage']
+        actor_page = new_item['actor']['page']
+
+        object_fqid = new_item['object']['id']
+
+        remote_author = Author.objects.get_or_create(
+            host=actor_host,
+            display_name=actor_display_name,
+            github=actor_github,
+            profile_image=actor_profile_image,
+            page=actor_page
+        )
+
+        local_author = get_object_or_404(Author, fqid=object_fqid)
+
+        new_follow = Follow(
+            user=local_author,
+            follower=remote_author,
+            status="REQUESTED"
+        )
+        new_follow.save()
+
     if new_item['type'] == "like":
-        pass
+        actor_fqid = new_item['actor']['id']
+        actor_host = new_item['actor']['host']
+        actor_display_name = new_item['actor']['displayName']
+        actor_github = new_item['actor']['github']
+        actor_profile_image = new_item['actor']['profileImage']
+        actor_page = new_item['actor']['page']
+
+        object_fqid = new_item['object']
+
+        like_id = new_item['id']
+        like_published = new_item['published']
+
+        remote_author = Author.objects.get_or_create(
+            host=actor_host,
+            display_name=actor_display_name,
+            github=actor_github,
+            profile_image=actor_profile_image,
+            page=actor_page
+        )
+
+        new_like = Like(
+            author=remote_author,
+            object=object_fqid,
+            fqid=like_id
+        )
+        new_like.save()
+
+        new_like.published = like_published
+        new_like.save()
+
     if new_item['type'] == "comment":
-        pass
+        actor_fqid = new_item['actor']['id']
+        actor_host = new_item['actor']['host']
+        actor_display_name = new_item['actor']['displayName']
+        actor_github = new_item['actor']['github']
+        actor_profile_image = new_item['actor']['profileImage']
+        actor_page = new_item['actor']['page']
+
+        comment = new_item['comment']
+        content_type = new_item['contentType']
+        comment_post_fqid = new_item['post']
+        comment_published = new_item['published']
+
+        filter_author = Author.objects.filter(fqid=actor_fqid)
+
+        if filter_author.exists():
+            remote_author = filter_author.first()
+        else:
+            remote_author = Author(
+                host=actor_host,
+                display_name=actor_display_name,
+                github=actor_github,
+                profile_image=actor_profile_image,
+                page=actor_page
+            )
+            remote_author.save()
+
+        comment_post = get_object_or_404(Comment, fqid=comment_post_fqid)
+
+        new_comment = Comment(
+            author=remote_author,
+            comment=comment,
+            contentType=content_type,
+            post=comment_post
+        )
+        new_comment.save()
+
+        new_comment.published = comment_published
+        new_comment.save()
+
+    return Response(status=status.HTTP_201_CREATED)
