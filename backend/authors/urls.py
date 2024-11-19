@@ -14,6 +14,9 @@ urlpatterns = [
     # get author info and update/edit author info by author id
     path("<int:author_id>/", author_views.get_update_author, name="get_update_author"),
 
+    # author inbox
+    path("<int:author_id>/inbox/", author_views.inbox, name="inbox"),
+
     # get author info and update/edit author info by author id
     path("<int:author_id>/full/", author_views.get_full_author, name="get_full_author"),
 
