@@ -8,7 +8,11 @@ export default function StreamPage() {
 
   useEffect(() => {
     // get posts
-    fetch(`${authorId}/stream/`)
+    fetch(`${authorId}/stream/`, {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
     .then((r) => r.json())
     .then((data) => {
       setPosts(data.results);

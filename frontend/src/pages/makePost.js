@@ -51,7 +51,11 @@ const MakePost = () => {
 
   useEffect(() => {
     // get all hosted images
-    fetch('/api/authors/images/all/')
+    fetch('/api/authors/images/all/', {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
       .then(r => r.json())
       .then(data => {
         setCommonmarkImages(data.images)
@@ -91,6 +95,7 @@ const MakePost = () => {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': csrftoken,
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
         body: data.toString()
       });
@@ -126,7 +131,11 @@ const MakePost = () => {
       const fetchImages = async () => {
         const fetchedUrls = await Promise.all(
           images.map(async (filename) => {
-            const response = await fetch(filename);
+            const response = await fetch(filename, {
+              headers: {
+                'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+              },
+            });
             const blob = await response.blob();
             return URL.createObjectURL(blob);
           })

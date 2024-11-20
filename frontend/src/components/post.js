@@ -81,7 +81,7 @@ const Content = ({ post, postState }) => {
         headers: {
           'Content-Type': 'application/json',
           'X-CSRFToken': csrftoken,
-          'Authorization': `Basic ${token}`,
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
         body: JSON.stringify(updatedData)
       });
@@ -369,7 +369,11 @@ export default function Post({ post }) {
   const [newComment, setNewComment] = useState("");
 
   function getPostInfo() {
-    fetch(post.id + "/")
+    fetch(post.id + "/", {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
     .then(r => r.json())
     .then(data => {
       setAuthor(data.author);
@@ -383,7 +387,11 @@ export default function Post({ post }) {
 
     getPostInfo();
 
-    fetch(`${post.author.id}/`)
+    fetch(`${post.author.id}/`, {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
     .then(r => r.json())
     .then(data => {
       setSelf(data);
@@ -399,7 +407,11 @@ export default function Post({ post }) {
   useEffect(() => {
     if (Object.keys(self).length !== 0) {
       let postId = post.id.split("/").pop();
-      fetch(`${self.id}` + "/liked/" + postId)
+      fetch(`${self.id}` + "/liked/" + postId, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
       .then(r => r.json())
       .then(data => {
         setSelfLiked(data.liked);
@@ -464,6 +476,7 @@ export default function Post({ post }) {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': csrftoken,
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
       })
       .then(r => {
@@ -483,6 +496,7 @@ export default function Post({ post }) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-CSRFToken': csrftoken,
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
       },
       body: data.toString(),
     })
@@ -496,7 +510,11 @@ export default function Post({ post }) {
 
   function getMoreComments() {
     let nextPageNum = (comments.length) % 5 + 2;
-    fetch(`${post.id}/comments?page=${nextPageNum}`)
+    fetch(`${post.id}/comments?page=${nextPageNum}`, {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
     .then(r => r.json())
     .then(data => {
       setComments(comments.concat(data.src));

@@ -62,7 +62,11 @@ export default function Profile() {
 
   useEffect(() => {
     // get profile information
-    fetch(`/api/authors/${profileAuthorId}/`)
+    fetch(`/api/authors/${profileAuthorId}/`, {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
     .then((r) => r.json())
     .then((data) => setProfileInfo(data));
 
@@ -76,34 +80,54 @@ export default function Profile() {
   useEffect(() => {
     if (Object.keys(profileInfo).length !== 0) {
       // get posts
-      fetch(`${profileInfo.id}/posts/`)
+      fetch(`${profileInfo.id}/posts/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
       .then((r) => r.json())
       .then((data) => {
         setPosts(data.posts);
       })
 
-      fetch(`${authorId}/relationship/${profileAuthorId}/`)
+      fetch(`${authorId}/relationship/${profileAuthorId}/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
       .then((r) => r.json())
       .then((data) => {
         setRelationship(data.relationship);
       });
 
       // get followers
-      fetch(`${profileInfo.id}/followers/`)
+      fetch(`${profileInfo.id}/followers/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
       .then((r) => r.json())
       .then((data) => {
         setFollowers(data.followers)
       });
 
       // get people author follows
-      fetch(`${profileInfo.id}/following/`)
+      fetch(`${profileInfo.id}/following/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
       .then((r) => r.json())
       .then((data) => {
         setFollowing(data)
       });
 
       // get friends of the author
-      fetch(`${profileInfo.id}/friends/`)
+      fetch(`${profileInfo.id}/friends/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
       .then((r) => r.json())
       .then((data) => {
         setFriends(data.friends)
@@ -124,6 +148,7 @@ export default function Profile() {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': csrftoken,
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
         body: data.toString(),
       })
@@ -147,6 +172,7 @@ export default function Profile() {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': csrftoken,
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
         body: data.toString(),
       })

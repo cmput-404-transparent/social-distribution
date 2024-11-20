@@ -35,7 +35,11 @@ export default function Search() {
     const data = new URLSearchParams();
     data.append('keyword', keyword);
 
-    fetch(`/api/authors/search/?keyword=${data}`)
+    fetch(`/api/authors/search/?keyword=${data}`, {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
     .then((r) => r.json())
     .then((data) => {
       setResults(data);

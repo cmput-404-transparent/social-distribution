@@ -20,7 +20,11 @@ function App() {
   let authorSerial = authorId? authorId.split("/").pop() : '';
 
   useEffect(() => {
-    fetch(`/api/posts/${authorSerial}/github/`)
+    fetch(`/api/posts/${authorSerial}/github/`, {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
   });
 
   useEffect(() => {
