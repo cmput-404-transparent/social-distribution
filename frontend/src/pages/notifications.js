@@ -17,6 +17,7 @@ function FollowRequest({request, authorId}) {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': csrftoken,
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
         body: data.toString()
       })
@@ -43,6 +44,7 @@ function FollowRequest({request, authorId}) {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': csrftoken,
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
         body: data.toString()
       })
@@ -87,9 +89,14 @@ export default function Notifications() {
   const [followRequests, setFollowRequests] = useState([]);
 
   const authorId = localStorage.getItem('authorId');
+  const authorSerial = authorId.split("/").pop();
 
   useEffect(() => {
-    fetch(`/api/authors/${authorId}/follow_requests/`)
+    fetch(`/api/authors/${authorSerial}/follow_requests/`, {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
     .then((response) => response.json())
     .then((data) => setFollowRequests(data.src));
     // eslint-disable-next-line

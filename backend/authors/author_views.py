@@ -12,6 +12,7 @@ from django.contrib.auth import login as django_side_login, logout as django_sid
 from rest_framework.authtoken.models import Token
 from django.db.models import Q
 from rest_framework import status
+import base64
 
 #documentation 
 from .docs import *
@@ -29,7 +30,7 @@ def login(request):
                return Response({"detail": "Your account is pending approval."}, status=403)
         django_side_login(request, user)
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key, "userId": user.id}, status=200)
+        return Response({"token": base64.b64encode(f"{username}:{password}".encode()), "userId": user.fqid}, status=200)
     else:
         return Response({"detail": "Invalid username or password"}, status=401)
 
@@ -61,7 +62,7 @@ def signup(request):
         user = authenticate(request, username=username, password=password)
         django_side_login(request, user)
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key, "userId": user.id}, status=201)
+        return Response({"token": base64.b64encode(f"{username}:{password}".encode()), "userId": user.fqid}, status=201)
     else:
         return Response({"detail": "Your account is pending approval."}, status=201)
 
@@ -336,7 +337,6 @@ def friends(request, author_id):
 @manage_remote_nodes_docs
 @manage_remote_nodes_docs_post
 @api_view(['GET','POST'])
-@permission_classes([IsAdminUser])
 def manage_remote_nodes(request):
     if request.method == 'GET':
         nodes = RemoteNode.objects.all()
@@ -355,18 +355,20 @@ def manage_remote_nodes(request):
             )
 
         try:
-            response = requests.post(f"{url}/login/", data={'username': username, 'password': password} )  #(remote_node + /login)
+            response = requests.post(f"{url}/api/authors/login/", data={'username': username, 'password': password} )  #(remote_node + /login)
 
             if response.status_code == 200:
-                token= response.json().get('token')  # get the tokem
+                data = response.json()
+                user_id = data.get('userId')
+                token = data.get('token')  # get the tokem
                 
                 if not token:
                     return Response({'detail': 'Authentication token not provided by remote node.'},status=status.HTTP_400_BAD_REQUEST)                
 
-                remote_node,created= RemoteNode.objects.update_or_create(url=url,defaults={'username': username,'token': token,} )
+                remote_node, created = RemoteNode.objects.update_or_create(url=url, defaults={'username': username,'token': token,})
                 
                 serializer = RemoteNodeSerializer(remote_node)
-                return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+                return Response({"token": base64.b64encode(f"{username}:{password}".encode()), "userId": user_id}, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
             else:
                 return Response({'detail': 'Failed to authenticate with the remote node.'},status=response.status_code)

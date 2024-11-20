@@ -72,6 +72,8 @@ const Content = ({ post, postState }) => {
       content: content,
     };
 
+    const token = localStorage.getItem('authToken');
+
     const csrftoken = getCookie('csrftoken');
     try {
       await fetch(post.id + "/", {
@@ -79,7 +81,7 @@ const Content = ({ post, postState }) => {
         headers: {
           'Content-Type': 'application/json',
           'X-CSRFToken': csrftoken,
-          'Authorization': `Token ${localStorage.getItem('authToken')}`,
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
         body: JSON.stringify(updatedData)
       });
@@ -367,7 +369,11 @@ export default function Post({ post }) {
   const [newComment, setNewComment] = useState("");
 
   function getPostInfo() {
-    fetch(post.id + "/")
+    fetch(post.id + "/", {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
     .then(r => r.json())
     .then(data => {
       setAuthor(data.author);
@@ -381,8 +387,11 @@ export default function Post({ post }) {
 
     getPostInfo();
 
-    let baseAuthorAPIUrl = post.author.id.split("/").slice(0, -1).join("/");
-    fetch(`${baseAuthorAPIUrl}/${authorId}/`)
+    fetch(`${post.author.id}/`, {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
     .then(r => r.json())
     .then(data => {
       setSelf(data);
@@ -390,9 +399,7 @@ export default function Post({ post }) {
 
     setIsStream(window.location.href.includes('stream'));
 
-    let postAuthorId = post.author.id.split("/").pop();
-
-    setIsOwn(postAuthorId === authorId);
+    setIsOwn(post.author.id === authorId);
 
     // eslint-disable-next-line
   }, []);
@@ -400,7 +407,11 @@ export default function Post({ post }) {
   useEffect(() => {
     if (Object.keys(self).length !== 0) {
       let postId = post.id.split("/").pop();
-      fetch(`${self.id}` + "/liked/" + postId)
+      fetch(`${self.id}` + "/liked/" + postId, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
       .then(r => r.json())
       .then(data => {
         setSelfLiked(data.liked);
@@ -435,13 +446,14 @@ export default function Post({ post }) {
 
   const Delete = async () => {
     const csrftoken = getCookie('csrftoken');
+    const token = localStorage.getItem('authToken');
     try {
       await fetch(post.id + "/", {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           'X-CSRFToken': csrftoken,
-          'Authorization': `Token ${localStorage.getItem('authToken')}`,
+          'Authorization': `Basic ${token}`,
         }
       });
 
@@ -464,6 +476,7 @@ export default function Post({ post }) {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': csrftoken,
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
       })
       .then(r => {
@@ -483,6 +496,7 @@ export default function Post({ post }) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-CSRFToken': csrftoken,
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
       },
       body: data.toString(),
     })
@@ -496,7 +510,11 @@ export default function Post({ post }) {
 
   function getMoreComments() {
     let nextPageNum = (comments.length) % 5 + 2;
-    fetch(`${post.id}/comments?page=${nextPageNum}`)
+    fetch(`${post.id}/comments?page=${nextPageNum}`, {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
     .then(r => r.json())
     .then(data => {
       setComments(comments.concat(data.src));

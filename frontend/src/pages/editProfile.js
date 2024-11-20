@@ -19,7 +19,11 @@ export default function EditProfile() {
 
   useEffect(() => {
     // get profile information
-    fetch(`/api/authors/${authorId}/full/`)
+    fetch(`${authorId}/full/`, {
+      headers: {
+        'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+      },
+    })
     .then((r) => r.json())
     .then((data) => {
       setAuthor(data);
@@ -42,19 +46,20 @@ export default function EditProfile() {
     data.append('github', github);
 
     const csrftoken = getCookie('csrftoken');
-
+    
     try {
       const response = await fetch(`${author.host}authors/${author.id}/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': csrftoken,
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
         body: data.toString(),
       });
 
       if (response.ok) {
-        navigate(`/authors/${authorId}`);
+        navigate(`/authors/${authorId.split("/").pop()}`);
       } else {
         let r = await response.json();
         let errors = r.errors;
