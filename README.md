@@ -28,9 +28,9 @@ The authors claiming copyright.
 
 ## Heroku deployed URLS
 1. [https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com/](https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com/)
-2. [**https://transparent-jwan-de425e3e313f.herokuapp.com/**](https://transparent-jwan-de425e3e313f.herokuapp.com/)
-3. [**https://social-distribution-omelchuk-a7deff81f6a3.herokuapp.com/ **](https://social-distribution-omelchuk-a7deff81f6a3.herokuapp.com/ )
-4. [**https://social-distribution-asolanki-45d4887bf9b6.herokuapp.com/**](https://social-distribution-asolanki-45d4887bf9b6.herokuapp.com/)
-5. [*https://jastegh-socialdistribution-c7853f320baf.herokuapp.com/**](https://jastegh-socialdistribution-c7853f320baf.herokuapp.com/)
-6. [**https://socialdistribution-jassidak-a0db46597407.herokuapp.com/**](https://socialdistribution-jassidak-a0db46597407.herokuapp.com/)
+2. [https://transparent-jwan-de425e3e313f.herokuapp.com/](https://transparent-jwan-de425e3e313f.herokuapp.com/)
+3. [https://social-distribution-omelchuk-a7deff81f6a3.herokuapp.com/](https://social-distribution-omelchuk-a7deff81f6a3.herokuapp.com/ )
+4. [https://social-distribution-asolanki-45d4887bf9b6.herokuapp.com/](https://social-distribution-asolanki-45d4887bf9b6.herokuapp.com/)
+5. [https://jastegh-socialdistribution-c7853f320baf.herokuapp.com/](https://jastegh-socialdistribution-c7853f320baf.herokuapp.com/)
+6. [https://socialdistribution-jassidak-a0db46597407.herokuapp.com/](https://socialdistribution-jassidak-a0db46597407.herokuapp.com/)
   
