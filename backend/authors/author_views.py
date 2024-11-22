@@ -13,7 +13,7 @@ from rest_framework.authtoken.models import Token
 from django.db.models import Q
 from rest_framework import status
 import base64
-
+from django.utils import timezone
 #documentation 
 from .docs import *
 
@@ -379,6 +379,18 @@ def manage_remote_nodes(request):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
+def extract_author_info(actor):
+    """Helper function to extract author information."""
+    return {
+        'fqid': actor.get('id'),
+        'host': actor.get('host'),
+        'display_name': actor.get('displayName'),
+        'github': actor.get('github'),
+        'profile_image': actor.get('profileImage'),
+        'page': actor.get('page'),
+        'username': actor.get('username', actor.get('id').split('/')[-1])  # Derive username if not provided
+    }
+
 @api_view(['POST'])
 def inbox(request, author_id):
     if request.method != 'POST':
@@ -389,13 +401,14 @@ def inbox(request, author_id):
     print(str(new_item))
     item_type = new_item.get('type')
     print(item_type)
+    
     if item_type == "post":
         author_id = new_item['author']['id'].split('/')
         author_serial = author_id[-1]
         host = new_item['author']['host']
-        author = Author.objects.get(host=host, id=author_serial)    # if receiving a post from someone, the remote author should already be in the db
+        author = Author.objects.get(host=host, id=author_serial)
 
-        post_published = new_item['published']
+        post_published = new_item.get('published', timezone.now())
 
         new_post = Post(
             title=new_item['title'],
@@ -405,30 +418,26 @@ def inbox(request, author_id):
             author=author,
             visibility=new_item['visibility']
         )
-        new_post.save()
-
         new_post.published = post_published
         new_post.save()
-        print("it works")
-    if item_type == "follow":
-        actor_fqid = new_item['actor']['id']
-        actor_host = new_item['actor']['host']
-        actor_display_name = new_item['actor']['displayName']
-        actor_github = new_item['actor']['github']
-        actor_profile_image = new_item['actor']['profileImage']
-        actor_page = new_item['actor']['page']
 
+    elif item_type == "follow":
+        actor_info = extract_author_info(new_item['actor'])
         object_fqid = new_item['object']['id']
 
+        local_author = get_object_or_404(Author, fqid=object_fqid)
+
         remote_author, _ = Author.objects.get_or_create(
-            host=actor_host,
-            display_name=actor_display_name,
-            github=actor_github,
-            profile_image=actor_profile_image,
-            page=actor_page
+            host=actor_info['host'],
+            username=actor_info['username'],  # Ensure username is set
+            defaults={
+                'display_name': actor_info['display_name'],
+                'github': actor_info['github'],
+                'profile_image': actor_info['profile_image'],
+                'page': actor_info['page']
+            }
         )
 
-        local_author = get_object_or_404(Author, fqid=object_fqid)
 
         new_follow = Follow(
             user=local_author,
@@ -437,75 +446,54 @@ def inbox(request, author_id):
         )
         new_follow.save()
 
-    if item_type == "like":
-        actor_fqid = new_item['actor']['id']
-        actor_host = new_item['actor']['host']
-        actor_display_name = new_item['actor']['displayName']
-        actor_github = new_item['actor']['github']
-        actor_profile_image = new_item['actor']['profileImage']
-        actor_page = new_item['actor']['page']
-
+    elif item_type == "like":
+        actor_info = extract_author_info(new_item['actor'])
         object_fqid = new_item['object']
-
-        like_id = new_item['id']
-        like_published = new_item['published']
+        # like_id = new_item['id']
+        like_published = new_item.get('published', timezone.now())
 
         remote_author, created = Author.objects.get_or_create(
-            host=actor_host,
-            display_name=actor_display_name,
-            github=actor_github,
-            profile_image=actor_profile_image,
-            page=actor_page
+            host=actor_info['host'],
+            display_name=actor_info['display_name'],
+            github=actor_info['github'],
+            profile_image=actor_info['profile_image'],
+            page=actor_info['page'],
+            username=actor_info['username']  # Ensure username is set
         )
 
         new_like = Like(
             author=remote_author,
             object=object_fqid,
-            fqid=like_id
+            # fqid=like_id,
+            published=like_published
         )
         new_like.save()
 
-        new_like.published = like_published
-        new_like.save()
-
-    if item_type == "comment":
-        actor_fqid = new_item['actor']['id']
-        actor_host = new_item['actor']['host']
-        actor_display_name = new_item['actor']['displayName']
-        actor_github = new_item['actor']['github']
-        actor_profile_image = new_item['actor']['profileImage']
-        actor_page = new_item['actor']['page']
-
+    elif item_type == "comment":
+        actor_info = extract_author_info(new_item['actor'])
         comment = new_item['comment']
         content_type = new_item['contentType']
         comment_post_fqid = new_item['post']
-        comment_published = new_item['published']
+        comment_published = new_item.get('published', timezone.now())
 
-        filter_author = Author.objects.filter(fqid=actor_fqid)
+        remote_author, created = Author.objects.get_or_create(
+            host=actor_info['host'],
+            display_name=actor_info['display_name'],
+            github=actor_info['github'],
+            profile_image=actor_info['profile_image'],
+            page=actor_info['page'],
+            username=actor_info['username']  # Ensure username is set
+        )
 
-        if filter_author.exists():
-            remote_author = filter_author.first()
-        else:
-            remote_author = Author(
-                host=actor_host,
-                display_name=actor_display_name,
-                github=actor_github,
-                profile_image=actor_profile_image,
-                page=actor_page
-            )
-            remote_author.save()
-
-        comment_post = get_object_or_404(Comment, fqid=comment_post_fqid)
+        comment_post = get_object_or_404(Post, fqid=comment_post_fqid)
 
         new_comment = Comment(
             author=remote_author,
             comment=comment,
             contentType=content_type,
-            post=comment_post
+            post=comment_post,
+            published=comment_published
         )
-        new_comment.save()
-
-        new_comment.published = comment_published
         new_comment.save()
 
     return Response(status=status.HTTP_201_CREATED)
