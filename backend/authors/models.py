@@ -63,6 +63,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
 
     def save(self, *args, **kwargs):
         # save fqid on object save
+        super().save(*args, **kwargs)   # need to save object to get id first
         if not self.fqid:
             self.fqid = f"{self.host}authors/{self.id}"
         super().save(*args, **kwargs)

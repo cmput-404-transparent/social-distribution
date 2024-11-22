@@ -28,7 +28,6 @@ export default function SignUp() {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': csrftoken,
-          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
         body: data.toString(),
       });
