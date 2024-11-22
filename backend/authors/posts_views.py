@@ -207,7 +207,7 @@ def delete_post(request, author_id, post_id):
 @api_view(['GET'])
 def get_all_public_posts(request):
     public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
-    serialized_posts = [PostSerializer(post).data for post in public_posts]
+    serialized_posts = [PostSummarySerializer(post).data for post in public_posts]
     return Response({"posts": serialized_posts}, status=200)
 
 

@@ -107,6 +107,8 @@ def test_remote_node_connection(request):
 
 
 
+
+
 @api_view(['GET'])
 def fetch_remote_posts(request):
     """
@@ -121,15 +123,15 @@ def fetch_remote_posts(request):
     for node in remote_nodes:
         try:
             # Try to fetch public posts from the remote node
-            url = f"{node.url.rstrip('/')}/api/posts/public/"
-
+            url = f"{node.url.rstrip('/')}/api/authors/posts/public/"
             print(f"Fetching posts from: {url}")  # Debug log
 
             response = requests.get(url, auth=(node.username, node.password))
 
             if response.status_code == 200:
-                posts_data = response.json()  # Assuming JSON response
-                save_remote_posts(posts_data, node.url)
+                posts_data = response.json().get("posts", [])  # Extract posts list
+                print(f"Fetched {len(posts_data)} posts from {node.url}")
+                save_remote_posts(posts_data, node.url, (node.username, node.password))  # Pass authentication
                 results.append({
                     "node": node.url,
                     "message": f"Fetched and saved {len(posts_data)} posts.",
@@ -150,36 +152,70 @@ def fetch_remote_posts(request):
 
 
 
-def save_remote_posts(posts_data, node_url):
+
+
+def fetch_author_details(author_id, node_url, node_auth):
+    """
+    Fetch full author details using the author ID.
+    """
+    author_url = f"{node_url.rstrip('/')}/authors/{author_id}/"
+    print(f"Fetching author details from: {author_url}")  # Debug log
+    
+    try:
+        response = requests.get(author_url, auth=node_auth)
+        print(f"Raw author response: {response.content}")  # Log the raw response for debugging
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Failed to fetch author details for ID {author_id}: {response.status_code} {response.text}")
+            return None
+    except requests.RequestException as e:
+        print(f"Error fetching author details: {e}")
+        return None
+
+
+def save_remote_posts(posts_data, node_url, node_auth):
     """
     Save posts fetched from a remote node to the local database.
     """
     for post_data in posts_data:
-        # Extract the post author information
-        author_data = post_data.get("author", {})
-        post_author, _ = Author.objects.get_or_create(
-            fqid=author_data.get("id"),
-            defaults={
-                "host": author_data.get("host"),
-                "display_name": author_data.get("displayName"),
-                "github": author_data.get("github", ""),
-                "profile_image": author_data.get("profileImage", ""),
-                "is_remote": True,
-            },
-        )
+        try:
+            # If the author is an integer, fetch the full author details
+            author_data = post_data.get("author")
+            if isinstance(author_data, int):  # If author is an ID, fetch details
+                author_data = fetch_author_details(author_data, node_url, node_auth)
 
-        # Save or update the post in the local database
-        Post.objects.update_or_create(
-            fqid=post_data.get("id"),
-            defaults={
-                "author": post_author,
-                "title": post_data.get("title", ""),
-                "description": post_data.get("description", ""),
-                "content": post_data.get("content", ""),
-                "contentType": post_data.get("contentType", ""),
-                "visibility": post_data.get("visibility", "PUBLIC"),
-                "published": post_data.get("published", None),
-            },
-        )
+            if not author_data:
+                print(f"Invalid post data: No valid author found in {post_data}")
+                continue  # Skip this post if no author data is available
 
+            # Save or get the author from the database
+            post_author, _ = Author.objects.get_or_create(
+                fqid=author_data.get("id"),
+                defaults={
+                    "host": author_data.get("host"),
+                    "display_name": author_data.get("displayName"),
+                    "github": author_data.get("github", ""),
+                    "profile_image": author_data.get("profileImage", ""),
+                    "is_remote": True,
+                },
+            )
+
+            # Save or update the post in the local database
+            Post.objects.update_or_create(
+                fqid=post_data.get("id"),
+                defaults={
+                    "author": post_author,
+                    "title": post_data.get("title", ""),
+                    "description": post_data.get("description", ""),
+                    "content": post_data.get("content", ""),
+                    "contentType": post_data.get("contentType", ""),
+                    "visibility": post_data.get("visibility", "PUBLIC"),
+                    "published": post_data.get("published", None),
+                },
+            )
+
+        except Exception as e:
+            print(f"Error saving post: {e} -- Post Data: {post_data}")
 
