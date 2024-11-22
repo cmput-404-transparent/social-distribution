@@ -62,3 +62,4 @@ class AuthorAdmin(admin.ModelAdmin):
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(Follow)
 admin.site.register(SiteConfiguration, SiteConfigurationAdmin)
+admin.site.register(RemoteNode)
