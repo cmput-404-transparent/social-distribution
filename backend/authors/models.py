@@ -65,8 +65,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
         # save fqid on object save
         super().save(*args, **kwargs)   # need to save object to get id first
         if not self.fqid:
-            self.fqid = f"{self.host}authors/{self.id}"
-        super().save(*args, **kwargs)
+            Author.objects.filter(id=self.id).update(fqid=f"{self.host}authors/{self.id}")
 
 class Follow(models.Model):
     STATUS_CHOICES = [
