@@ -17,7 +17,7 @@ def index(request):
     return render(request, 'index.html')
 
 
-# Testing 
+# Testing fetching authors
 @api_view(['GET'])
 def test_remote_node_connection(request):  
     """
@@ -37,10 +37,22 @@ def test_remote_node_connection(request):
                 auth=HTTPBasicAuth(node.username, node.password)  # Use saved credentials
             )
             if response.status_code == 200:
-                results.append({
-                    "node": node.url,
-                    "authors": response.json()  # Add authors from this node
-                })
+                authors_data = response.json().get("authors", [])  # Extract authors list
+                for author_data in authors_data:
+                    # Save each author using save_remote_author
+                    author = save_remote_author(author_data)
+                    if author:
+                        results.append({
+                            "node": node.url,
+                            "author": author.fqid,  # Include the fqid for reference
+                            "status": "saved",
+                        })
+                    else:
+                        results.append({
+                            "node": node.url,
+                            "author_data": author_data,
+                            "status": "failed",
+                        })
             else:
                 results.append({
                     "node": node.url,
@@ -56,6 +68,27 @@ def test_remote_node_connection(request):
 
 
 
+
+def save_remote_author(author_data):
+    """
+    Save or update a remote author in the local database.
+    """
+    try:
+        # Save or update the author based on fqid
+        author, created = Author.objects.get_or_create(
+            fqid=author_data.get("id"),
+            defaults={
+                "host": author_data.get("host"),
+                "display_name": author_data.get("displayName"),
+                "github": author_data.get("github", ""),
+                "profile_image": author_data.get("profileImage", ""),
+                "username": f"{author_data.get('host')}{author_data.get('id')}",  
+            },
+        )
+        return author  
+    except IntegrityError:
+        print(f"Integrity error for author: {author_data}")
+        return None 
 
 
 
