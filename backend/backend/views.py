@@ -1,4 +1,6 @@
+from sqlite3 import IntegrityError
 from django.shortcuts import render
+from requests.auth import HTTPBasicAuth
 
 import requests
 from rest_framework.decorators import api_view
@@ -8,68 +10,16 @@ from rest_framework import status
 from authors.models import RemoteNode  # Assuming you have a RemoteNode model
 
 from authors.models import Author
-from posts.models import Post
-
+from posts.models import Comment, Like, Post
 
 
 def index(request):
     return render(request, 'index.html')
-# In authors/author_views.py
 
 
-
-
-# @api_view(['GET'])
-# def test_remote_node_connection(request):
-#     """
-#     Test connection to all remote nodes or a specific remote node by its ID.
-#     """
-#     node_id = request.query_params.get('node_id')  # Optionally, allow testing a specific node
-
-#     # Fetch the appropriate remote node(s)
-#     if node_id:
-#         remote_nodes = RemoteNode.objects.filter(id=node_id)  # Filter by specific node ID
-#     else:
-#         remote_nodes = RemoteNode.objects.all()  # Test all nodes
-
-#     if not remote_nodes.exists():
-#         return Response({
-#             "message": "No remote nodes found to test."
-#         }, status=status.HTTP_404_NOT_FOUND)
-
-#     results = []
-#     for node in remote_nodes:
-#         try:
-#             # Use the saved credentials for the remote node
-#             response = requests.get(
-#                 f"{node.url}/api/authors/",  # Example endpoint to test
-#                 auth=(node.username, node.password)  # Basic Authentication
-#             )
-#             if response.status_code == 200:
-#                 results.append({
-#                     "node": node.url,
-#                     "message": "Connection successful",
-#                     "data": response.json()
-#                 })
-#             else:
-#                 results.append({
-#                     "node": node.url,
-#                     "message": "Connection failed",
-#                     "status_code": response.status_code,
-#                     "details": response.text
-#                 })
-#         except requests.RequestException as e:
-#             results.append({
-#                 "node": node.url,
-#                 "message": "Connection error",
-#                 "error": str(e)
-#             })
-
-#     return Response(results, status=status.HTTP_200_OK)
-
-
+# Testing 
 @api_view(['GET'])
-def test_remote_node_connection(request):
+def test_remote_node_connection(request):  
     """
     Fetch authors from all connected remote nodes.
     """
@@ -84,7 +34,7 @@ def test_remote_node_connection(request):
             # Fetch authors from the remote node
             response = requests.get(
                 f"{node.url}/api/authors/",
-                auth=(node.username, node.password)  # Use saved credentials
+                auth=HTTPBasicAuth(node.username, node.password)  # Use saved credentials
             )
             if response.status_code == 200:
                 results.append({
@@ -112,9 +62,12 @@ def test_remote_node_connection(request):
 @api_view(['GET'])
 def fetch_remote_posts(request):
     """
-    Fetch posts from all connected remote nodes.
+    Fetch public posts from all connected remote nodes and save them locally.
     """
-    remote_nodes = RemoteNode.objects.all()  # Fetch all connected nodes
+    # remote_nodes = RemoteNode.objects.all()
+
+    remote_nodes = RemoteNode.objects.filter(is_active=True)
+
 
     if not remote_nodes.exists():
         return Response({"message": "No remote nodes found."}, status=status.HTTP_404_NOT_FOUND)
@@ -122,16 +75,16 @@ def fetch_remote_posts(request):
     results = []
     for node in remote_nodes:
         try:
-            # Try to fetch public posts from the remote node
+            # Fetch posts from the remote node
             url = f"{node.url.rstrip('/')}/api/authors/posts/public/"
-            print(f"Fetching posts from: {url}")  # Debug log
+            print(f"Fetching posts from: {url}")
 
-            response = requests.get(url, auth=(node.username, node.password))
+            response = requests.get(url, auth=HTTPBasicAuth(node.username, node.password))
 
             if response.status_code == 200:
-                posts_data = response.json().get("posts", [])  # Extract posts list
+                posts_data = response.json().get("posts", [])
                 print(f"Fetched {len(posts_data)} posts from {node.url}")
-                save_remote_posts(posts_data, node.url, (node.username, node.password))  # Pass authentication
+                save_remote_posts(posts_data, node.url)  # Save posts locally
                 results.append({
                     "node": node.url,
                     "message": f"Fetched and saved {len(posts_data)} posts.",
@@ -153,69 +106,109 @@ def fetch_remote_posts(request):
 
 
 
-
-def fetch_author_details(author_id, node_url, node_auth):
-    """
-    Fetch full author details using the author ID.
-    """
-    author_url = f"{node_url.rstrip('/')}/authors/{author_id}/"
-    print(f"Fetching author details from: {author_url}")  # Debug log
-    
-    try:
-        response = requests.get(author_url, auth=node_auth)
-        print(f"Raw author response: {response.content}")  # Log the raw response for debugging
-        
-        if response.status_code == 200:
-            return response.json()
-        else:
-            print(f"Failed to fetch author details for ID {author_id}: {response.status_code} {response.text}")
-            return None
-    except requests.RequestException as e:
-        print(f"Error fetching author details: {e}")
-        return None
-
-
-def save_remote_posts(posts_data, node_url, node_auth):
+def save_remote_posts(posts_data, node_url):
     """
     Save posts fetched from a remote node to the local database.
     """
     for post_data in posts_data:
+        author_data = post_data.get("author", {})
+        if not author_data:
+            print(f"Invalid post data: No author found in {post_data}")
+            continue
+
         try:
-            # If the author is an integer, fetch the full author details
-            author_data = post_data.get("author")
-            if isinstance(author_data, int):  # If author is an ID, fetch details
-                author_data = fetch_author_details(author_data, node_url, node_auth)
-
-            if not author_data:
-                print(f"Invalid post data: No valid author found in {post_data}")
-                continue  # Skip this post if no author data is available
-
-            # Save or get the author from the database
-            post_author, _ = Author.objects.get_or_create(
+            author, created = Author.objects.get_or_create(
                 fqid=author_data.get("id"),
                 defaults={
                     "host": author_data.get("host"),
                     "display_name": author_data.get("displayName"),
                     "github": author_data.get("github", ""),
                     "profile_image": author_data.get("profileImage", ""),
-                    "is_remote": True,
+                    "username": f"{author_data.get('host')}{author_data.get('id')}",  # Ensure unique username
                 },
             )
+        except IntegrityError:
+            print(f"Integrity error for author: {author_data}")
+            continue
 
-            # Save or update the post in the local database
-            Post.objects.update_or_create(
+        try:
+            # Capture the Post object in the variable `post`
+            post, _ = Post.objects.update_or_create(
                 fqid=post_data.get("id"),
                 defaults={
-                    "author": post_author,
+                    "author": author,
                     "title": post_data.get("title", ""),
                     "description": post_data.get("description", ""),
                     "content": post_data.get("content", ""),
                     "contentType": post_data.get("contentType", ""),
                     "visibility": post_data.get("visibility", "PUBLIC"),
-                    "published": post_data.get("published", None),
+                    "published": post_data.get("published"),
                 },
             )
-
         except Exception as e:
-            print(f"Error saving post: {e} -- Post Data: {post_data}")
+            print(f"Error saving post {post_data.get('id')}: {e}")
+            continue
 
+        # Save likes for the post
+        likes_data = post_data.get("likes", {}).get("src", [])
+        for like_data in likes_data:
+            try:
+                like_author_data = like_data.get("author", {})
+                if not like_author_data:
+                    continue
+
+                like_author, _ = Author.objects.get_or_create(
+                    fqid=like_author_data.get("id"),
+                    defaults={
+                        "host": like_author_data.get("host"),
+                        "display_name": like_author_data.get("displayName"),
+                        "github": like_author_data.get("github", ""),
+                        "profile_image": like_author_data.get("profileImage", ""),
+                        "username": f"{like_author_data.get('host')}{like_author_data.get('id')}",
+                    },
+                )
+
+                Like.objects.update_or_create(
+                    fqid=like_data.get("id"),
+                    defaults={
+                        "author": like_author,
+                        "object": post.fqid,  # Use the post's fqid as the liked object
+                        "published": like_data.get("published"),
+                    },
+                )
+            except Exception as e:
+                print(f"Error saving like {like_data.get('id')}: {e}")
+                continue
+
+        # Save comments for the post
+        comments_data = post_data.get("comments", {}).get("src", [])
+        for comment_data in comments_data:
+            try:
+                comment_author_data = comment_data.get("author", {})
+                if not comment_author_data:
+                    continue
+
+                comment_author, _ = Author.objects.get_or_create(
+                    fqid=comment_author_data.get("id"),
+                    defaults={
+                        "host": comment_author_data.get("host"),
+                        "display_name": comment_author_data.get("displayName"),
+                        "github": comment_author_data.get("github", ""),
+                        "profile_image": comment_author_data.get("profileImage", ""),
+                        "username": f"{comment_author_data.get('host')}{comment_author_data.get('id')}",
+                    },
+                )
+
+                Comment.objects.update_or_create(
+                    fqid=comment_data.get("id"),
+                    defaults={
+                        "author": comment_author,
+                        "post": post,
+                        "comment": comment_data.get("comment"),  # Match the 'comment' field in the Comment model
+                        "contentType": comment_data.get("contentType"),
+                        "published": comment_data.get("published"),
+                    },
+                )
+            except Exception as e:
+                print(f"Error saving comment {comment_data.get('id')}: {e}")
+                continue

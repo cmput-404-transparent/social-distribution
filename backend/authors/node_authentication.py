@@ -3,7 +3,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from .models import RemoteNode
 import base64
 
-# to authenticate incoming requests from othe nodes
+# to authenticate incoming requests from remote nodes
 class NodeBasicAuthentication(BaseAuthentication):
     def authenticate(self, request):
         auth_header = request.headers.get('Authorization')
