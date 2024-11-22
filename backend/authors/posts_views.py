@@ -1,4 +1,3 @@
-from .utils import IsAuthenticatedOrNode
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -11,8 +10,6 @@ from posts.models import *
 from posts.views import get_post
 from rest_framework.pagination import PageNumberPagination
 from django.core.files.storage import default_storage
-from .node_authentication import NodeBasicAuthentication  # Add this import
-from rest_framework.decorators import api_view, permission_classes, authentication_classes  # Add authentication_classes to imports
 
 #documentation
 from .docs import *
@@ -208,8 +205,6 @@ def delete_post(request, author_id, post_id):
 
 @get_all_public_posts_docs
 @api_view(['GET'])
-@authentication_classes([NodeBasicAuthentication])
-@permission_classes([IsAuthenticatedOrNode])
 def get_all_public_posts(request):
     public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
     serialized_posts = [PostSerializer(post).data for post in public_posts]
