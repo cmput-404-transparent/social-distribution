@@ -59,6 +59,11 @@ class AuthorAdmin(admin.ModelAdmin):
         # Save the changes
         obj.save()
 
+# Register RemoteNode in the admin panel
+# class RemoteNodeAdmin(admin.ModelAdmin):
+#     list_display = ['url', 'username', 'password']
+
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(Follow)
 admin.site.register(SiteConfiguration, SiteConfigurationAdmin)
+admin.site.register(RemoteNode)  

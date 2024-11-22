@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc-ui'),
+    path('test-remote-connection/', test_remote_node_connection, name='test_remote_connection'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('', TemplateView.as_view(template_name='index.html')),
     re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
