@@ -13,6 +13,8 @@ from rest_framework.authtoken.models import Token
 from django.db.models import Q
 from rest_framework import status
 import base64
+from rest_framework.decorators import authentication_classes, permission_classes
+from .node_authentication import NodeBasicAuthentication
 
 #documentation 
 from .docs import *
@@ -380,6 +382,8 @@ def manage_remote_nodes(request):
             )
 
 @api_view(['POST'])
+@authentication_classes([NodeBasicAuthentication])
+@permission_classes([IsAuthenticated])
 def inbox(request, author_id):
     if request.method != 'POST':
         return Response(status=status.HTTP_403_FORBIDDEN)
