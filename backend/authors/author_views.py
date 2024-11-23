@@ -503,20 +503,26 @@ def inbox(request, author_id):
         return Response(status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
     elif item_type == "comment":
-        actor_info = extract_author_info(new_item['actor'])
+        actor_info = extract_author_info(new_item['author'])
         comment = new_item['comment']
         content_type = new_item['contentType']
         comment_post_fqid = new_item['post']
         comment_published = new_item.get('published', timezone.now())
 
-        remote_author, created = Author.objects.get_or_create(
-            host=actor_info['host'],
-            display_name=actor_info['display_name'],
-            github=actor_info['github'],
-            profile_image=actor_info['profile_image'],
-            page=actor_info['page'],
-            username=actor_info['username']  # Ensure username is set
-        )
+        remote_author_check = Author.objects.filter(fqid=actor_info['fqid'])
+
+        if remote_author_check.exists():
+            remote_author = remote_author_check.first()
+        else:
+            remote_author = Author.objects.create(
+                host=actor_info['host'],
+                display_name=actor_info['display_name'],
+                username=actor_info['fqid'],
+                github=actor_info['github'],
+                profile_image=actor_info['profile_image'],
+                page=actor_info['page'],
+                fqid=actor_info['fqid'],
+            )
 
         comment_post = get_object_or_404(Post, fqid=comment_post_fqid)
 
