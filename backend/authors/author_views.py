@@ -443,6 +443,8 @@ def inbox(request, author_id):
             post.content = new_item['content']
             post.save()
 
+            return Response(status=status.HTTP_200_OK)
+
     elif item_type == "follow":
         actor_info = extract_author_info(new_item['actor'])
         object_fqid = new_item['object']['id']
@@ -464,12 +466,12 @@ def inbox(request, author_id):
                 fqid=actor_info['fqid'],
             )
 
-        new_follow = Follow(
+        new_follow, created = Follow.objects.get_or_create(
             user=local_author,
             follower=remote_author,
             status="REQUESTED"
         )
-        new_follow.save()
+        return Response(status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
     elif item_type == "like":
         actor_info = extract_author_info(new_item['author'])
