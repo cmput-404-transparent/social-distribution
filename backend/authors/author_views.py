@@ -418,6 +418,7 @@ def inbox(request, author_id):
             author=author,
             visibility=new_item['visibility']
         )
+        new_post.save()
         new_post.published = post_published
         new_post.save()
 
@@ -465,8 +466,9 @@ def inbox(request, author_id):
             author=remote_author,
             object=object_fqid,
             # fqid=like_id,
-            published=like_published
         )
+        new_like.save()
+        new_like.published=like_published
         new_like.save()
 
     elif item_type == "comment":
@@ -492,8 +494,9 @@ def inbox(request, author_id):
             comment=comment,
             contentType=content_type,
             post=comment_post,
-            published=comment_published
         )
+        new_comment.save()
+        new_comment.published = comment_published
         new_comment.save()
 
     return Response(status=status.HTTP_201_CREATED)
