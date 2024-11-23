@@ -206,6 +206,19 @@ def delete_post(request, author_id, post_id):
 @get_all_public_posts_docs
 @api_view(['GET'])
 def get_all_public_posts(request):
+    # auth_header = request.headers['Authorization']
+    # # auth_header is going to equal something like Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+    # # so split this and decode the base64 value which will give me user:password
+    # password="test"
+    # username="jas"
+    # validCred = RemoteNode.objects.filter(type="incoming",username=username,password=password)
+    # if len(validCred)==1:
+    #     #Succussfully authenticated
+    #     pass
+    # else:
+    #     #could not find credentials 
+    #     pass
+    
     public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
     serialized_posts = [PostSummarySerializer(post).data for post in public_posts]
     return Response({"posts": serialized_posts}, status=200)

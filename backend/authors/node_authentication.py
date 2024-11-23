@@ -15,7 +15,7 @@ class NodeBasicAuthentication(BaseAuthentication):
         username, password = decoded_auth.split(':')
 
         try:
-            node = RemoteNode.objects.get(username=username, password=password, is_active=True)
+            node = RemoteNode.objects.get(username=username, password=password, type="incoming", is_active=True)
         except RemoteNode.DoesNotExist:
             raise AuthenticationFailed('Invalid node credentials')
 
