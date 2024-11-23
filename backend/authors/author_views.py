@@ -398,29 +398,50 @@ def inbox(request, author_id):
     
     new_item = request.data
     
-    print(str(new_item))
     item_type = new_item.get('type')
-    print(item_type)
     
     if item_type == "post":
-        author_id = new_item['author']['id'].split('/')
-        author_serial = author_id[-1]
-        host = new_item['author']['host']
-        author = Author.objects.get(host=host, id=author_serial)
+        post_id = new_item['id']
 
-        post_published = new_item.get('published', timezone.now())
+        if not Post.objects.filter(fqid=post_id).exists():  # if post doesn't exist in db yet
+            author_id = new_item['author']['id']
+            host = new_item['author']['host']
+            post_published = new_item.get('published', timezone.now())
 
-        new_post = Post(
-            title=new_item['title'],
-            description=new_item['description'],
-            contentType=new_item['contentType'],
-            content=new_item['content'],
-            author=author,
-            visibility=new_item['visibility']
-        )
-        new_post.save()
-        new_post.published = post_published
-        new_post.save()
+            author_check = Author.objects.filter(fqid=author_id)
+
+            if author_check:
+                author = author_check.first()
+            else:
+                author = Author.objects.create(
+                    host=host,
+                    display_name=new_item['author']['displayName'],
+                    username=author_id,
+                    github=new_item['author']['github'],
+                    profile_image=new_item['author']['profileImage'],
+                    page=new_item['author']['page'],
+                    fqid=author_id
+                )
+
+            new_post = Post(
+                title=new_item['title'],
+                description=new_item['description'],
+                contentType=new_item['contentType'],
+                content=new_item['content'],
+                author=author,
+                visibility=new_item['visibility'],
+                fqid=post_id
+            )
+            new_post.save()
+            new_post.published = post_published
+            new_post.save()
+        
+        else:   # if post exists in db then there was an edit to the post
+            post = Post.objects.get(fqid=post_id)
+            post.title = new_item['title']
+            post.description = new_item['description']
+            post.content = new_item['content']
+            post.save()
 
     elif item_type == "follow":
         actor_info = extract_author_info(new_item['actor'])
