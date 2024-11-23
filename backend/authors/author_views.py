@@ -449,17 +449,20 @@ def inbox(request, author_id):
 
         local_author = get_object_or_404(Author, fqid=object_fqid)
 
-        remote_author, _ = Author.objects.get_or_create(
-            host=actor_info['host'],
-            username=actor_info['username'],  # Ensure username is set
-            defaults={
-                'display_name': actor_info['display_name'],
-                'github': actor_info['github'],
-                'profile_image': actor_info['profile_image'],
-                'page': actor_info['page']
-            }
-        )
+        remote_author_check = Author.objects.filter(fqid=actor_info['fqid'])
 
+        if remote_author_check.exists():
+            remote_author = remote_author_check.first()
+        else:
+            remote_author = Author.objects.create(
+                host=actor_info['host'],
+                display_name=actor_info['display_name'],
+                username=actor_info['fqid'],
+                github=actor_info['github'],
+                profile_image=actor_info['profile_image'],
+                page=actor_info['page'],
+                fqid=actor_info['fqid'],
+            )
 
         new_follow = Follow(
             user=local_author,
