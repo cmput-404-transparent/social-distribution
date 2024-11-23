@@ -105,13 +105,8 @@ class SiteConfiguration(models.Model):
 
 
 class RemoteNode(models.Model):
-    url = models.URLField()
-    username = models.CharField(max_length=250)
-    password = models.CharField(max_length=250, default="password")
-    # type = models.CharField(max_length=100, default="incoming")
-    is_active = models.BooleanField(default=True)  # To easily enable/disable nodes
- 
-class toconnectIncoming(models.Model):
     url = models.URLField(unique=True)
     username = models.CharField(max_length=250)
     password = models.CharField(max_length=250, default="password")
+    is_active = models.BooleanField(default=True)  # To easily enable/disable nodes
+ 

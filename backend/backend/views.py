@@ -19,52 +19,67 @@ def index(request):
 
 # Testing fetching authors
 @api_view(['GET'])
-def test_remote_node_connection(request):  
+def test_remote_node_connection(request):
     """
     Fetch authors from all connected remote nodes.
     """
     remote_nodes = RemoteNode.objects.all()  # Get all connected nodes
-
     if not remote_nodes.exists():
         return Response({"message": "No remote nodes found."}, status=status.HTTP_404_NOT_FOUND)
 
     results = []
     for node in remote_nodes:
-        try:
-            # Fetch authors from the remote node
-            response = requests.get(
-                f"{node.url}/api/authors/",
-                auth=HTTPBasicAuth(node.username, node.password)  # Use saved credentials
-            )
-            if response.status_code == 200:
-                authors_data = response.json().get("authors", [])  # Extract authors list
-                for author_data in authors_data:
-                    # Save each author using save_remote_author
-                    author = save_remote_author(author_data)
-                    if author:
-                        results.append({
-                            "node": node.url,
-                            "author": author.fqid,  # Include the fqid for reference
-                            "status": "saved",
-                        })
-                    else:
-                        results.append({
-                            "node": node.url,
-                            "author_data": author_data,
-                            "status": "failed",
-                        })
-            else:
+        page = 1
+        while True:
+            try:
+                # Fetch authors from the remote node
+                response = requests.get(
+                    f"{node.url}/api/authors/?page={page}&size=10",
+                    auth=HTTPBasicAuth(node.username, node.password)  
+                )
+                if response.status_code == 200:
+                    authors_data = response.json().get("authors", [])
+                    if not authors_data:  # Stop if no autjors 
+                        break
+
+                    # Save author
+                    for author_data in authors_data:
+                        author = save_remote_author(author_data)
+                        if author:
+                            results.append({
+                                "node": node.url,
+                                "author": author.fqid,
+                                "status": "saved",
+                            })
+                        else:
+                            results.append({
+                                "node": node.url,
+                                "author_data": author_data,
+                                "status": "failed",
+                            })
+
+                    page += 1  # next page
+                # elif response.status_code == 404:
+                #     results.append({
+                #         "node": node.url,
+                #         "error": f"No more pages: {response.text}"
+                #     })
+                #     break
+                else:
+                    results.append({
+                        "node": node.url,
+                        "error": f"Failed with status {response.status_code}: {response.text}"
+                    })
+                    break
+            except requests.RequestException as e:
                 results.append({
                     "node": node.url,
-                    "error": f"Failed with status {response.status_code}: {response.text}"
+                    "error": str(e)
                 })
-        except requests.RequestException as e:
-            results.append({
-                "node": node.url,
-                "error": str(e)
-            })
+                break
 
     return Response(results, status=status.HTTP_200_OK)
+
 
 
 

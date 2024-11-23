@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('authors', '0022_remotenode_is_active'),
+        ('authors', '0021_remove_remotenode_token_remotenode_is_active_and_more'),
     ]
 
     operations = [
