@@ -11,7 +11,6 @@ from authors.models import RemoteNode  # Assuming you have a RemoteNode model
 
 from authors.models import Author
 from posts.models import Comment, Like, Post
-from authors.serializers import AuthorSummarySerializer 
 
 def index(request):
     return render(request, 'index.html')
@@ -27,6 +26,7 @@ def test_remote_node_connection(request):
     if not remote_nodes.exists():
         return Response({"message": "No remote nodes found."}, status=status.HTTP_404_NOT_FOUND)
 
+    authors_list = []
     results = []
     for node in remote_nodes:
         page = 1
@@ -46,12 +46,14 @@ def test_remote_node_connection(request):
                     for author_data in authors_data:
                         author = save_remote_author(author_data)
                         if author:
-                            # Serialize the author using AuthorSerializer
-                            serialized_author = AuthorSummarySerializer(author).data
-                            results.append({
-                                "node": node.url,
-                                 "author": serialized_author,
-                                "status": "saved",
+                            authors_list.append({
+                                "type": "author",
+                                "id": author.fqid,
+                                "host": author.host,
+                                "displayName": author.display_name,
+                                "github": author.github,
+                                "profileImage": author.profile_image,
+                                "page": author.page,
                             })
                         else:
                             results.append({
@@ -69,7 +71,10 @@ def test_remote_node_connection(request):
                     "error": str(e)
                 })
                 break
-
+    results = {
+        "type": "authors",
+        "authors": authors_list,
+    }    
     return Response(results, status=status.HTTP_200_OK)
 
 
