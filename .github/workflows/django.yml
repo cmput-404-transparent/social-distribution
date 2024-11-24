@@ -31,9 +31,11 @@ jobs:
         node-version: '16'
     - name: Install frontend dependencies and build
       working-directory: frontend
+      env:
+        CI: false
       run: |
         npm install
-        CI=false npm run build
+        npm run build
     - name: Run Tests
       run: |
         cd backend/
