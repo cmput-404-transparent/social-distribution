@@ -746,7 +746,40 @@ class InboxTests(APITestCase):
 
     def test_share_public_images_with_remote(self):
         url = reverse('api:authors:inbox', args=[self.author.id])
-        # TODO: idk what this user story means yet
+        post_id = "http://nodebbbb/api/authors/222/posts/249"
+
+        likes = LikesSerializer({
+            'page': self.post.page,
+            'id': self.post.fqid + "/likes",
+            'page_number': 1,
+            'size': 5,
+            'count': 0,
+            'src': [],
+        }).data
+
+        post_object = {
+            "type": "post",
+            "title": self.post.title,
+            "id": post_id,
+            "page": self.post.page,
+            "description": self.post.description,
+            "contentType": self.post.contentType,
+            "content": "http://localhost:8000/media/images/test_image.png",
+            "author": AuthorSummarySerializer(self.post.author).data,
+            "likes": likes,
+            "published": self.post.published,
+            "visibility": "DELETED"
+        }
+
+        response = self.client.post(url, post_object, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)     # check that post was created
+        new_post = Post.objects.filter(fqid=post_id)
+        self.assertTrue(new_post.exists())
+        
+        new_post = new_post.first()
+        image_response = self.client.get(new_post.content)
+        self.assertEqual(image_response.status_code, status.HTTP_200_OK)    # check that image is public and visible
+
     
     def test_follow_remote_author(self):
         url = reverse('api:authors:inbox', args=[self.author.id])
