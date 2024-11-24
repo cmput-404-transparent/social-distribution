@@ -266,6 +266,40 @@ def manage_follow(request, author_id):
             follow = Follow.objects.get(user=author, follower=follower)
             follow.status = "FOLLOWED"
             follow.save()
+
+            if author.remote_node:
+                 remote_posts_url = f"{author.remote_node.url}/api/authors/{author.id}/posts/"
+                 response = requests.get(remote_posts_url) 
+
+                 if response.status_code == 200:
+                    remote_posts_data = response.json()
+                    remote_posts = remote_posts_data.get('posts', [])
+
+                    relevant_posts = [
+                        post for post in remote_posts if post.get('visibility') in ['PUBLIC', 'FRIENDS']
+                    ]
+
+                    #double check 
+                    for post_data in relevant_posts:
+                        post_fqid = post_data.get('fqid')
+                        if not post_fqid:
+                            continue  
+
+                    Post.objects.update_or_create(
+                            fqid=post_fqid,
+                            defaults={
+                                "title": post_data.get('title', ''),
+                                "description": post_data.get('description', ''),
+                                "contentType": post_data.get('contentType', ''),
+                                "content": post_data.get('content', ''),
+                                "author": follower,
+                                "visibility": post_data.get('visibility', 'PUBLIC'),
+                    
+                            }
+                        )
+                 else:
+                    return Response({"detail": "Failed to fetch remote posts."}, status=response.status_code)
+
         elif request.method == "DELETE":
             # remove follow request
             follow = Follow.objects.get(user=author, follower=follower)
