@@ -186,7 +186,7 @@ const MakePost = () => {
 
   useEffect(() => {
     if (commonmarkImage) {
-      let commonmarkImageText = `![Image](/media/images/${commonmarkImage})`
+      let commonmarkImageText = `![Image](${window.location.origin}/media/images/${commonmarkImage})`
       setContent(content + commonmarkImageText);
       setCommonmarkImage('');
     }
