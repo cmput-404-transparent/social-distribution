@@ -65,17 +65,7 @@ def test_remote_node_connection(request):
                             })
 
                     page += 1  # next page
-                # elif response.status_code == 404:
-                #     results.append({
-                #         "node": node.url,
-                #         "error": f"No more pages: {response.text}"
-                #     })
-                #     break
                 else:
-                    results.append({
-                        "node": node.url,
-                        "error": f"Failed with status {response.status_code}: {response.text}"
-                    })
                     break
             except requests.RequestException as e:
                 results.append({
