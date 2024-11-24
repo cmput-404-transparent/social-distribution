@@ -13,7 +13,10 @@ from rest_framework.authtoken.models import Token
 from django.db.models import Q
 from rest_framework import status
 import base64
+from rest_framework.decorators import authentication_classes, permission_classes
+from .node_authentication import NodeBasicAuthentication
 from django.utils import timezone
+
 #documentation 
 from .docs import *
 
@@ -392,6 +395,7 @@ def extract_author_info(actor):
     }
 
 @api_view(['POST'])
+@authentication_classes([NodeBasicAuthentication])
 def inbox(request, author_id):
     if request.method != 'POST':
         return Response(status=status.HTTP_403_FORBIDDEN)

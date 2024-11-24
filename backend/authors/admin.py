@@ -59,7 +59,9 @@ class AuthorAdmin(admin.ModelAdmin):
         # Save the changes
         obj.save()
 
+
+
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(Follow)
 admin.site.register(SiteConfiguration, SiteConfigurationAdmin)
-admin.site.register(RemoteNode)
+admin.site.register(RemoteNode)  
