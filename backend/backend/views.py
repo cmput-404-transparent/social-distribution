@@ -94,7 +94,9 @@ def save_remote_author(author_data):
                 "github": author_data.get("github", ""),
                 "profile_image": author_data.get("profileImage", ""), 
                 "page": author_data.get("page", ""),  # Add the page field
+                "username": f"{author_data.get('id')}",  
             },
+
         )
         return author  
     except IntegrityError:

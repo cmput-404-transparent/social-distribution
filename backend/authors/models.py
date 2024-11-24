@@ -66,6 +66,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
     objects = AuthorManager()
 
     USERNAME_FIELD = 'username'
+    
 
     def save(self, *args, **kwargs):
         # save fqid on object save
