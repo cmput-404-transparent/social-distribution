@@ -16,6 +16,7 @@ import base64
 from rest_framework.decorators import authentication_classes, permission_classes
 from .node_authentication import NodeBasicAuthentication
 
+from django.utils import timezone
 #documentation 
 from .docs import *
 
@@ -381,6 +382,18 @@ def manage_remote_nodes(request):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
+def extract_author_info(actor):
+    """Helper function to extract author information."""
+    return {
+        'fqid': actor.get('id'),
+        'host': actor.get('host'),
+        'display_name': actor.get('displayName'),
+        'github': actor.get('github'),
+        'profile_image': actor.get('profileImage'),
+        'page': actor.get('page'),
+        'username': actor.get('username', actor.get('id').split('/')[-1])  # Derive username if not provided
+    }
+
 @api_view(['POST'])
 @authentication_classes([NodeBasicAuthentication])
 def inbox(request, author_id):
@@ -389,125 +402,143 @@ def inbox(request, author_id):
     
     new_item = request.data
     
-    print(str(new_item))
     item_type = new_item.get('type')
-    print(item_type)
+    
     if item_type == "post":
-        author_id = new_item['author']['id'].split('/')
-        author_serial = author_id[-1]
-        host = new_item['author']['host']
-        author = Author.objects.get(host=host, id=author_serial)    # if receiving a post from someone, the remote author should already be in the db
+        post_id = new_item['id']
 
-        post_published = new_item['published']
+        if not Post.objects.filter(fqid=post_id).exists():  # if post doesn't exist in db yet
+            author_id = new_item['author']['id']
+            host = new_item['author']['host']
+            post_published = new_item.get('published', timezone.now())
 
-        new_post = Post(
-            title=new_item['title'],
-            description=new_item['description'],
-            contentType=new_item['contentType'],
-            content=new_item['content'],
-            author=author,
-            visibility=new_item['visibility']
-        )
-        new_post.save()
+            author_check = Author.objects.filter(fqid=author_id)
 
-        new_post.published = post_published
-        new_post.save()
-        print("it works")
-    if item_type == "follow":
-        actor_fqid = new_item['actor']['id']
-        actor_host = new_item['actor']['host']
-        actor_display_name = new_item['actor']['displayName']
-        actor_github = new_item['actor']['github']
-        actor_profile_image = new_item['actor']['profileImage']
-        actor_page = new_item['actor']['page']
+            if author_check:
+                author = author_check.first()
+            else:
+                author = Author.objects.create(
+                    host=host,
+                    display_name=new_item['author']['displayName'],
+                    username=author_id,
+                    github=new_item['author']['github'],
+                    profile_image=new_item['author']['profileImage'],
+                    page=new_item['author']['page'],
+                    fqid=author_id
+                )
 
+            new_post = Post(
+                title=new_item['title'],
+                description=new_item['description'],
+                contentType=new_item['contentType'],
+                content=new_item['content'],
+                author=author,
+                visibility=new_item['visibility'],
+                fqid=post_id
+            )
+            new_post.save()
+            new_post.published = post_published
+            new_post.save()
+        
+        else:   # if post exists in db then there was an edit to the post
+            post = Post.objects.get(fqid=post_id)
+            post.title = new_item['title']
+            post.description = new_item['description']
+            post.content = new_item['content']
+            post.save()
+
+            return Response(status=status.HTTP_200_OK)
+
+    elif item_type == "follow":
+        actor_info = extract_author_info(new_item['actor'])
         object_fqid = new_item['object']['id']
-
-        remote_author, _ = Author.objects.get_or_create(
-            host=actor_host,
-            display_name=actor_display_name,
-            github=actor_github,
-            profile_image=actor_profile_image,
-            page=actor_page
-        )
 
         local_author = get_object_or_404(Author, fqid=object_fqid)
 
-        new_follow = Follow(
+        remote_author_check = Author.objects.filter(fqid=actor_info['fqid'])
+
+        if remote_author_check.exists():
+            remote_author = remote_author_check.first()
+        else:
+            remote_author = Author.objects.create(
+                host=actor_info['host'],
+                display_name=actor_info['display_name'],
+                username=actor_info['fqid'],
+                github=actor_info['github'],
+                profile_image=actor_info['profile_image'],
+                page=actor_info['page'],
+                fqid=actor_info['fqid'],
+            )
+
+        new_follow, created = Follow.objects.get_or_create(
             user=local_author,
             follower=remote_author,
             status="REQUESTED"
         )
-        new_follow.save()
+        return Response(status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
-    if item_type == "like":
-        actor_fqid = new_item['actor']['id']
-        actor_host = new_item['actor']['host']
-        actor_display_name = new_item['actor']['displayName']
-        actor_github = new_item['actor']['github']
-        actor_profile_image = new_item['actor']['profileImage']
-        actor_page = new_item['actor']['page']
-
+    elif item_type == "like":
+        actor_info = extract_author_info(new_item['author'])
         object_fqid = new_item['object']
-
         like_id = new_item['id']
-        like_published = new_item['published']
+        like_published = new_item.get('published', timezone.now())
 
-        remote_author, created = Author.objects.get_or_create(
-            host=actor_host,
-            display_name=actor_display_name,
-            github=actor_github,
-            profile_image=actor_profile_image,
-            page=actor_page
-        )
+        remote_author_check = Author.objects.filter(fqid=actor_info['fqid'])
 
-        new_like = Like(
+        if remote_author_check.exists():
+            remote_author = remote_author_check.first()
+        else:
+            remote_author = Author.objects.create(
+                host=actor_info['host'],
+                display_name=actor_info['display_name'],
+                username=actor_info['fqid'],
+                github=actor_info['github'],
+                profile_image=actor_info['profile_image'],
+                page=actor_info['page'],
+                fqid=actor_info['fqid'],
+            )
+
+        new_like, created = Like.objects.get_or_create(
             author=remote_author,
             object=object_fqid,
-            fqid=like_id
+            fqid=like_id,
         )
-        new_like.save()
-
         new_like.published = like_published
         new_like.save()
 
-    if item_type == "comment":
-        actor_fqid = new_item['actor']['id']
-        actor_host = new_item['actor']['host']
-        actor_display_name = new_item['actor']['displayName']
-        actor_github = new_item['actor']['github']
-        actor_profile_image = new_item['actor']['profileImage']
-        actor_page = new_item['actor']['page']
+        return Response(status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
+    elif item_type == "comment":
+        actor_info = extract_author_info(new_item['author'])
         comment = new_item['comment']
         content_type = new_item['contentType']
         comment_post_fqid = new_item['post']
-        comment_published = new_item['published']
+        comment_published = new_item.get('published', timezone.now())
 
-        filter_author = Author.objects.filter(fqid=actor_fqid)
+        remote_author_check = Author.objects.filter(fqid=actor_info['fqid'])
 
-        if filter_author.exists():
-            remote_author = filter_author.first()
+        if remote_author_check.exists():
+            remote_author = remote_author_check.first()
         else:
-            remote_author = Author(
-                host=actor_host,
-                display_name=actor_display_name,
-                github=actor_github,
-                profile_image=actor_profile_image,
-                page=actor_page
+            remote_author = Author.objects.create(
+                host=actor_info['host'],
+                display_name=actor_info['display_name'],
+                username=actor_info['fqid'],
+                github=actor_info['github'],
+                profile_image=actor_info['profile_image'],
+                page=actor_info['page'],
+                fqid=actor_info['fqid'],
             )
-            remote_author.save()
 
-        comment_post = get_object_or_404(Comment, fqid=comment_post_fqid)
+        comment_post = get_object_or_404(Post, fqid=comment_post_fqid)
 
         new_comment = Comment(
             author=remote_author,
             comment=comment,
             contentType=content_type,
-            post=comment_post
+            post=comment_post,
         )
         new_comment.save()
-
         new_comment.published = comment_published
         new_comment.save()
 

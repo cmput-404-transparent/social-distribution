@@ -48,7 +48,13 @@ def test_remote_node_connection(request):
                         if author:
                             results.append({
                                 "node": node.url,
-                                "author": author.fqid,
+                                 "author": {
+                                    "fqid": author.fqid,
+                                    "display_name": author.display_name,
+                                    "host": author.host,
+                                    "github": author.github,
+                                    "profile_image": author.profile_image,
+                                },
                                 "status": "saved",
                             })
                         else:
@@ -89,14 +95,14 @@ def save_remote_author(author_data):
     """
     try:
         # Save or update the author based on fqid
-        author, created = Author.objects.get_or_create(
+        author, created = Author.objects.update_or_create(
             fqid=author_data.get("id"),
             defaults={
                 "host": author_data.get("host"),
                 "display_name": author_data.get("displayName"),
                 "github": author_data.get("github", ""),
-                "profile_image": author_data.get("profileImage", ""),
-                "username": f"{author_data.get('host')}{author_data.get('id')}",  
+                "profile_image": author_data.get("profileImage", ""), 
+                "page": author_data.get("page", ""),  # Add the page field
             },
         )
         return author  
