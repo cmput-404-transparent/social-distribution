@@ -476,7 +476,6 @@ def inbox(request, author_id):
             status="REQUESTED"
         )
         return Response(status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
-    
 
     elif item_type == "like":
         actor_info = extract_author_info(new_item['author'])
