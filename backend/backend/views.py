@@ -95,8 +95,9 @@ def save_remote_author(author_data):
                 "profile_image": author_data.get("profileImage", ""), 
                 "page": author_data.get("page", ""),  # Add the page field
                 "username": f"{author_data.get('id')}",  
-
+                "is_remote": True,
             },
+
         )
         return author  
     except IntegrityError:

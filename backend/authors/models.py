@@ -66,6 +66,8 @@ class Author(AbstractBaseUser, PermissionsMixin):
     objects = AuthorManager()
 
     USERNAME_FIELD = 'username'
+    
+    is_remote = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         # save fqid on object save
@@ -111,8 +113,8 @@ class SiteConfiguration(models.Model):
 
 
 class RemoteNode(models.Model):
-    url = models.URLField(unique=True)
+
     username = models.CharField(max_length=250)
-    password = models.CharField(max_length=250, default="password")
+    password = models.CharField(max_length=250)
     is_active = models.BooleanField(default=True)  # To easily enable/disable nodes
  
