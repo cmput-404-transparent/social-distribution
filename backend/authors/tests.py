@@ -4,6 +4,8 @@ from rest_framework import status
 from django.urls import reverse
 from authors.models import Author, Follow, RemoteNode
 from posts.models import Post, Comment, Like
+from authors.serializers import AuthorSummarySerializer
+from posts.serializers import LikesSerializer
 
 from rest_framework.authtoken.models import Token
 from unittest.mock import patch
@@ -597,3 +599,178 @@ class PostFeatureTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn(self.post.title, str(response.content))
+
+
+class InboxTests(APITestCase):
+
+    def setUp(self):
+        self.author = Author.objects.create(username="testuser", display_name="Test User")
+        self.password = "testpass"
+        self.author.set_password(self.password)
+        self.author.save()
+
+        self.post = Post.objects.create(
+            title="Test Post",
+            description="Test Description",
+            content="This is the content",
+            author=self.author,
+            visibility="PUBLIC"
+        )
+
+    def test_send_posts_to_remote_followers(self):
+        url = reverse('api:authors:inbox', args=[self.author.id])
+        post_id = "http://nodebbbb/api/authors/222/posts/249"
+        title = "A post title about a post about web dev"
+
+        post_object = {
+            "type": "post",
+            "title": title,
+            "id": post_id,
+            "page": "http://nodebbbb/authors/222/posts/293",
+            "description": "This post discusses stuff -- brief",
+            "contentType": "text/plain",
+            "content": "This is a short post about web development.",
+            "author": {
+                "type": "author",
+                "id": "http://nodebbbb/api/authors/222",
+                "host": "http://nodebbbb/api/",
+                "displayName": "Lara Croft",
+                "page": "http://nodebbbb/authors/222",
+                "github": "http://github.com/laracroft",
+                "profileImage": "http://nodebbbb/api/authors/222/posts/217/image"
+            },
+            "likes": {
+                "type": "likes",
+                "page": "http://nodeaaaa/authors/222/posts/249",
+                "id": "http://nodeaaaa/api/authors/222/posts/249/likes",
+                "page_number": 1,
+                "size": 50,
+                "count": 9001,
+                "src": [
+                {
+                    "type": "like",
+                    "author": {
+                    "type": "author",
+                    "id": "http://nodeaaaa/api/authors/111",
+                    "page": "http://nodeaaaa/authors/greg",
+                    "host": "http://nodeaaaa/api/",
+                    "displayName": "Greg Johnson",
+                    "github": "http://github.com/gjohnson",
+                    "profileImage": "https://i.imgur.com/k7XVwpB.jpeg"
+                    },
+                    "published": "2015-03-09T13:07:04+00:00",
+                    "id": "http://nodeaaaa/api/authors/111/liked/166",
+                    "object": "http://nodebbbb/authors/222/posts/249"
+                }
+                ]
+            },
+            "published": "2015-03-09T13:07:04+00:00",
+            "visibility": "PUBLIC"
+        }
+
+        response = self.client.post(url, post_object, format='json')
+        new_post = Post.objects.filter(fqid=post_id)
+        self.assertTrue(new_post.exists())      # check for the id
+        new_post = new_post.first()
+        self.assertEqual(new_post.title, title)     # check for the title
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_resend_edited_posts(self):
+        url = reverse('api:authors:inbox', args=[self.author.id])
+        new_title = "A new post title about a post about web dev"
+        post_id = self.post.fqid
+
+        likes = LikesSerializer({
+            'page': self.post.page,
+            'id': self.post.fqid + "/likes",
+            'page_number': 1,
+            'size': 5,
+            'count': 0,
+            'src': [],
+        }).data
+
+        post_object = {     # post object version of self.post with new title
+            "type": "post",
+            "title": new_title,
+            "id": post_id,
+            "page": self.post.page,
+            "description": self.post.description,
+            "contentType": self.post.contentType,
+            "content": self.post.content,
+            "author": AuthorSummarySerializer(self.post.author).data,
+            "likes": likes,
+            "published": self.post.published,
+            "visibility": self.post.visibility
+        }
+
+        response = self.client.post(url, post_object, format='json')
+        new_post = Post.objects.filter(fqid=post_id)
+        self.assertTrue(new_post.exists())      # check for the id
+        new_post = new_post.first()
+        self.assertEqual(new_post.title, new_title)     # check that title was updated
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+    def test_resend_deleted_posts(self):
+        url = reverse('api:authors:inbox', args=[self.author.id])
+        post_id = self.post.fqid
+
+        likes = LikesSerializer({
+            'page': self.post.page,
+            'id': self.post.fqid + "/likes",
+            'page_number': 1,
+            'size': 5,
+            'count': 0,
+            'src': [],
+        }).data
+
+        post_object = {     # post object version of self.post with visibility = "DELETED"
+            "type": "post",
+            "title": self.post.title,
+            "id": post_id,
+            "page": self.post.page,
+            "description": self.post.description,
+            "contentType": self.post.contentType,
+            "content": self.post.content,
+            "author": AuthorSummarySerializer(self.post.author).data,
+            "likes": likes,
+            "published": self.post.published,
+            "visibility": "DELETED"
+        }
+
+        response = self.client.post(url, post_object, format='json')
+        new_post = Post.objects.filter(fqid=post_id)
+        self.assertTrue(new_post.exists())
+        self.assertTrue(new_post.first().is_deleted)    # check that post is deleted
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_share_public_images_with_remote(self):
+        url = reverse('api:authors:inbox', args=[self.author.id])
+        # TODO: idk what this user story means yet
+    
+    def test_follow_remote_author(self):
+        url = reverse('api:authors:inbox', args=[self.author.id])
+        remote_author_id = "http://nodeaaaa/api/authors/111"
+        
+        follow_request_object = {
+            "type": "follow",      
+            "summary": f"Greg wants to follow {self.author.display_name}",
+            "actor": {
+                "type": "author",
+                "id": remote_author_id,
+                "host": "http://nodeaaaa/api/",
+                "displayName": "Greg Johnson",
+                "github": "http://github.com/gjohnson",
+                "profileImage": "https://i.imgur.com/k7XVwpB.jpeg",
+                "page": "http://nodeaaaa/authors/greg"
+            },
+            "object": AuthorSummarySerializer(self.author).data,
+        }
+
+        response = self.client.post(url, follow_request_object, format='json')
+        new_remote_author_check = Author.objects.filter(fqid=remote_author_id)
+        self.assertTrue(new_remote_author_check.exists())
+
+        new_follow_request = Follow.objects.filter(user=self.author, follower=new_remote_author_check.first())
+        self.assertTrue(new_follow_request.exists())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
