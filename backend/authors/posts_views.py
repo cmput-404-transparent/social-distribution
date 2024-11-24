@@ -12,6 +12,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.core.files.storage import default_storage
 import requests
 from requests.auth import HTTPBasicAuth
+import json
 
 #documentation
 from .docs import *
@@ -80,6 +81,7 @@ def create_new_post(request, author_id):
 
 def send_post_to_remote(author, post):
     post_object = PostSummarySerializer(post).data
+    json_post = json.dumps(post_object)
 
     if post.visibility in ['PUBLIC', 'UNLISTED']:
         # public and unlisted posts should be sent to all followers
@@ -87,14 +89,18 @@ def send_post_to_remote(author, post):
         followers = Author.objects.filter(id__in=follower_ids)
         for follower in followers:
             if follower.remote_node and follower.remote_node.is_active == True:
-                requests.post(follower.fqid + "/inbox/", data=post_object, auth=HTTPBasicAuth(follower.remote_node.username, follower.remote_node.password))
+                requests.post(follower.fqid + "/inbox/", data=json_post,
+                              auth=HTTPBasicAuth(follower.remote_node.username, follower.remote_node.password),
+                              headers={"Content-Type": "application/json"}, timeout=5)
     else:
         # friends only should only be sent to remote friends
         friend_ids = Follow.get_friends(author)
         friends = Author.objects.filter(id__in=friend_ids)
         for friend in friends:
             if friend.remote_node and friend.remote_node.is_active == True:
-                requests.post(friend.fqid + "/inbox/", data=post_object, auth=HTTPBasicAuth(friend.remote_node.username, friend.remote_node.password))
+                requests.post(friend.fqid + "/inbox/", data=json_post,
+                              auth=HTTPBasicAuth(friend.remote_node.username, friend.remote_node.password),
+                              headers={"Content-Type": "application/json"}, timeout=5)
 
 # # List recent posts by an author
 def list_recent_posts(request, author_id):
