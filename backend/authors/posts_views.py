@@ -201,6 +201,7 @@ def update_existing_post(request, author_id, post_id):
 
     post.save()
 
+    send_post_to_remote(post)
 
     response_data = {
         'id': post.id,
