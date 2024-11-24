@@ -48,7 +48,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
     github = models.URLField(blank=True, null=True)
     profile_image = models.URLField(blank=True, default="")
     page = models.URLField(blank=True, null=True)
-    username = models.CharField(max_length=999, unique=True)
+    username = models.CharField(max_length=250, unique=True)
     password = models.CharField(max_length=500)
     fqid = models.URLField(blank=True, null=True)
 
