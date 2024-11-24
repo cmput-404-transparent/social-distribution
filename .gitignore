@@ -277,6 +277,7 @@ dist
 
 backend/media/images/*.*
 !backend/media/images/
+!backend/media/images/test_image.jpg
 
 staticfiles/
 build/
