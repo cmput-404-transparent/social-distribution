@@ -52,6 +52,12 @@ class Author(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=500)
     fqid = models.URLField(blank=True, null=True)
 
+    remote_node = models.ForeignKey(
+        'RemoteNode',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
