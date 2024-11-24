@@ -9,6 +9,7 @@ class Post(models.Model):
         ('PUBLIC', 'Public'),
         ('UNLISTED', 'Unlisted'),
         ('FRIENDS', 'Friends Only'),
+        ('DELETED', 'Deleted Post'),
     ]
 
     CONTENT_TYPE_CHOICES = [

@@ -73,13 +73,14 @@ def create_new_post(request, author_id):
     )
     new_post.save()
 
-    send_post_to_remote(author, new_post)
+    send_post_to_remote(new_post)
 
     serializer = PostSerializer(new_post)
 
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-def send_post_to_remote(author, post):
+def send_post_to_remote(post):
+    author = post.author
     post_object = PostSummarySerializer(post).data
     json_post = json.dumps(post_object)
 
@@ -225,7 +226,9 @@ def delete_post(request, author_id, post_id):
             shared_posts.update(is_deleted=True)
 
         post.is_deleted = True  # Mark as deleted
+        post.visibility = 'DELETED'
         post.save()
+        send_post_to_remote(post)  # resend the deleted post to remote followers/friends
         return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_403_FORBIDDEN)  # Forbidden if not the author
 
