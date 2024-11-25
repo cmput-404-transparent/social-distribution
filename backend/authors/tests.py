@@ -604,7 +604,7 @@ class PostFeatureTests(APITestCase):
 class InboxTests(APITestCase):
 
     def setUp(self):
-        self.author = Author.objects.create(username="testuser", display_name="Test User")
+        self.author = Author.objects.create(username="testuser", display_name="Test User", fqid="http://localhost:8000/api/authors/1")
         self.password = "testpass"
         self.author.set_password(self.password)
         self.author.save()
