@@ -62,6 +62,7 @@ export default function Profile() {
 
   const authorId = localStorage.getItem('authorId');
   const { profileAuthorId } = useParams();
+  let encodedAuth = '';
 
   useEffect(() => {
     // get profile information
@@ -92,7 +93,7 @@ export default function Profile() {
       const url =profileInfo.host
       const updatedUrl = url.replace("/api/", "");
       if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
-        let encodedAuth = '';
+        
         fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${updatedUrl}`, {
           method: 'GET',
           headers: {
