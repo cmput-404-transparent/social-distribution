@@ -18,6 +18,7 @@ from .node_authentication import NodeBasicAuthentication
 from django.utils import timezone
 from requests.auth import HTTPBasicAuth
 import json
+from django.views.decorators.csrf import csrf_exempt
 #documentation 
 from .docs import *
 
@@ -454,6 +455,7 @@ def extract_author_info(actor):
         'username': actor.get('username', actor.get('id').split('/')[-1])  # Derive username if not provided
     }
 
+@csrf_exempt
 @api_view(['POST'])
 @authentication_classes([NodeBasicAuthentication])
 def inbox(request, author_id):
