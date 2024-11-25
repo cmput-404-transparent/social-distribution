@@ -19,6 +19,7 @@ from django.utils import timezone
 from requests.auth import HTTPBasicAuth
 import json
 from django.views.decorators.csrf import csrf_exempt
+from urllib.parse import unquote
 #documentation 
 from .docs import *
 
@@ -292,6 +293,42 @@ def manage_follow(request, author_id):
     
     return Response("author and/or follower doesn't exist", status=400)
 
+@handle_follow_get_docs
+@handle_follow_put_docs
+@handle_follow_delete_docs
+@api_view(["GET", "PUT", "DELETE"])
+def handle_follow(request, author_id, foreign_author_fqid):
+    try:
+        author = Author.objects.get(id=author_id)
+        foreign_author_fqid = unquote(foreign_author_fqid)  # Decode the percent-encoded URL
+        foreign_author, _ = Author.objects.get_or_create(fqid=foreign_author_fqid)
+        
+        if request.method == 'GET':  # Check if foreign author is a follower
+            if Follow.objects.filter(user=author, follower__fqid=foreign_author_fqid).exists():
+                # Fetch the existing foreign_author from the database
+                foreign_author = Author.objects.get(fqid=foreign_author_fqid)
+                return Response({
+                    "type": "author",
+                    "id": foreign_author.fqid,
+                    "host": foreign_author.host,
+                    "displayName": foreign_author.display_name,
+                    "page": foreign_author.page,
+                    "github": foreign_author.github,
+                    "profileImage": foreign_author.profile_image,
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+        elif request.method == 'PUT' and request.user.is_authenticated:  # Add as a follower
+            Follow.objects.get_or_create(user=author, follower=foreign_author)
+            return Response(status=status.HTTP_201_CREATED)
+
+        elif request.method == 'DELETE' and request.user.is_authenticated:  # Remove as a follower
+            Follow.objects.filter(user=author, follower=foreign_author).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+    except Author.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 def fetch_remote_posts(author):
     """

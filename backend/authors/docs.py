@@ -1688,3 +1688,47 @@ get_author_likes_by_fqid_docs = swagger_auto_schema(
         )
     }
 )
+
+handle_follow_get_docs = swagger_auto_schema(
+    method="get",
+    operation_summary="Check if a foreign author is a follower",
+    operation_description="Checks whether the specified foreign author (by FQID) is a follower of the given author.",
+    responses={
+        200: openapi.Response(
+            description="The foreign author is a follower.",
+            examples={
+                "application/json": {
+                    "type": "author",
+                    "id": "https://example.com/authors/foreign-author-id",
+                    "host": "https://example.com",
+                    "displayName": "Foreign Author",
+                    "page": "https://example.com/authors/foreign-author-id",
+                    "github": "https://github.com/foreignauthor",
+                    "profileImage": "https://example.com/images/foreignauthor.jpg"
+                }
+            },
+        ),
+        404: openapi.Response(description="The foreign author is not a follower or the author does not exist."),
+    },
+)
+
+handle_follow_put_docs = swagger_auto_schema(
+    method="put",
+    operation_summary="Add a foreign author as a follower",
+    operation_description="Adds the specified foreign author as a follower of the given author.",
+    responses={
+        201: openapi.Response(description="The foreign author was added as a follower."),
+        401: openapi.Response(description="Authentication is required to perform this action."),
+    },
+)
+
+handle_follow_delete_docs = swagger_auto_schema(
+    method="delete",
+    operation_summary="Remove a foreign author as a follower",
+    operation_description="Removes the specified foreign author as a follower of the given author.",
+    responses={
+        204: openapi.Response(description="The foreign author was removed as a follower."),
+        401: openapi.Response(description="Authentication is required to perform this action."),
+        404: openapi.Response(description="The author or foreign author does not exist."),
+    },
+)
