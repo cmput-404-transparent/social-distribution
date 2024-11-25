@@ -90,7 +90,7 @@ export default function Profile() {
       const url =profileInfo.host
       const updatedUrl = url.replace("/api/", "");
       if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
-        fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${updatedUrl}}`, {
+        fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${updatedUrl}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
