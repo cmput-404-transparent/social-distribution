@@ -86,7 +86,8 @@ export default function Profile() {
     if (Object.keys(profileInfo).length !== 0) {
       // get posts
       alert(profileInfo.id);
-      if (profileInfo.id.startsWith(localStorage.getItem('host')=== false)) {
+      alert(profileInfo.id.startsWith(localStorage.getItem('host')));
+      if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
         fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${profileInfo.host}`, {
           method: 'GET',
           headers: {
