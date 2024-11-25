@@ -109,11 +109,7 @@ export default function Profile() {
           .then((data) => {
             setPosts(data.posts);
           });
-        })
-        .catch((error) => {
-          console.error('Error fetching remote nodes:', error);
-        });
-      }
+
       fetch(`${authorId}/relationship/${profileAuthorId}/`, {
         headers: {
           'Authorization': `Basic ${localStorage.getItem('authToken')}`,
@@ -156,6 +152,11 @@ export default function Profile() {
       .then((data) => {
         setFriends(data.friends)
       });
+        })
+        .catch((error) => {
+          console.error('Error fetching remote nodes:', error);
+        });
+      }
     }
 
       else {
