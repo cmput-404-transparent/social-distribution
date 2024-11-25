@@ -20,10 +20,7 @@ import {PostProfilePicture, ProfilePicture} from "../components/profilePicture";
   * date: October 20, 2024
   */
 
-useEffect(() => {
-  const host = window.location.origin;
-  localStorage.setItem('host', host);
-}, []);
+
 
 const style = {
   position: 'absolute',
@@ -68,6 +65,8 @@ export default function Profile() {
 
   useEffect(() => {
     // get profile information
+    const host = window.location.origin;
+    localStorage.setItem('host', host);
     fetch(`/api/authors/${profileAuthorId}/`, {
       headers: {
         'Authorization': `Basic ${localStorage.getItem('authToken')}`,
