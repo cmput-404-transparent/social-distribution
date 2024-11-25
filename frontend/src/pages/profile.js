@@ -87,8 +87,10 @@ export default function Profile() {
       // get posts
       alert(profileInfo.id);
       alert(profileInfo.id.startsWith(localStorage.getItem('host')));
+      const url =profileInfo.host
+      url = url.replace("/api/", "");
       if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
-        fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${encodeURIComponent(profileInfo.host)}`, {
+        fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${url}}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
