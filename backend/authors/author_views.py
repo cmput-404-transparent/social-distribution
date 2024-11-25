@@ -245,7 +245,7 @@ def follow(request):
 @api_view(['GET'])
 def get_follow_requests(request, author_id):
     author = Author.objects.get(id=author_id)
-    follow_requests = Follow.objects.filter(user=author, status="REQUESTED")
+    follow_requests = Follow.objects.filter(status="REQUESTED")
     serialized_follow_requests = [FollowRequestSerializer(follow_request).data for follow_request in follow_requests]
     response_data = {
         'type': 'followRequests',
