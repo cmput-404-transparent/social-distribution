@@ -99,7 +99,7 @@ export default function Profile() {
         })
         .then((response) => response.json())
         .then((data) => {
-          encodedAuth = data;
+          encodedAuth = data.credentials;
 
         })
         .catch((error) => {
@@ -109,7 +109,7 @@ export default function Profile() {
         fetch(`${profileInfo.id}/posts/`, {
           headers: {
             
-            'Authorization': `Basic ${encodedAuth}`,
+            'Authorization': `Basic ${localStorage.getItem('authToken')}`,
           },
           })
           .then((r) => r.json())
