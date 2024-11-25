@@ -111,9 +111,3 @@ class FollowRequestSerializer(serializers.ModelSerializer):
     def get_object(self, obj):
         return AuthorSummarySerializer(obj.user).data
 
-
-class RemoteNodeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RemoteNode
-        fields = ['id','url','username', 'token']
-        read_only_fields = ['token'] 

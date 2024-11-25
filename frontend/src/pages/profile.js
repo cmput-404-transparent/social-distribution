@@ -85,7 +85,7 @@ export default function Profile() {
   useEffect(() => {
     if (Object.keys(profileInfo).length !== 0) {
       // get posts
-      if (!profileInfo.id.startsWith(localStorage.getItem('host'))) {
+      if (profileInfo.id.startsWith(localStorage.getItem('host')=== false)) {
         fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${profileInfo.host}`, {
           method: 'GET',
           headers: {
