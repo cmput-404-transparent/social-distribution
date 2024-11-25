@@ -85,11 +85,11 @@ export default function Profile() {
   useEffect(() => {
     if (Object.keys(profileInfo).length !== 0) {
       // get posts
-      alert(profileInfo.id);
-      alert(profileInfo.id.startsWith(localStorage.getItem('host')));
+      alert(profileInfo.Fqid);
+      alert(profileInfo.Fqid.startsWith(localStorage.getItem('host')));
       const url =profileInfo.host
       const updatedUrl = url.replace("/api/", "");
-      if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
+      if (profileInfo.Fqid.startsWith(localStorage.getItem('host'))=== false) {
         let encodedAuth = '';
         fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${updatedUrl}`, {
           method: 'GET',
@@ -107,7 +107,7 @@ export default function Profile() {
         .catch((error) => {
           console.error('Error fetching remote nodes:', error);
         });
-        fetch(`${profileInfo.id}/posts/`, {
+        fetch(`${profileInfo.Fqid}/posts/`, {
           headers: {
             'Authorization': `Basic ${encodedAuth}`,
           },
@@ -118,7 +118,7 @@ export default function Profile() {
           })
       }
       else {
-        fetch(`${profileInfo.id}/posts/`, {
+        fetch(`${profileInfo.Fqid}/posts/`, {
           headers: {
             'Authorization': `Basic ${localStorage.getItem('authToken')}`,
           },
