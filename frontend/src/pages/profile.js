@@ -103,22 +103,20 @@ export default function Profile() {
         .then((response) => response.json())
         .then((data) => {
           encodedAuth = data.credentials;
-
-        })
-        .catch((error) => {
-          console.error('Error fetching remote nodes:', error);
-        });
-        alert(encodedAuth);
-        fetch(`${profileInfo.fqid}/posts/`, {
-          headers: {
-            
-            'Authorization': `Basic ${localStorage.getItem('authToken')}`,
-          },
+          alert(encodedAuth);
+          fetch(`${profileInfo.fqid}/posts/`, {
+            headers: {
+              'Authorization': `Basic ${encodedAuth}`,
+            },
           })
           .then((r) => r.json())
           .then((data) => {
             setPosts(data.posts);
-          })
+          });
+        })
+        .catch((error) => {
+          console.error('Error fetching remote nodes:', error);
+        });
       }
       else {
         fetch(`${profileInfo.id}/posts/`, {
