@@ -99,10 +99,8 @@ export default function Profile() {
         })
         .then((response) => response.json())
         .then((data) => {
-          const { username, password } = data;
-          const authString = `${username}:${password}`;
-          encodedAuth = btoa(authString);
-          localStorage.setItem('remoteAuth', encodedAuth);
+          encodedAuth = data;
+
         })
         .catch((error) => {
           console.error('Error fetching remote nodes:', error);

@@ -12,6 +12,7 @@ from authors.models import RemoteNode  # Assuming you have a RemoteNode model
 
 from authors.models import Author
 from posts.models import Comment, Like, Post
+import base64
 
 def index(request):
     return render(request, 'index.html')
@@ -21,11 +22,12 @@ def index(request):
 def remote_node_auth(request):
     try:
         remote_node = RemoteNode.objects.get(url=request.GET.get('host'))
+        credentials = f"{remote_node.username}:{remote_node.password}"
+        encoded_credentials = base64.b64encode(credentials.encode()).decode()
         return Response({
-            'username': remote_node.username,
-            'password': remote_node.password,
+            'credentials': encoded_credentials,
         }, status=status.HTTP_200_OK)
-        
+            
     except RemoteNode.DoesNotExist:
         return Response({'detail': 'Remote node not found.'}, status=status.HTTP_404_NOT_FOUND)
 
