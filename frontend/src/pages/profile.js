@@ -86,10 +86,6 @@ export default function Profile() {
   useEffect(() => {
     if (Object.keys(profileInfo).length !== 0) {
       // get posts
-      alert(profileInfo.id);
-      alert(profileInfo.id.startsWith(localStorage.getItem('host')));
-      alert(profileInfo);
-      alert(profileInfo.fqid);
       const url =profileInfo.host
       const updatedUrl = url.replace("/api/", "");
       if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
@@ -118,6 +114,50 @@ export default function Profile() {
           console.error('Error fetching remote nodes:', error);
         });
       }
+      fetch(`${authorId}/relationship/${profileAuthorId}/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setRelationship(data.relationship);
+      });
+
+      // get followers
+      fetch(`${profileInfo.fqid}/followers/`, {
+        headers: {
+          'Authorization': `Basic ${encodedAuth}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowers(data.followers)
+      });
+
+      // get people author follows
+      fetch(`${profileInfo.fqid}/following/`, {
+        headers: {
+          'Authorization': `Basic ${encodedAuth}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowing(data)
+      });
+
+      // get friends of the author
+      fetch(`${profileInfo.fqid}/friends/`, {
+        headers: {
+          'Authorization': `Basic ${encodedAuth}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFriends(data.friends)
+      });
+    }
+
       else {
         fetch(`${profileInfo.id}/posts/`, {
           headers: {
@@ -128,9 +168,6 @@ export default function Profile() {
           .then((data) => {
             setPosts(data.posts);
           })
-      }
-
- 
 
       fetch(`${authorId}/relationship/${profileAuthorId}/`, {
         headers: {
@@ -174,7 +211,10 @@ export default function Profile() {
       .then((data) => {
         setFriends(data.friends)
       });
-    }
+      }
+
+ 
+
   }, [profileInfo]);
 
   function follow() {
