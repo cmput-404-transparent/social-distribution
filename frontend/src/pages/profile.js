@@ -159,16 +159,17 @@ export default function Profile() {
       }
     }
 
-      else {
-        fetch(`${profileInfo.fqid}/posts/`, {
-          headers: {
-            'Authorization': `Basic ${localStorage.getItem('authToken')}`,
-          },
-          })
-          .then((r) => r.json())
-          .then((data) => {
-            setPosts(data.posts);
-          })
+      else if (profileInfo.id !== undefined) {
+        
+      fetch(`${profileInfo.fqid}/posts/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+        })
+        .then((r) => r.json())
+        .then((data) => {
+          setPosts(data.posts);
+        })
 
       fetch(`${authorId}/relationship/${profileAuthorId}/`, {
         headers: {
@@ -213,6 +214,62 @@ export default function Profile() {
         setFriends(data.friends)
       });
       }
+    else {
+      
+      fetch(`${authorId}/posts/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+        })
+        .then((r) => r.json())
+        .then((data) => {
+          setPosts(data.posts);
+        })
+
+      fetch(`${authorId}/relationship/${profileAuthorId}/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setRelationship(data.relationship);
+      });
+
+      // get followers
+      fetch(`${authorId}/followers/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowers(data.followers)
+      });
+
+      // get people author follows
+      fetch(`${authorId}/following/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowing(data)
+      });
+
+      // get friends of the author
+      fetch(`${authorId}/friends/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFriends(data.friends)
+      });
+    }
+
 
  
 
