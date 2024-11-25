@@ -1689,33 +1689,13 @@ get_author_likes_by_fqid_docs = swagger_auto_schema(
     }
 )
 
-handle_follow_docs = swagger_auto_schema(
-    operation_summary="Manage follow relationships for authors",
-    operation_description=(
-        "Handles follow relationships between authors. \n\n"
-        "GET: Check if a foreign author is a follower of the specified author.\n"
-        "PUT: Add the foreign author as a follower of the specified author.\n"
-        "DELETE: Remove the foreign author as a follower of the specified author."
-    ),
-    manual_parameters=[
-        openapi.Parameter(
-            name="author_id",
-            in_=openapi.IN_PATH,
-            description="The ID of the local author.",
-            type=openapi.TYPE_INTEGER,
-            required=True,
-        ),
-        openapi.Parameter(
-            name="foreign_author_fqid",
-            in_=openapi.IN_PATH,
-            description="The fully qualified ID (FQID) of the foreign author.",
-            type=openapi.TYPE_STRING,
-            required=True,
-        ),
-    ],
+handle_follow_get_docs = swagger_auto_schema(
+    method="get",
+    operation_summary="Check if a foreign author is a follower",
+    operation_description="Checks whether the specified foreign author (by FQID) is a follower of the given author.",
     responses={
         200: openapi.Response(
-            description="Foreign author is a follower.",
+            description="The foreign author is a follower.",
             examples={
                 "application/json": {
                     "type": "author",
@@ -1724,13 +1704,31 @@ handle_follow_docs = swagger_auto_schema(
                     "displayName": "Foreign Author",
                     "page": "https://example.com/authors/foreign-author-id",
                     "github": "https://github.com/foreignauthor",
-                    "profileImage": "https://example.com/images/foreignauthor.jpg",
+                    "profileImage": "https://example.com/images/foreignauthor.jpg"
                 }
             },
         ),
-        201: openapi.Response(description="Foreign author added as a follower."),
-        204: openapi.Response(description="Foreign author removed as a follower."),
-        401: openapi.Response(description="Authentication required."),
-        404: openapi.Response(description="Author or foreign author not found."),
+        404: openapi.Response(description="The foreign author is not a follower or the author does not exist."),
+    },
+)
+
+handle_follow_put_docs = swagger_auto_schema(
+    method="put",
+    operation_summary="Add a foreign author as a follower",
+    operation_description="Adds the specified foreign author as a follower of the given author.",
+    responses={
+        201: openapi.Response(description="The foreign author was added as a follower."),
+        401: openapi.Response(description="Authentication is required to perform this action."),
+    },
+)
+
+handle_follow_delete_docs = swagger_auto_schema(
+    method="delete",
+    operation_summary="Remove a foreign author as a follower",
+    operation_description="Removes the specified foreign author as a follower of the given author.",
+    responses={
+        204: openapi.Response(description="The foreign author was removed as a follower."),
+        401: openapi.Response(description="Authentication is required to perform this action."),
+        404: openapi.Response(description="The author or foreign author does not exist."),
     },
 )

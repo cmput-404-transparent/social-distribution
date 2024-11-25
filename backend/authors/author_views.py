@@ -293,7 +293,9 @@ def manage_follow(request, author_id):
     
     return Response("author and/or follower doesn't exist", status=400)
 
-@handle_follow_docs
+@handle_follow_get_docs
+@handle_follow_put_docs
+@handle_follow_delete_docs
 @api_view(["GET", "PUT", "DELETE"])
 def handle_follow(request, author_id, foreign_author_fqid):
     try:
