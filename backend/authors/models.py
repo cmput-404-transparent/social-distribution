@@ -54,7 +54,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
 
     remote_node = models.ForeignKey(
         'RemoteNode',
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         blank=True,
         null=True,
     )
