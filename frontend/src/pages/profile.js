@@ -160,7 +160,7 @@ export default function Profile() {
     }
 
       else {
-        fetch(`${profileInfo.id}/posts/`, {
+        fetch(`${profileInfo.fqid}/posts/`, {
           headers: {
             'Authorization': `Basic ${localStorage.getItem('authToken')}`,
           },
@@ -181,7 +181,7 @@ export default function Profile() {
       });
 
       // get followers
-      fetch(`${profileInfo.id}/followers/`, {
+      fetch(`${profileInfo.fqid}/followers/`, {
         headers: {
           'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
@@ -192,7 +192,7 @@ export default function Profile() {
       });
 
       // get people author follows
-      fetch(`${profileInfo.id}/following/`, {
+      fetch(`${profileInfo.fqid}/following/`, {
         headers: {
           'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
@@ -203,7 +203,7 @@ export default function Profile() {
       });
 
       // get friends of the author
-      fetch(`${profileInfo.id}/friends/`, {
+      fetch(`${profileInfo.fqid}/friends/`, {
         headers: {
           'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
