@@ -182,7 +182,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://social-distribution-omelchuk-a7deff81f6a3.herokuapp.com",
     "https://social-distribution-asolanki-45d4887bf9b6.herokuapp.com",
     "https://jastegh-socialdistribution-c7853f320baf.herokuapp.com",
-    "https://socialdistribution-jassidak-a0db46597407.herokuapp.com"
+    "https://socialdistribution-jassidak-a0db46597407.herokuapp.com",
+    "https://f24-project-chartreuse-b4b2bcc83d87.herokuapp.com"
 ]
 
 CORS_ALLOW_METHODS = [
