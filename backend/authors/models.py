@@ -44,7 +44,7 @@ class AuthorManager(BaseUserManager):
 
 class Author(AbstractBaseUser, PermissionsMixin):
     host = models.URLField(blank=True, null=True)
-    display_name = models.CharField(max_length=500)
+    display_name = models.CharField(max_length=100)
     github = models.URLField(blank=True, null=True)
     profile_image = models.URLField(blank=True, default="")
     page = models.URLField(blank=True, null=True)
