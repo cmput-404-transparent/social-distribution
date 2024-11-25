@@ -108,7 +108,7 @@ export default function Profile() {
         });
         fetch(`${profileInfo.id}/posts/`, {
           headers: {
-            'Authorization': `Basic ${localStorage.getItem('remoteAuth')}`,
+            'Authorization': `Basic ${encodedAuth}}`,
           },
           })
           .then((r) => r.json())
