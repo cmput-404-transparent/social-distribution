@@ -83,7 +83,7 @@ class AuthorSummarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Author
-        fields = ['type', 'id', 'host', 'displayName', 'github', 'profileImage', 'page']
+        fields = ['type', 'id', 'host', 'displayName', 'github', 'profileImage', 'page', 'fqid']
 
     def get_id(self, obj):
         return f"{obj.host}authors/{obj.id}"
@@ -111,9 +111,3 @@ class FollowRequestSerializer(serializers.ModelSerializer):
     def get_object(self, obj):
         return AuthorSummarySerializer(obj.user).data
 
-
-class RemoteNodeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RemoteNode
-        fields = ['id','url','username', 'token']
-        read_only_fields = ['token'] 

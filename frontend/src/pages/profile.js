@@ -19,6 +19,9 @@ import {PostProfilePicture, ProfilePicture} from "../components/profilePicture";
   * link: https://mui.com/material-ui/react-modal/
   * date: October 20, 2024
   */
+
+
+
 const style = {
   position: 'absolute',
   top: '50%',
@@ -59,9 +62,12 @@ export default function Profile() {
 
   const authorId = localStorage.getItem('authorId');
   const { profileAuthorId } = useParams();
+  let encodedAuth = '';
 
   useEffect(() => {
     // get profile information
+    const host = window.location.origin;
+    localStorage.setItem('host', host);
     fetch(`/api/authors/${profileAuthorId}/`, {
       headers: {
         'Authorization': `Basic ${localStorage.getItem('authToken')}`,
@@ -80,15 +86,29 @@ export default function Profile() {
   useEffect(() => {
     if (Object.keys(profileInfo).length !== 0) {
       // get posts
-      fetch(`${profileInfo.id}/posts/`, {
-        headers: {
-          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
-        },
-      })
-      .then((r) => r.json())
-      .then((data) => {
-        setPosts(data.posts);
-      })
+      const url =profileInfo.host
+      const updatedUrl = url.replace("/api/", "");
+      if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
+        
+        fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${updatedUrl}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          encodedAuth = data.credentials;
+
+          fetch(`${profileInfo.fqid}/posts/`, {
+            headers: {
+              'Authorization': `Basic ${encodedAuth}`,
+            },
+          })
+          .then((r) => r.json())
+          .then((data) => {
+            setPosts(data.posts);
+          });
 
       fetch(`${authorId}/relationship/${profileAuthorId}/`, {
         headers: {
@@ -101,7 +121,68 @@ export default function Profile() {
       });
 
       // get followers
-      fetch(`${profileInfo.id}/followers/`, {
+      fetch(`${profileInfo.fqid}/followers/`, {
+        headers: {
+          'Authorization': `Basic ${encodedAuth}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowers(data.followers)
+      });
+
+      // get people author follows
+      fetch(`${profileInfo.fqid}/following/`, {
+        headers: {
+          'Authorization': `Basic ${encodedAuth}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowing(data)
+      });
+
+      // get friends of the author
+      fetch(`${profileInfo.fqid}/friends/`, {
+        headers: {
+          'Authorization': `Basic ${encodedAuth}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFriends(data.friends)
+      });
+        })
+        .catch((error) => {
+          console.error('Error fetching remote nodes:', error);
+        });
+      }
+    }
+
+      else if (profileInfo.id !== undefined) {
+        
+      fetch(`${profileInfo.fqid}/posts/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+        })
+        .then((r) => r.json())
+        .then((data) => {
+          setPosts(data.posts);
+        })
+
+      fetch(`${authorId}/relationship/${profileAuthorId}/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setRelationship(data.relationship);
+      });
+
+      // get followers
+      fetch(`${profileInfo.fqid}/followers/`, {
         headers: {
           'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
@@ -112,7 +193,7 @@ export default function Profile() {
       });
 
       // get people author follows
-      fetch(`${profileInfo.id}/following/`, {
+      fetch(`${profileInfo.fqid}/following/`, {
         headers: {
           'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
@@ -123,7 +204,62 @@ export default function Profile() {
       });
 
       // get friends of the author
-      fetch(`${profileInfo.id}/friends/`, {
+      fetch(`${profileInfo.fqid}/friends/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFriends(data.friends)
+      });
+      }
+    else {
+      
+      fetch(`${authorId}/posts/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+        })
+        .then((r) => r.json())
+        .then((data) => {
+          setPosts(data.posts);
+        })
+
+      fetch(`${authorId}/relationship/${profileAuthorId}/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setRelationship(data.relationship);
+      });
+
+      // get followers
+      fetch(`${authorId}/followers/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowers(data.followers)
+      });
+
+      // get people author follows
+      fetch(`${authorId}/following/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowing(data)
+      });
+
+      // get friends of the author
+      fetch(`${authorId}/friends/`, {
         headers: {
           'Authorization': `Basic ${localStorage.getItem('authToken')}`,
         },
@@ -133,6 +269,10 @@ export default function Profile() {
         setFriends(data.friends)
       });
     }
+
+
+ 
+
   }, [profileInfo]);
 
   function follow() {

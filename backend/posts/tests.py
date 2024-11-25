@@ -139,8 +139,8 @@ class PostAndGithubActivityTests(APITestCase):
 
     def test_get_image_post_by_fqid(self):
          # Create an image post
-         with open('posts/test_image.jpg', 'rb') as image_file:
-             image_content = base64.b64encode(image_file.read()).decode('utf-8')
+         with open('media/images/test_image.jpg', 'rb') as image_file:
+            image_content = base64.b64encode(image_file.read()).decode('utf-8')
 
          image_post = Post.objects.create(
              title="Image Post",

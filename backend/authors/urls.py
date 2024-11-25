@@ -129,6 +129,8 @@ urlpatterns = [
     # get author by fqid
     path("<path:author_fqid>/", author_views.get_author_by_fqid, name="get_author_by_fqid"),
 
+    
+
 ]
 
 

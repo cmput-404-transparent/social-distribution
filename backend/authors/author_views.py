@@ -491,6 +491,13 @@ def inbox(request, author_id):
             new_post.published = post_published
             new_post.save()
         
+        elif new_item['visibility'] == "DELETED":  # if post exists in db and is marked as deleted
+            post = Post.objects.get(fqid=post_id)
+            post.is_deleted = True
+            post.visibility = "DELETED"
+            post.save()
+            return Response(status=status.HTTP_200_OK)
+        
         else:   # if post exists in db then there was an edit to the post
             post = Post.objects.get(fqid=post_id)
             post.title = new_item['title']

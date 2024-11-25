@@ -91,8 +91,9 @@ export default function Notifications() {
   const authorId = localStorage.getItem('authorId');
   const authorSerial = authorId.split("/").pop();
 
+
   useEffect(() => {
-    fetch(`/api/authors/${authorSerial}/follow_requests/`, {
+    fetch(`api/authors/${authorSerial}/follow_requests/`, {
       headers: {
         'Authorization': `Basic ${localStorage.getItem('authToken')}`,
       },

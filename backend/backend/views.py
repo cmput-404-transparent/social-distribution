@@ -7,14 +7,29 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
+
 from authors.models import RemoteNode  # Assuming you have a RemoteNode model
 
 from authors.models import Author
 from posts.models import Comment, Like, Post
+import base64
 
 def index(request):
     return render(request, 'index.html')
 
+
+@api_view(['GET'])
+def remote_node_auth(request):
+    try:
+        remote_node = RemoteNode.objects.get(url=request.GET.get('host'))
+        credentials = f"{remote_node.username}:{remote_node.password}"
+        encoded_credentials = base64.b64encode(credentials.encode()).decode()
+        return Response({
+            'credentials': encoded_credentials,
+        }, status=status.HTTP_200_OK)
+            
+    except RemoteNode.DoesNotExist:
+        return Response({'detail': 'Remote node not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 # Testing fetching authors
 @api_view(['GET'])
@@ -84,6 +99,10 @@ def save_remote_author(author_data):
     """
     Save or update a remote author in the local database.
     """
+    if  "http://localhost" in author_data.get("id"):  # Skip local author
+        return None
+    
+
     try:
         # Save or update the author based on fqid
         author, created = Author.objects.update_or_create(
