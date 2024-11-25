@@ -18,9 +18,9 @@ def index(request):
 
 
 @api_view(['GET'])
-def remote_node_auth(request, host):
+def remote_node_auth(request):
     try:
-        remote_node = RemoteNode.objects.get(url=host)
+        remote_node = RemoteNode.objects.get(request.GET.get('host'))
         return Response({
             'username': remote_node.username,
             'password': remote_node.password,

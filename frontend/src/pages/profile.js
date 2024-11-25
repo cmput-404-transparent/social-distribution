@@ -88,7 +88,7 @@ export default function Profile() {
       alert(profileInfo.id);
       alert(profileInfo.id.startsWith(localStorage.getItem('host')));
       if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
-        fetch(`${localStorage.getItem('host')}/remote-nodes/${encodeURIComponent(profileInfo.host)}`, {
+        fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${encodeURIComponent(profileInfo.host)}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
