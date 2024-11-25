@@ -45,6 +45,7 @@ def test_remote_node_connection(request):
     results = []
     for node in remote_nodes:
         page = 1
+        
         while True:
             try:
                 # Fetch authors from the remote node
@@ -56,10 +57,11 @@ def test_remote_node_connection(request):
                     authors_data = response.json().get("authors", [])
                     if not authors_data:  # Stop if no autjors 
                         break
+                    
 
                     # Save author
                     for author_data in authors_data:
-                        author = save_remote_author(author_data)
+                        author = save_remote_author(author_data,node.url)
                         if author:
                             authors_list.append({
                                 "type": "author",
@@ -95,14 +97,16 @@ def test_remote_node_connection(request):
 
 
 
-def save_remote_author(author_data):
+def save_remote_author(author_data,node_url=None):
     """
     Save or update a remote author in the local database.
     """
     if  "http://localhost" in author_data.get("id"):  # Skip local author
         return None
     
-
+    elif node_url not in author_data.get('id'):
+        return None
+    
     try:
         # Save or update the author based on fqid
         author, created = Author.objects.update_or_create(
@@ -121,4 +125,3 @@ def save_remote_author(author_data):
     except IntegrityError:
         print(f"Integrity error for author: {author_data}")
         return None 
-
