@@ -86,7 +86,7 @@ class AuthorSummarySerializer(serializers.ModelSerializer):
         fields = ['type', 'id', 'host', 'displayName', 'github', 'profileImage', 'page', 'fqid']
 
     def get_id(self, obj):
-        return f"{obj.host}authors/{obj.id}"
+        return obj.fqid
 
 
     def get_url(self, obj):
