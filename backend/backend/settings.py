@@ -31,10 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000","http://localhost:8000", "https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com",
-                        "https://transparent-jwan-de425e3e313f.herokuapp.com", "https://social-distribution-omelchuk-a7deff81f6a3.herokuapp.com",
-                        "https://social-distribution-asolanki-45d4887bf9b6.herokuapp.com", "https://jastegh-socialdistribution-c7853f320baf.herokuapp.com",
-                        "https://socialdistribution-jassidak-a0db46597407.herokuapp.com"]
+CSRF_TRUSTED_ORIGINS = ["*"]
 CSRF_ALLOWED_ORIGINS = ["*"]
 CORS_ORIGIN_WHITELIST = ["*"]
 
@@ -174,16 +171,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "https://social-distribution-tqyoung-bad8770cc2df.herokuapp.com",
-    "https://transparent-jwan-de425e3e313f.herokuapp.com",
-    "https://social-distribution-omelchuk-a7deff81f6a3.herokuapp.com",
-    "https://social-distribution-asolanki-45d4887bf9b6.herokuapp.com",
-    "https://jastegh-socialdistribution-c7853f320baf.herokuapp.com",
-    "https://socialdistribution-jassidak-a0db46597407.herokuapp.com"
-]
+CORS_ALLOWED_ORIGINS = ["*"]
 
 CORS_ALLOW_METHODS = [
     "DELETE",
