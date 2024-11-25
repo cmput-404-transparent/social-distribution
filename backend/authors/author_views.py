@@ -294,7 +294,6 @@ def manage_follow(request, author_id):
     return Response("author and/or follower doesn't exist", status=400)
 
 @api_view(["GET", "PUT", "DELETE"])
-@authentication_classes([NodeBasicAuthentication])
 def handle_follow(request, author_id, foreign_author_fqid):
     try:
         author = Author.objects.get(id=author_id)
@@ -317,11 +316,11 @@ def handle_follow(request, author_id, foreign_author_fqid):
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
-        elif request.method == 'PUT':  # Add as a follower
+        elif request.method == 'PUT' and request.user.is_authenticated:  # Add as a follower
             Follow.objects.get_or_create(user=author, follower=foreign_author)
             return Response(status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':  # Remove as a follower
+        elif request.method == 'DELETE' and request.user.is_authenticated:  # Remove as a follower
             Follow.objects.filter(user=author, follower=foreign_author).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
