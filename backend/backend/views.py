@@ -97,7 +97,7 @@ def save_remote_author(author_data):
     """
     Save or update a remote author in the local database.
     """
-    if author_data.get("id") in "local":  # Skip local author
+    if  "http://localhost" in author_data.get("id"):  # Skip local author
         return None
     
 
