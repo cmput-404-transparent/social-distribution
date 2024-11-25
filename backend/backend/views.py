@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
+
 from authors.models import RemoteNode  # Assuming you have a RemoteNode model
 
 from authors.models import Author
@@ -15,6 +16,18 @@ from posts.models import Comment, Like, Post
 def index(request):
     return render(request, 'index.html')
 
+
+@api_view(['GET'])
+def remote_node_auth(request, host):
+    try:
+        remote_node = RemoteNode.objects.get(url=host)
+        return Response({
+            'username': remote_node.username,
+            'password': remote_node.password,
+        }, status=status.HTTP_200_OK)
+        
+    except RemoteNode.DoesNotExist:
+        return Response({'detail': 'Remote node not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 # Testing fetching authors
 @api_view(['GET'])

@@ -19,6 +19,12 @@ import {PostProfilePicture, ProfilePicture} from "../components/profilePicture";
   * link: https://mui.com/material-ui/react-modal/
   * date: October 20, 2024
   */
+
+useEffect(() => {
+  const host = window.location.origin;
+  localStorage.setItem('host', host);
+}, []);
+
 const style = {
   position: 'absolute',
   top: '50%',
@@ -80,15 +86,46 @@ export default function Profile() {
   useEffect(() => {
     if (Object.keys(profileInfo).length !== 0) {
       // get posts
-      fetch(`${profileInfo.id}/posts/`, {
-        headers: {
-          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
-        },
-      })
-      .then((r) => r.json())
-      .then((data) => {
-        setPosts(data.posts);
-      })
+      if (!profileInfo.id.startsWith(localStorage.getItem('host'))) {
+        fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${profileInfo.host}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          const { username, password } = data;
+          const authString = `${username}:${password}`;
+          const encodedAuth = btoa(authString);
+          localStorage.setItem('remoteAuth', encodedAuth);
+        })
+        .catch((error) => {
+          console.error('Error fetching remote nodes:', error);
+        });
+        fetch(`${profileInfo.id}/posts/`, {
+          headers: {
+            'Authorization': `Basic ${localStorage.getItem('encodedAuth')}`,
+          },
+          })
+          .then((r) => r.json())
+          .then((data) => {
+            setPosts(data.posts);
+          })
+      }
+      else {
+        fetch(`${profileInfo.id}/posts/`, {
+          headers: {
+            'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+          },
+          })
+          .then((r) => r.json())
+          .then((data) => {
+            setPosts(data.posts);
+          })
+      }
+
+ 
 
       fetch(`${authorId}/relationship/${profileAuthorId}/`, {
         headers: {
