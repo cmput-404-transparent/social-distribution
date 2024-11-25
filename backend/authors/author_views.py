@@ -267,6 +267,8 @@ def manage_follow(request, author_id):
             follow.status = "FOLLOWED"
             follow.save()
 
+            result = {"success": True, "detail": "Follow request accepted."}
+
             if follower.remote_node:
                 result = fetch_remote_posts(follower)
             if not result["success"]:
@@ -303,7 +305,6 @@ def fetch_remote_posts(author):
                 if not post_fqid:
                     continue
                 
-                # Create or update the post locally
                 Post.objects.update_or_create(
                     fqid=post_fqid,
                     defaults={
