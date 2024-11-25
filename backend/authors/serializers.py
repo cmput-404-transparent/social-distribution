@@ -83,7 +83,7 @@ class AuthorSummarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Author
-        fields = ['type', 'id', 'host', 'displayName', 'github', 'profileImage', 'page']
+        fields = ['type', 'id', 'host', 'displayName', 'github', 'profileImage', 'page', 'fqid']
 
     def get_id(self, obj):
         return f"{obj.host}authors/{obj.id}"
