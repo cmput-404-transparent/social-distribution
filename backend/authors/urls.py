@@ -54,7 +54,9 @@ urlpatterns = [
 
     # get followers (GET method)
     path("<int:author_id>/followers/", author_views.followers, name="followers"),
-    path("<int:author_id>/followers/<path:foreign_author_fqid>", author_views.manage_follow, name='manage_follow'),
+
+    # check if folloqing (GET method)      # send a follow (POST method)        # remove follower (DELETE method)
+    path("<int:author_id>/followers/<path:foreign_author_fqid>", author_views.handle_follow, name='handle_follow'),
 
     # get users that an author follows (GET method)     # unfollow (DELETE method)
     path("<int:author_id>/following/", author_views.following, name="following"),

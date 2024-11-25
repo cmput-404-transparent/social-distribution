@@ -267,9 +267,35 @@ def get_follow_requests(request, author_id):
 
 @accept_follow_docs
 @delete_follow_docs
+@api_view(["PUT", "DELETE"])
+def manage_follow(request, author_id):
+    author = request.user
+    follower = Author.objects.get(id=request.POST.get('follower', None))
+    if author and follower:
+        if request.method == "PUT":
+            # accepting follow request
+            follow = Follow.objects.get(user=author, follower=follower)
+            follow.status = "FOLLOWED"
+            follow.save()
+
+            result = {"success": True, "detail": "Follow request accepted."}
+
+            if follower.remote_node:
+                result = fetch_remote_posts(follower)
+            if not result["success"]:
+                return Response({"detail": result["detail"]}, status=400)
+        elif request.method == "DELETE":
+            # remove follow request
+            follow = Follow.objects.get(user=author, follower=follower)
+            follow.delete()
+        
+        return Response(status=200)
+    
+    return Response("author and/or follower doesn't exist", status=400)
+
 @api_view(["GET", "PUT", "DELETE"])
 @authentication_classes([NodeBasicAuthentication])
-def manage_follow(request, author_id, foreign_author_fqid):
+def handle_follow(request, author_id, foreign_author_fqid):
     try:
         author = Author.objects.get(id=author_id)
         foreign_author_fqid = unquote(foreign_author_fqid)  # Decode the percent-encoded URL
@@ -301,7 +327,6 @@ def manage_follow(request, author_id, foreign_author_fqid):
 
     except Author.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-
 
 def fetch_remote_posts(author):
     """
