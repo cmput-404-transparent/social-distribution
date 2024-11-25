@@ -62,6 +62,7 @@ export default function Profile() {
 
   const authorId = localStorage.getItem('authorId');
   const { profileAuthorId } = useParams();
+  let encodedAuth = '';
 
   useEffect(() => {
     // get profile information
@@ -85,8 +86,11 @@ export default function Profile() {
   useEffect(() => {
     if (Object.keys(profileInfo).length !== 0) {
       // get posts
-      if (profileInfo.id.startsWith(localStorage.getItem('host')=== false)) {
-        fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${profileInfo.host}`, {
+      const url =profileInfo.host
+      const updatedUrl = url.replace("/api/", "");
+      if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
+        
+        fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${updatedUrl}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
@@ -94,24 +98,67 @@ export default function Profile() {
         })
         .then((response) => response.json())
         .then((data) => {
-          const { username, password } = data;
-          const authString = `${username}:${password}`;
-          const encodedAuth = btoa(authString);
-          localStorage.setItem('remoteAuth', encodedAuth);
-        })
-        .catch((error) => {
-          console.error('Error fetching remote nodes:', error);
-        });
-        fetch(`${profileInfo.id}/posts/`, {
-          headers: {
-            'Authorization': `Basic ${localStorage.getItem('encodedAuth')}`,
-          },
+          encodedAuth = data.credentials;
+
+          fetch(`${profileInfo.fqid}/posts/`, {
+            headers: {
+              'Authorization': `Basic ${encodedAuth}`,
+            },
           })
           .then((r) => r.json())
           .then((data) => {
             setPosts(data.posts);
-          })
+          });
+
+      fetch(`${authorId}/relationship/${profileAuthorId}/`, {
+        headers: {
+          'Authorization': `Basic ${localStorage.getItem('authToken')}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setRelationship(data.relationship);
+      });
+
+      // get followers
+      fetch(`${profileInfo.fqid}/followers/`, {
+        headers: {
+          'Authorization': `Basic ${encodedAuth}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowers(data.followers)
+      });
+
+      // get people author follows
+      fetch(`${profileInfo.fqid}/following/`, {
+        headers: {
+          'Authorization': `Basic ${encodedAuth}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowing(data)
+      });
+
+      // get friends of the author
+      fetch(`${profileInfo.fqid}/friends/`, {
+        headers: {
+          'Authorization': `Basic ${encodedAuth}`,
+        },
+      })
+      .then((r) => r.json())
+      .then((data) => {
+        setFriends(data.friends)
+      });
+        })
+        .catch((error) => {
+          console.error('Error fetching remote nodes:', error);
+        });
       }
+    }
+
       else {
         fetch(`${profileInfo.id}/posts/`, {
           headers: {
@@ -122,9 +169,6 @@ export default function Profile() {
           .then((data) => {
             setPosts(data.posts);
           })
-      }
-
- 
 
       fetch(`${authorId}/relationship/${profileAuthorId}/`, {
         headers: {
@@ -168,7 +212,10 @@ export default function Profile() {
       .then((data) => {
         setFriends(data.friends)
       });
-    }
+      }
+
+ 
+
   }, [profileInfo]);
 
   function follow() {
