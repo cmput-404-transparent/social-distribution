@@ -87,6 +87,7 @@ export default function Profile() {
       // get posts
       alert(profileInfo.id);
       alert(profileInfo.id.startsWith(localStorage.getItem('host')));
+      alert(profileInfo);
       const url =profileInfo.host
       const updatedUrl = url.replace("/api/", "");
       if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
