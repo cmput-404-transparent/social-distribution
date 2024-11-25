@@ -107,8 +107,10 @@ export default function Profile() {
         .catch((error) => {
           console.error('Error fetching remote nodes:', error);
         });
+        alert(encodedAuth);
         fetch(`${profileInfo.id}/posts/`, {
           headers: {
+            
             'Authorization': `Basic ${encodedAuth}`,
           },
           })
