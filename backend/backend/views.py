@@ -84,6 +84,10 @@ def save_remote_author(author_data):
     """
     Save or update a remote author in the local database.
     """
+    if author_data.get("id") in "local":  # Skip local author
+        return None
+    
+
     try:
         # Save or update the author based on fqid
         author, created = Author.objects.update_or_create(
