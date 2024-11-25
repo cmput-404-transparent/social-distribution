@@ -16,7 +16,8 @@ import base64
 from rest_framework.decorators import authentication_classes, permission_classes
 from .node_authentication import NodeBasicAuthentication
 from django.utils import timezone
-
+from requests.auth import HTTPBasicAuth
+import json
 #documentation 
 from .docs import *
 
@@ -234,7 +235,15 @@ def follow(request):
         user_author = Author.objects.get(id=user)
         follower_author = Author.objects.get(id=follower)
 
-        Follow.objects.get_or_create(user=user_author, follower=follower_author)
+        follow_request, created = Follow.objects.get_or_create(user=user_author, follower=follower_author)
+
+        if user_author.remote_node and created:
+            follow_request_object = FollowRequestSerializer(follow_request).data
+            follow_request_json = json.dumps(follow_request_object)
+
+            requests.post(user_author.fqid + "/inbox/", data=follow_request_json,
+                          auth=HTTPBasicAuth(user_author.remote_node.username, user_author.remote_node.password),
+                          headers={"Content-Type": "application/json"}, timeout=5)
 
         return Response(status=201)
 
@@ -266,6 +275,13 @@ def manage_follow(request, author_id):
             follow = Follow.objects.get(user=author, follower=follower)
             follow.status = "FOLLOWED"
             follow.save()
+
+            result = {"success": True, "detail": "Follow request accepted."}
+
+            if follower.remote_node:
+                result = fetch_remote_posts(follower)
+            if not result["success"]:
+                return Response({"detail": result["detail"]}, status=400)
         elif request.method == "DELETE":
             # remove follow request
             follow = Follow.objects.get(user=author, follower=follower)
@@ -274,6 +290,50 @@ def manage_follow(request, author_id):
         return Response(status=200)
     
     return Response("author and/or follower doesn't exist", status=400)
+
+
+def fetch_remote_posts(author):
+    """
+    Fetch posts from a remote author and store them locally.
+    """
+    remote_posts_url = f"{author.fqid}/posts/"
+
+    try:
+        response = requests.get(remote_posts_url, auth=HTTPBasicAuth(author.remote_node.username, author.remote_node.password),
+                              headers={"Content-Type": "application/json"}, timeout=5)
+        if response.status_code == 200:
+            remote_posts_data = response.json()
+            remote_posts = remote_posts_data.get('posts', [])
+            
+            relevant_posts = [
+                post for post in remote_posts if post.get('visibility') in ['PUBLIC', 'FRIENDS','UNLISTED']
+            ]
+
+            for post_data in relevant_posts:
+                post_fqid = post_data.get('id')
+                if not post_fqid:
+                    continue
+                
+                Post.objects.update_or_create(
+                    fqid=post_fqid,
+                    defaults={
+                        "title": post_data.get('title', ''),
+                        "description": post_data.get('description', ''),
+                        "contentType": post_data.get('contentType', ''),
+                        "content": post_data.get('content', ''),
+                        "visibility": post_data.get('visibility', 'PUBLIC'),
+                        "author": author,
+                        "published": post_data.get('published', timezone.now()),
+                    }
+                )
+            return {"success": True, "detail": "Posts fetched and saved successfully."}
+        else:
+            return {"success": False, "detail": f"Failed to fetch remote posts. Status: {response.status_code}"}
+    except requests.RequestException as e:
+        return {"success": False, "detail": f"Error fetching remote posts: {str(e)}"}
+
+
+
 
 @get_follows_docs
 @api_view(['GET'])
@@ -550,3 +610,7 @@ def inbox(request, author_id):
         new_comment.save()
 
     return Response(status=status.HTTP_201_CREATED)
+
+
+
+
