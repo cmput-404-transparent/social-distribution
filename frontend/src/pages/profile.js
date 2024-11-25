@@ -99,7 +99,7 @@ export default function Profile() {
         .then((response) => response.json())
         .then((data) => {
           encodedAuth = data.credentials;
-          alert(encodedAuth);
+
           fetch(`${profileInfo.fqid}/posts/`, {
             headers: {
               'Authorization': `Basic ${encodedAuth}`,
