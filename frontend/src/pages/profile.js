@@ -90,6 +90,7 @@ export default function Profile() {
       const url =profileInfo.host
       const updatedUrl = url.replace("/api/", "");
       if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
+        let encodedAuth = '';
         fetch(`${localStorage.getItem('host')}/remote-nodes/?host=${updatedUrl}`, {
           method: 'GET',
           headers: {
@@ -100,7 +101,7 @@ export default function Profile() {
         .then((data) => {
           const { username, password } = data;
           const authString = `${username}:${password}`;
-          const encodedAuth = btoa(authString);
+          encodedAuth = btoa(authString);
           localStorage.setItem('remoteAuth', encodedAuth);
         })
         .catch((error) => {
@@ -108,7 +109,7 @@ export default function Profile() {
         });
         fetch(`${profileInfo.id}/posts/`, {
           headers: {
-            'Authorization': `Basic ${encodedAuth}}`,
+            'Authorization': `Basic ${encodedAuth}`,
           },
           })
           .then((r) => r.json())
