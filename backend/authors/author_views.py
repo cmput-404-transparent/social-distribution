@@ -17,6 +17,7 @@ from rest_framework.decorators import authentication_classes, permission_classes
 from .node_authentication import NodeBasicAuthentication
 from django.utils import timezone
 from requests.auth import HTTPBasicAuth
+import json
 #documentation 
 from .docs import *
 
@@ -234,7 +235,15 @@ def follow(request):
         user_author = Author.objects.get(id=user)
         follower_author = Author.objects.get(id=follower)
 
-        Follow.objects.get_or_create(user=user_author, follower=follower_author)
+        follow_request, created = Follow.objects.get_or_create(user=user_author, follower=follower_author)
+
+        if user_author.remote_node and created:
+            follow_request_object = FollowRequestSerializer(follow_request).data
+            follow_request_json = json.dumps(follow_request_object)
+
+            requests.post(user_author.fqid + "/inbox/", data=follow_request_json,
+                          auth=HTTPBasicAuth(user_author.remote_node.username, user_author.remote_node.password),
+                          headers={"Content-Type": "application/json"}, timeout=5)
 
         return Response(status=201)
 
