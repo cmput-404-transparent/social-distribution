@@ -88,6 +88,7 @@ export default function Profile() {
       alert(profileInfo.id);
       alert(profileInfo.id.startsWith(localStorage.getItem('host')));
       alert(profileInfo);
+      alert(profileInfo.fqid);
       const url =profileInfo.host
       const updatedUrl = url.replace("/api/", "");
       if (profileInfo.id.startsWith(localStorage.getItem('host'))=== false) {
@@ -107,7 +108,7 @@ export default function Profile() {
           console.error('Error fetching remote nodes:', error);
         });
         alert(encodedAuth);
-        fetch(`${profileInfo.id}/posts/`, {
+        fetch(`${profileInfo.fqid}/posts/`, {
           headers: {
             
             'Authorization': `Basic ${localStorage.getItem('authToken')}`,
