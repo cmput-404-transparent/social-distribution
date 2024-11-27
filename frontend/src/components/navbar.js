@@ -43,7 +43,7 @@ export default function NavBar() {
       <div className="grid grid-flow-row auto-rows-max left max-w-max px-[30px] py-[20px] space-y-8">
 
         <div className="text-customOrange text-xl font-bold md:block flex justify-center">
-          <p className="hidden md:inline">&lt;SocialDistribution /&gt;</p>
+          <p className="hidden md:inline">SocialDistribution &lt;/&gt;</p>
           <p className="md:hidden">&lt;/&gt;</p>
         </div>
 
