@@ -3,7 +3,7 @@
 # SocialDistribution </> <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" /> <img src="https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue" />
 A decentralized social blogging platform that enables users to share posts and aggregate content from other sources, using a simple, RESTful inbox model.
 
-<img src="https://github.com/cmput-404-transparent/social-distribution/blob/main/images/sample-stream-screenshot.png" width="500"/> <img src="https://github.com/cmput-404-transparent/social-distribution/blob/main/images/sample-profile-screenshot.png" width="500" />
+<p align="center"><img src="https://github.com/cmput-404-transparent/social-distribution/blob/main/images/sample-stream-screenshot.png" width="375"/> <img src="https://github.com/cmput-404-transparent/social-distribution/blob/main/images/sample-profile-screenshot.png" width="375" /></p>
 
 ## Features 🌟
 - <b>Distributed Social Network:</b> Allows users to interact across different nodes, maintaining autonomy while sharing posts and content.
