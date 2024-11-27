@@ -34,3 +34,10 @@ build:
 
 test:
 	cd $(BACKEND_DIR) && python manage.py test
+
+dependencies:
+	cd $(FRONTEND_DIR) && npm i && cd .. && \
+	pip install -r requirements.txt
+
+test:
+	cd $(BACKEND_DIR) && python manage.py test
